@@ -1,3 +1,4 @@
+// $ Id: $
 #ifndef DUNE_COMMUNICATOR
 #define DUNE_COMMUNICATOR
 

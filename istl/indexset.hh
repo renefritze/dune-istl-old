@@ -1,5 +1,6 @@
-#ifndef DUNE_INDEXSET__HH
-#define DUNE_INDEXSET__HH
+// $Id$
+#ifndef DUNE_INDEXSET_HH
+#define DUNE_INDEXSET_HH
 
 #include<algorithm>
 #include<dune/common/arraylist.hh>
