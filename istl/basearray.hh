@@ -286,6 +286,15 @@ namespace Dune {
 	  return const_iterator(p,-1);
 	}
 
+	//! random access returning iterator (end if not contained)
+	const_iterator find (int i) const
+	{
+	  if (i>=0 && i<n)
+		return const_iterator(p,i);
+	  else
+		return const_iterator(p,n);
+	}
+
 
 	//===== sizes
 
@@ -729,6 +738,23 @@ namespace Dune {
 	  return iterator(p,j,-1);
 	}
 
+	//! random access returning iterator (end if not contained)
+	iterator find (int i)
+	{
+	  int l=0, r=n-1;
+	  while (l<r)
+		{
+		  int q = (l+r)/2;
+		  if (i <= j[q]) r=q;
+		  else l = q+1;
+		}
+
+	  if (i==j[l])
+		return iterator(p,j,l);
+	  else
+		return iterator(p,j,n);
+	}
+
 	//! const_iterator class for sequential access
 	class const_iterator 
 	{
@@ -840,7 +866,7 @@ namespace Dune {
 	}
 
 	//! random access returning iterator (end if not contained)
-	iterator find (int i)
+	const_iterator find (int i) const
 	{
 	  int l=0, r=n-1;
 	  while (l<r)
@@ -851,9 +877,9 @@ namespace Dune {
 		}
 
 	  if (i==j[l])
-		return iterator(p,j,l);
+		return const_iterator(p,j,l);
 	  else
-		return iterator(p,j,n);
+		return const_iterator(p,j,n);
 	}
 
 	//===== sizes
