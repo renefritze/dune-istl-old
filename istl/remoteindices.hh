@@ -149,6 +149,8 @@ namespace Dune{
        
   };
 
+
+  //! \todo Please doc me!
   template<typename T>
   class MPITraits<ParallelLocalIndex<T> >
   {
@@ -159,6 +161,7 @@ namespace Dune{
     
   };
   
+  //! \todo Please doc me!
   template<typename TG, typename TA>
   class MPITraits<IndexPair<TG,ParallelLocalIndex<TA> > >
   {
@@ -556,6 +559,7 @@ namespace Dune{
       typedef typename Map::iterator ConstRealIterator;
       
       
+      //! \todo Please doc me!
       iterator(const RealIterator& iter, const ConstRealIterator& end, TG& index)
 	: iter_(iter), end_(end), index_(index)
       {
@@ -564,10 +568,12 @@ namespace Dune{
 	  ++iter_;
       }
       
+      //! \todo Please doc me!
       iterator(const iterator& other)
 	: iter_(other.iter_), end_(other.end_), index_(other.index_)
       { }
-            
+         
+      //! \todo Please doc me!   
       iterator& operator++()
       {	
 	++iter_;
@@ -578,26 +584,31 @@ namespace Dune{
 	return *this;
       }
       
+      //! \todo Please doc me!
       const std::pair<int,RemoteIndex>& operator*()const
       {
 	return *(iter_->second.first);
       }
-
+      
+      //! \todo Please doc me!
       int process() const
       {
 	return iter_->first;
       }
       
+      //! \todo Please doc me!
       const RemoteIndex* operator->()const
       {
 	return iter_->second.first.operator->();
       }
       
+      //! \todo Please doc me!
       bool operator==(const iterator& other)
       {
 	return other.iter_==iter_;
       }
 
+      //! \todo Please doc me!
       bool operator!=(const iterator& other)
       {
 	return other.iter_!=iter_;
