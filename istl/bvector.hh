@@ -56,6 +56,7 @@ namespace Dune {
 
 	//===== assignment from scalar
 
+      //! Assignment from a scalar
 	block_vector_unmanaged& operator= (const field_type& k)
 	{
 	  for (int i=0; i<this->n; i++)
@@ -351,6 +352,15 @@ namespace Dune {
 	}
   };
 
+  //! Send BlockVector to an output stream
+    template<class K, class A>
+    std::ostream& operator<< (std::ostream& s, const BlockVector<K, A>& v)
+  {
+      for (int i=0; i<v.size(); i++)
+          s << v[i] << std::endl;
+
+      return s;
+  }
 
   /** BlockVectorWindow adds window manipulation functions
 	  to the block_vector_unmanaged template.
