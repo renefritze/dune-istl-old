@@ -28,16 +28,16 @@ namespace Dune {
 
   // recursively print all the blocks
   template<class V>
-  void recursive_printvector (std::ostream& s, V& v, std::string rowtext, int& counter, 
+  void recursive_printvector (std::ostream& s, const V& v, std::string rowtext, int& counter, 
 							  int columns, int width, int precision)
   {
-	for (typename V::Iterator i=v.begin(); i!=v.end(); ++i)
+	for (typename V::ConstIterator i=v.begin(); i!=v.end(); ++i)
 	  recursive_printvector(s,*i,rowtext,counter,columns,width,precision);
   }
 
   // specialization for FieldVector
   template<class K, int n>
-  void recursive_printvector (std::ostream& s, FieldVector<K,n>& v, std::string rowtext, int& counter, 
+  void recursive_printvector (std::ostream& s, const FieldVector<K,n>& v, std::string rowtext, int& counter, 
 							  int columns, int width, int precision)
   {
 	// we now can print n numbers
@@ -61,7 +61,7 @@ namespace Dune {
 
 
   template<class V>
-  void printvector (std::ostream& s, V& v, std::string title, std::string rowtext, 
+  void printvector (std::ostream& s, const V& v, std::string title, std::string rowtext, 
 					int columns=1, int width=10, int precision=2)
   {
 	// count the numbers printed to make columns
@@ -104,7 +104,7 @@ namespace Dune {
 
   //! print one row of a matrix
   template<class M>
-  void print_row (std::ostream& s, M& A, int I, int J, int therow, int width, int precision)
+  void print_row (std::ostream& s, const M& A, int I, int J, int therow, int width, int precision)
   {
 	int i0=I;
 	for (int i=0; i<A.N(); i++)
@@ -116,7 +116,7 @@ namespace Dune {
 			for (int j=0; j<A.M(); j++)
 			  {
 				// find this block
-				typename M::ColIterator it = A[i].find(j);
+				typename M::ConstColIterator it = A[i].find(j);
 				
 				// print row or filler
 				if (it!=A[i].end())
@@ -135,7 +135,7 @@ namespace Dune {
 
   //! print one row of a matrix, specialization for FieldMatrix
   template<class K, int n, int m>
-  void print_row (std::ostream& s, FieldMatrix<K,n,m>& A, int I, int J, int therow, int width, int precision)
+  void print_row (std::ostream& s, const FieldMatrix<K,n,m>& A, int I, int J, int therow, int width, int precision)
   {
 	for (int i=0; i<n; i++)
 	  if (I+i==therow)
@@ -149,7 +149,7 @@ namespace Dune {
 
   //! print one row of a matrix, specialization for K11Matrix
   template<class K>
-  void print_row (std::ostream& s, K11Matrix<K>& A, int I, int J, int therow, int width, int precision)
+  void print_row (std::ostream& s, const K11Matrix<K>& A, int I, int J, int therow, int width, int precision)
   {
 	if (I==therow)
 	  {
@@ -160,7 +160,7 @@ namespace Dune {
   }
 
   template<class M>
-  void printmatrix (std::ostream& s, M& A, std::string title, std::string rowtext, 
+  void printmatrix (std::ostream& s, const M& A, std::string title, std::string rowtext, 
 					int width=10, int precision=2)
   {
 	// set the output format
