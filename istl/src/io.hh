@@ -11,14 +11,14 @@
 #include "fvector.hh"
 #include "fmatrix.hh"
 
-/*! \file __FILE__
+/*! \file 
 
 Some generic functions for pretty printing vectors and matrices
 */
 
 namespace Dune {
    
-    /** @defgroup ISTL Iterative Solvers Template Library
+    /** 
 		@addtogroup ISTL
 		@{
      */
