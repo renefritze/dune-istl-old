@@ -603,25 +603,29 @@ namespace Dune {
 	  //! equality
 	  bool operator== (const iterator& it) const
 	  {
-        return (p+i)==(it.p+it.i);
+		//        return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
 	  }
 
 	  //! inequality
 	  bool operator!= (const iterator& it) const
 	  {
-        return (p+i)!=(it.p+it.i);
+		//        return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
 	  }
 
 	  //! equality
 	  bool operator== (const const_iterator& it) const
 	  {
-		return (p+i)==(it.p+it.i);
+		//		return (p+i)==(it.p+it.i);
+		return (i)==(it.i);
 	  }
 
 	  //! inequality
 	  bool operator!= (const const_iterator& it) const
 	  {
-        return (p+i)!=(it.p+it.i);
+		//        return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
 	  }
 
 	  //! dereferencing
@@ -696,25 +700,29 @@ namespace Dune {
 	  //! equality
 	  bool operator== (const const_iterator& it) const
 	  {
-        return (p+i)==(it.p+it.i);
+		//        return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
 	  }
 
 	  //! inequality
 	  bool operator!= (const const_iterator& it) const
 	  {
-        return (p+i)!=(it.p+it.i);
+		//        return (p+i)!=(it.p+it.i);
+        return (i)!=(it.i);
  	  }
 
 	  //! equality
 	  bool operator== (const iterator& it) const
 	  {
-        return (p+i)==(it.p+it.i);
+		//        return (p+i)==(it.p+it.i);
+        return (i)==(it.i);
 	  }
 
 	  //! inequality
 	  bool operator!= (const iterator& it) const
 	  {
-		return (p+i)!=(it.p+it.i);
+		//		return (p+i)!=(it.p+it.i);
+		return (i)!=(it.i);
 	  }
 
 	  //! dereferencing
