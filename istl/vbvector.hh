@@ -3,6 +3,7 @@
 
 #include<math.h>
 #include<complex>
+#include<iostream>
 
 #include "../common/exceptions.hh"
 
@@ -231,13 +232,49 @@ namespace Dune {
 	  CreateIterator (VariableBlockVector& _v, int _i) : v(_v)
 	  {
 		i = _i;
+		k = 0;
 	  }
 
 	  //! prefix increment
 	  CreateIterator& operator++()
 	  {
-        ++i;
-		return *this;
+ 		// set the blocks size
+		v.s[i] = k;
+
+		// accumulate total size
+		v.n += k;
+
+		// compute entry into big array
+		if (i==0)
+		  v.e[i] = 0;
+		else
+		  v.e[i] = v.e[i-1]+v.s[i-1];
+
+// 		std::cout << "block " << i
+// 				  << " size " << v.s[i]
+// 				  << " total " << v.n << std::endl;
+
+		// go to next block
+		++i;
+
+		// if we are past the last block, finish off
+		if (i==v.nblocks) 
+		  {
+			// allocate p array
+			if (v.n>0) 
+			  v.p = A::template malloc<B>(v.n);
+			else
+			  {
+				v.n = 0;
+				v.p = 0;
+			  }
+			
+			// and the vector is ready
+			v.initialized = true;
+
+//			std::cout << "made vbvector with " << v.n << " components" << std::endl;
+		  }
+ 		return *this;
 	  }
 	  
 	  //! inequality
@@ -253,49 +290,21 @@ namespace Dune {
 	  }
 
 	  //! dereferencing
-	  int blockindex ()
+	  int index ()
 	  {
         return i;
 	  }
 
 	  //! set size of current block
-	  void setblocksize (int k)
+	  void setblocksize (int _k)
 	  {
-		// do nothing if vector is already built (requires clear first)
-#ifdef DUNE_ISTL_WITH_CHECKING
-	  if (v.initialized) DUNE_THROW(ISTLError,"tried to set block size for initialized vector");
-#endif
-
-		// set the blocks size
-		v.s[i] = k;
-
-		// compute entry into big array
-		if (i==0)
-		  v.e[i] = 0;
-		else
-		  v.e[i] = v.e[i-1]+v.s[i-1];
-
-		// if last block, finish off
-		if (i==v.nblocks-1) 
-		  {
-			// allocate p array
-			v.n = v.e[i]+v.s[i];
-			if (v.n>0) 
-			  v.p = A::template malloc<B>(v.n);
-			else
-			  {
-				v.n = 0;
-				v.p = 0;
-			  }
-			
-			// and the vector is ready
-			v.initialized = true;
-		  }
+		k = _k;
 	  }
 
 	private:
 	  VariableBlockVector& v; // my vector
-	  int i;                  // current block to be defined 
+	  int i;                  // current block to be defined
+	  int k; // block size
 	};
 
 	// CreateIterator wants to set all the arrays ...
@@ -307,6 +316,7 @@ namespace Dune {
 #ifdef DUNE_ISTL_WITH_CHECKING
 	  if (initialized) DUNE_THROW(ISTLError,"no CreateIterator in initialized state");
 #endif
+	  n = 0; // clear total counter
 	  return CreateIterator(*this,0);
 	}
 
@@ -348,58 +358,34 @@ namespace Dune {
 	  return window;
 	}
 
-	//! random access via round brackets supplied to be consistent with matrix
-	block_type& operator() (int i)
-	{
-#ifdef DUNE_ISTL_WITH_CHECKING
-	  if (i<0 || i>=nblocks) DUNE_THROW(ISTLError,"index out of range");
-	  if (!initialized) DUNE_THROW(ISTLError,"tried to access uninitialized vector");
-#endif
-	  window.set(s[i],p+e[i]);
-	  return window;
-	}
-
-	//! same for read only access
-	const block_type& operator() (int i) const
-	{
-#ifdef DUNE_ISTL_WITH_CHECKING
-	  if (i<0 || i>=nblocks) DUNE_THROW(ISTLError,"index out of range");
-	  if (!initialized) DUNE_THROW(ISTLError,"tried to access uninitialized vector");
-#endif
-	  window.set(s[i],p+e[i]);
-	  return window;
-	}
-
 	//! Iterator class for sequential access
 	class Iterator 
 	{
 	public:
 	  //! constructor
-	  Iterator (VariableBlockVector& _v, int _i, B* _p) : v(_v),window(true) 
+	  Iterator (const VariableBlockVector& _v, int _i, B* _p) : v(_v),window(_p,_v.s[0]) 
 	  {
 		i = _i;
-		p = _p;
 	  }
 
 	  //! prefix increment
 	  Iterator& operator++()
 	  {
-        p += v.s[i];
 		++i;
-		window.set(s[i],p);
+		window.advance(v.s[i]);
 		return *this;
 	  }
 	  
 	  //! equality
-	  bool operator== (const Iterator& i) const
+	  bool operator== (const Iterator& it) const
 	  {
-        return p==i.p;
+        return window.getptr()==it.window.getptr();
 	  }
 
 	  //! inequality
-	  bool operator!= (const Iterator& i) const
+	  bool operator!= (const Iterator& it) const
 	  {
-        return p!=i.p;
+		return (window.getptr())!=(it.window.getptr());
 	  }
 
 	  //! dereferencing
@@ -414,11 +400,16 @@ namespace Dune {
         return &window;
 	  }
 
+	  //! return block index
+	  int index ()
+	  {
+		return i;
+	  }
+
 	private:
 	  mutable block_type window; // provides a window into the vector
 	  int i;
-	  B* p;
-	  VariableBlockVector& v;
+	  const VariableBlockVector& v;
 	};
 
 	// Iterator wants to see all the arrays ...
@@ -561,10 +552,10 @@ namespace Dune {
 
 	//===== sizes
 
-	//! number of blocks in the vector (are of size 1 here)
+	//! number of blocks in the vector (are of variable size here)
 	int N () const
 	{
-	  return n;
+	  return nblocks;
 	}
 
 	//! dimension of the vector space
