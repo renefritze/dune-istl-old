@@ -1,7 +1,8 @@
-#ifndef __DUNE_ISTL_HH__
-#define __DUNE_ISTL_HH__
+// $ Id: $
+#ifndef DUNE_ISTL_HH
+#define DUNE_ISTL_HH
 
-/** @defgroup ISTL Dune Sparse Matrix Vector Templates
+/** @defgroup ISTL Iterative Solvers Template Library
 
     The SPMV module defines a set of classes for sparse
     matrices and vectors with the following features:
