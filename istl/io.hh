@@ -8,7 +8,7 @@
 #include<string>
 
 #include "istlexception.hh"
-#include "fvector.hh"
+#include "dune/common/fvector.hh"
 #include "fmatrix.hh"
 
 /*! \file __FILE__

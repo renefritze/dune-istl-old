@@ -7,7 +7,7 @@
 
 #include "istlexception.hh"
 #include "allocator.hh"
-#include "fvector.hh"
+#include "dune/common/fvector.hh"
 #include "precision.hh"
 
 /*! \file __FILE__
