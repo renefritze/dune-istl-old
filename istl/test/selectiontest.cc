@@ -40,8 +40,9 @@ void test()
   const int Ny = SIZE;
   
   // Process configuration
+  const int ALSIZE=55;
   
-  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags> > distIndexSet;
+  Dune::IndexSet<int,Dune::ParallelLocalIndex<GridFlags>,ALSIZE> distIndexSet;
 
   distIndexSet.beginResize();
   
@@ -56,16 +57,16 @@ void test()
   
   distIndexSet.endResize();
   
-  Dune::UncachedSelection<Dune::EnumItem<GridFlags,owner>,int,Dune::ParallelLocalIndex<GridFlags> >
+  Dune::UncachedSelection<Dune::EnumItem<GridFlags,owner>,int,Dune::ParallelLocalIndex<GridFlags>,ALSIZE>
     ownerUncached(distIndexSet);
   
-  Dune::Selection<Dune::EnumItem<GridFlags,owner>,int,Dune::ParallelLocalIndex<GridFlags> >
+  Dune::Selection<Dune::EnumItem<GridFlags,owner>,int,Dune::ParallelLocalIndex<GridFlags>,ALSIZE>
     ownerCached(distIndexSet);
 
-  Dune::UncachedSelection<Dune::EnumItem<GridFlags,overlap>,int,Dune::ParallelLocalIndex<GridFlags> >
+  Dune::UncachedSelection<Dune::EnumItem<GridFlags,overlap>,int,Dune::ParallelLocalIndex<GridFlags>,ALSIZE>
     overlapUncached(distIndexSet);
   
-  Dune::Selection<Dune::EnumItem<GridFlags,overlap>,int,Dune::ParallelLocalIndex<GridFlags> >
+  Dune::Selection<Dune::EnumItem<GridFlags,overlap>,int,Dune::ParallelLocalIndex<GridFlags>,ALSIZE>
     overlapCached(distIndexSet);
 
   int count=0;
