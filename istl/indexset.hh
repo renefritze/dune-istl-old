@@ -1,5 +1,5 @@
-#ifndef __DUNE_INDEXSET__HH__
-#define __DUNE_INDEXSET__HH__
+#ifndef DUNE_INDEXSET__HH
+#define DUNE_INDEXSET__HH
 
 #include<algorithm>
 #include<dune/common/arraylist.hh>
@@ -227,6 +227,7 @@ namespace Dune
   template<typename TG, typename TL, int N=100>
   class IndexSet
   {
+    
   public:    
     /**
      * @brief the type of the global index.
