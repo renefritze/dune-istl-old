@@ -249,6 +249,9 @@ namespace Dune{
   template<typename TG, typename TA>
   class Communicator;
 
+  template<typename TG, typename TA>
+  class InterfaceBuilder;
+
   template<class TG, class TA>
   class CollectiveIterator;
   
@@ -258,6 +261,7 @@ namespace Dune{
   template<class TG,class TA>
   class RemoteIndices
   {
+    friend class InterfaceBuilder<TG,TA>;
     friend class Communicator<TG,TA>;
     friend std::ostream& operator<<<>(std::ostream& os, const RemoteIndices<TG,TA>& indices);
     
@@ -287,14 +291,20 @@ namespace Dune{
      */
     typedef RemoteIndex<GlobalIndexType,AttributeType> RemoteIndexType;
 
+    
+    /**
+     * @brief The type of the allocator for the remote index list.
+     */
+    typedef PoolAllocator<RemoteIndexType,1> Allocator;
+
     /** @brief The type of the remote index list. */
-    typedef SLList<RemoteIndex<GlobalIndexType,AttributeType> >
+    typedef SLList<RemoteIndexType,Allocator>
     RemoteIndexList;
     
     /** @brief The type of the map from rank to remote index list. */
     typedef std::map<int, std::pair<RemoteIndexList*,RemoteIndexList*> >
     RemoteIndexMap;    
-
+    
     /**
      * @brief Constructor.
      * @param comm The communicator to use.
@@ -328,19 +338,19 @@ namespace Dune{
      * If they are not synced the remote indices need to be rebuild.
      * @return True if they are synced.
      */
-    inline bool isSynced();
+    inline bool isSynced() const;
 
     /**
      * @brief Get the mpi communicator used.
      */
-    inline MPI_Comm communicator();
+    inline MPI_Comm communicator() const;
 
-    inline typename RemoteIndexMap::const_iterator begin();
+    inline typename RemoteIndexMap::const_iterator begin() const;
     
-    inline typename RemoteIndexMap::const_iterator end();
-
+    inline typename RemoteIndexMap::const_iterator end() const;
+    
     template<bool send>
-    inline CollectiveIterator<TG,TA> iterator();
+    inline CollectiveIterator<TG,TA> iterator() const;
 
   private:    
     /** @brief Index set used at the source of the communication. */
@@ -468,8 +478,11 @@ namespace Dune{
     /** @brief The remote index type */
     typedef RemoteIndex<TG,TA> RemoteIndex;
     
+    /** @brief The allocator of the remote indices. */
+    typedef PoolAllocator<RemoteIndex,1> Allocator;
+
     /** @brief The type of the remote index list. */
-    typedef SLList<RemoteIndex> RemoteIndexList;
+    typedef SLList<RemoteIndex,Allocator> RemoteIndexList;    
 
     /** @brief The of map for storing the iterators. */
     typedef std::map<int,std::pair<typename RemoteIndexList::const_iterator,
@@ -1117,34 +1130,36 @@ namespace Dune{
   }
   
   template<class TG, class TA>
-  inline bool RemoteIndices<TG,TA>::isSynced()
+  inline bool RemoteIndices<TG,TA>::isSynced() const
   {
     return sourceSeqNo_==source_.seqNo() && destSeqNo_ ==dest_.seqNo();
   }
 
   template<class TG, class TA>
-  inline typename std::map<int, std::pair<SLList<RemoteIndex<TG,TA> >*,SLList<RemoteIndex<TG,TA> >*> >::const_iterator
-  RemoteIndices<TG,TA>::begin()
+  inline typename std::map<int, std::pair<SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*,
+					  SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*> >::const_iterator
+  RemoteIndices<TG,TA>::begin() const
   {
     return remoteIndices_.begin();
   }
   
   template<class TG, class TA>
-  inline typename std::map<int, std::pair<SLList<RemoteIndex<TG,TA> >*,SLList<RemoteIndex<TG,TA> >*> >::const_iterator
-  RemoteIndices<TG,TA>::end()
+  inline typename std::map<int, std::pair<SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*,
+					  SLList<RemoteIndex<TG,TA>,PoolAllocator<RemoteIndex<TG,TA>,1> >*> >::const_iterator
+  RemoteIndices<TG,TA>::end() const
   {
     return remoteIndices_.end();
   }
 
   template<class TG, class TA>
   template<bool send>
-  inline CollectiveIterator<TG, TA> RemoteIndices<TG,TA>::iterator()
+  inline CollectiveIterator<TG, TA> RemoteIndices<TG,TA>::iterator() const
   {
     return CollectiveIterator<TG,TA>(remoteIndices_, send);
   }
 
   template<class TG, class TA>
-  inline MPI_Comm RemoteIndices<TG,TA>::communicator()
+  inline MPI_Comm RemoteIndices<TG,TA>::communicator() const
   {
     return comm_;
     
