@@ -27,7 +27,7 @@ namespace Dune {
 	   vector spaces. The number of components is given at run-time.
 	   
   */
-  template<class B, class A=SPMV_Allocator>
+  template<class B, class A=ISTL_Allocator>
   class VariableBlockVector
   {
   public:

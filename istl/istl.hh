@@ -32,7 +32,7 @@ namespace Dune {
 	  - throws std::bad_alloc just as new does
 
    */
-  class SPMV_Allocator { // uses standard malloc and free 
+  class ISTL_Allocator { // uses standard malloc and free 
   public:
 	//! allocate array of nmemb objects of type T
 	template<class T>
@@ -63,7 +63,7 @@ namespace Dune {
 	static unsigned int count;
   };
 
-  unsigned int SPMV_Allocator::count=0;
+  unsigned int ISTL_Allocator::count=0;
  
   /** @} end documentation */
 
