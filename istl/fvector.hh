@@ -6,7 +6,7 @@
 
 #include "../common/exceptions.hh"
 
-#include "spmv.hh"
+#include "istl.hh"
 
 /*! \file __FILE__
 
@@ -16,8 +16,8 @@
 
 namespace Dune {
    
-    /** @defgroup SPMV Dune Sparse Matrix Vector Templates 
-		@addtogroup SPMV
+    /** @defgroup ISTL Iterative Solvers Template Library
+		@addtogroup ISTL
 		@{
      */
 
