@@ -23,7 +23,7 @@
 
 namespace Dune {
    
-    /** @defgroup ISTL Iterative Solvers Template Library
+    /**
 		@addtogroup ISTL
 		@{
      */
