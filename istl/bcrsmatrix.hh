@@ -154,13 +154,13 @@ namespace Dune {
 	  }
 
 	  //! dereferencing
-	  row_type& operator* ()
+	  row_type& operator* () const
 	  {
 		return p[i];
 	  }
 
 	  //! arrow
-	  row_type* operator-> ()
+	  row_type* operator-> () const
 	  {
 		return p+i;
 	  }
@@ -224,6 +224,11 @@ namespace Dune {
 		i = 0;
 	  }
 
+	  //! Copy constructor from mutable iterator.
+	  ConstIterator(const Iterator& other)
+	    : p(other.p), i(other.i)
+	  {}
+	  
 	  //! prefix increment
 	  ConstIterator& operator++()
 	  {

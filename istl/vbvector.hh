@@ -508,13 +508,13 @@ namespace Dune {
 	  }
 
 	  //! dereferencing
-	  window_type& operator* ()
+	  window_type& operator* () const
 	  {
         return p[i];
 	  }
 
 	  //! arrow
-	  window_type* operator-> ()
+	  window_type* operator-> () const
 	  {
         return p+i;
 	  }
