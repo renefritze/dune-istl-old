@@ -5,6 +5,24 @@
 
 namespace Dune
 {
+   /**
+   * @file
+   * @brief Traits classes for mapping types onto MPI_Datatype.
+   * @author Markus Blatt
+   */
+  /** @addtogroup ISTL_Comm
+   *
+   * @{
+   */
+  /**
+   * @brief A traits class describing the mapping of types onto MPI_Datatypes.
+   *
+   * Specializations exist for the default types.
+   * Specializations should provide a static method
+   * <pre>
+   * static MPI_Datatype getType();
+   * </pre>
+   */
   template<typename T>
   class MPITraits
   {};
@@ -17,13 +35,13 @@ namespace Dune
      */
     inline static MPI_Datatype getType();
   };
-
+  
   template<typename T, MPI_Datatype t>
   inline MPI_Datatype MPITraitsHelper<T,t>::getType()
   {
     return t;
   }
-
+  
   template<> 
   struct MPITraits<char> 
     : MPITraitsHelper<char, MPI_CHAR>
@@ -86,6 +104,7 @@ namespace Dune
     : public MPITraitsHelper<long double,MPI_LONG_DOUBLE>
   {};
 
+  /** @} */
 }
 
 
