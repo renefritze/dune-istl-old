@@ -7,6 +7,7 @@
 
 #include "istlexception.hh"
 #include "allocator.hh"
+#include "bvector.hh"
 
 /*! \file __FILE__
 
