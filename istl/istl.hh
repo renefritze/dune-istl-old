@@ -1,4 +1,4 @@
-// $ Id: $
+// $Id$
 #ifndef DUNE_ISTL_HH
 #define DUNE_ISTL_HH
 
