@@ -112,13 +112,13 @@ namespace Dune {
         return (p+i)!=(it.p+it.i);
 	  }
 
-	  //! equality
+	  //! equality with a const iterator
 	  bool operator== (const const_iterator& it) const
 	  {
 		return (p+i)==(it.p+it.i);
 	  }
 
-	  //! inequality
+	  //! inequality with a const iterator
 	  bool operator!= (const const_iterator& it) const
 	  {
         return (p+i)!=(it.p+it.i);
@@ -136,7 +136,7 @@ namespace Dune {
         return p+i;
 	  }
 
-	  // return index corresponding to pointer
+	  //! return index corresponding to pointer
 	  int index () const
 	  {
 		return i;
@@ -249,7 +249,7 @@ namespace Dune {
         return p+i;
 	  }
 
-	  // return index corresponding to pointer
+	  //! return index corresponding to pointer
 	  int index () const
 	  {
 		return i;
@@ -694,13 +694,13 @@ namespace Dune {
         return p+i;
 	  }
 
-	  // return index corresponding to pointer
+	  //! return index corresponding to pointer
 	  int index () const
 	  {
 		return j[i];
 	  }
 
-	  // return index corresponding to pointer
+	  //! Set index corresponding to pointer
 	  void setindex (int k)
 	  {
 		return j[i] = k;
@@ -767,9 +767,11 @@ namespace Dune {
 		i = 0;
 	  }
 
+            //! \todo please doc me!
 	  const_iterator (const B* _p, const int* _j, int _i) : p(_p), j(_j), i(_i)
 	  {	  }
 
+            //! Copy constructor from a non-const iterator
 	  const_iterator (const iterator& it) : p(it.p), j(it.j), i(it.i)
 	  {	  }
 
@@ -827,7 +829,7 @@ namespace Dune {
         return p+i;
 	  }
 
-	  // return index corresponding to pointer
+	  //! return index corresponding to pointer
 	  int index () const
 	  {
 		return j[i];
