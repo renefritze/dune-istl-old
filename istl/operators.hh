@@ -8,9 +8,9 @@
 #include<string>
 
 
-/*! \file __FILE__
+/** \file
 
-    Define general, extensible interface for operators. 
+\brief Define general, extensible interface for operators. 
 	The available implementation wraps a matrix.
 */
 

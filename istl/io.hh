@@ -11,9 +11,9 @@
 #include "dune/common/fvector.hh"
 #include "fmatrix.hh"
 
-/*! \file __FILE__
+/** \file
 
-Some generic functions for pretty printing vectors and matrices
+ \brief Some generic functions for pretty printing vectors and matrices
 */
 
 namespace Dune {

@@ -1,5 +1,5 @@
-#ifndef __DUNE_BVECTOR_HH__
-#define __DUNE_BVECTOR_HH__
+#ifndef DUNE_BVECTOR_HH
+#define DUNE_BVECTOR_HH
 
 #include<math.h>
 #include<complex>
@@ -8,9 +8,9 @@
 #include "allocator.hh"
 #include "basearray.hh"
 
-/*! \file __FILE__
+/*! \file
 
-  This file implements a vector space as a tensor product of
+\brief  This file implements a vector space as a tensor product of
   a given vector space. The number of components can be given at
   run-time.
 */

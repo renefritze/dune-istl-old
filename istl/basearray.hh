@@ -1,5 +1,5 @@
-#ifndef __DUNE_BASEARRAY_HH__
-#define __DUNE_BASEARRAY_HH__
+#ifndef DUNE_BASEARRAY_HH
+#define DUNE_BASEARRAY_HH
 
 #include<math.h>
 #include<complex>
@@ -7,9 +7,8 @@
 #include "istlexception.hh"
 #include "allocator.hh"
 
-/*! \file __FILE__
-
-  This file implements several basic array containers.
+/** \file 
+ \brief Implements several basic array containers.
 */
 
 namespace Dune {
@@ -161,13 +160,13 @@ namespace Dune {
 	  return iterator(p,n);
 	}
 
-	//! begin iterator
+	//! begin reverse iterator
 	iterator rbegin ()
 	{
 	  return iterator(p,n-1);
 	}
 
-	//! end iterator
+	//! end reverse iterator
 	iterator rend ()
 	{
 	  return iterator(p,-1);
@@ -274,13 +273,13 @@ namespace Dune {
 	  return const_iterator(p,n);
 	}
 
-	//! begin const_iterator
+	//! begin reverse const_iterator
 	const_iterator rbegin () const
 	{
 	  return const_iterator(p,n-1);
 	}
 
-	//! end const_iterator
+	//! end reverse const_iterator
 	const_iterator rend () const
 	{
 	  return const_iterator(p,-1);
@@ -726,13 +725,13 @@ namespace Dune {
 	  return iterator(p,j,n);
 	}
 
-	//! begin iterator
+	//! begin reverse iterator
 	iterator rbegin ()
 	{
 	  return iterator(p,j,n-1);
 	}
 
-	//! end iterator
+	//! end reverse iterator
 	iterator rend ()
 	{
 	  return iterator(p,j,-1);
@@ -855,13 +854,13 @@ namespace Dune {
 	  return const_iterator(p,j,n);
 	}
 
-	//! begin const_iterator
+	//! begin reverse const_iterator
 	const_iterator rbegin () const
 	{
 	  return const_iterator(p,j,n-1);
 	}
 
-	//! end const_iterator
+	//! end reverse const_iterator
 	const_iterator rend () const
 	{
 	  return const_iterator(p,j,-1);

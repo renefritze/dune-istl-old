@@ -1,5 +1,5 @@
-#ifndef __DUNE_FMATRIX_HH__
-#define __DUNE_FMATRIX_HH__
+#ifndef DUNE_FMATRIX_HH
+#define DUNE_FMATRIX_HH
 
 #include<math.h>
 #include<complex>
@@ -10,9 +10,9 @@
 #include "dune/common/fvector.hh"
 #include "precision.hh"
 
-/*! \file __FILE__
+/*! \file
 
-  This file implements a matrix constructed from a given type
+\brief  This file implements a matrix constructed from a given type
   representing a field and compile-time given number of rows and columns.
 */
 
@@ -519,8 +519,12 @@ namespace Dune {
 	enum {rows = n, cols = m};
 
 	//===== constructors
-	FieldMatrix () {}
+	/** \brief Default constructor
+         */
+        FieldMatrix () {}
 
+        /** \brief Constructor initializing the whole matrix with a scalar
+          */
 	FieldMatrix (const K& k)
 	{
 	  for (int i=0; i<n; i++) p[i] = k;
@@ -1031,11 +1035,8 @@ namespace Dune {
 
 	void print (std::ostream& s) const
 	{
-	  for (int i=0; i<n; i++)
-		  if (i>0)
-			s << " " << p[i];
-		  else
-			s << p[i];
+ 	  for (int i=0; i<n; i++)
+              s << p[i] << std::endl;
 	}
 
   private:

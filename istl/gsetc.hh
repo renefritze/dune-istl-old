@@ -1,5 +1,5 @@
-#ifndef __DUNE_GSETC_HH__
-#define __DUNE_GSETC_HH__
+#ifndef DUNE_GSETC_HH
+#define DUNE_GSETC_HH
 
 #include<math.h>
 #include<complex>
@@ -9,9 +9,8 @@
 
 #include "istlexception.hh"
 
-/*! \file __FILE__
-
-    Simple iterative methods like Jacobi, Gauss-Seidel, SOR, SSOR, etc.
+/*! \file
+ \brief Simple iterative methods like Jacobi, Gauss-Seidel, SOR, SSOR, etc.
     in a generic way
 */
 

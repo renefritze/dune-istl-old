@@ -1,5 +1,5 @@
-#ifndef __DUNE_PRECONDITIONERS_HH__
-#define __DUNE_PRECONDITIONERS_HH__
+#ifndef DUNE_PRECONDITIONERS_HH
+#define DUNE_PRECONDITIONERS_HH
 
 #include<math.h>
 #include<complex>
@@ -12,10 +12,11 @@
 #include "gsetc.hh"
 #include "ilu.hh"
 
-/*! \file __FILE__
+/** \file
 
-    Define general preconditioner interface and wrap the
-    methods implemented by ISTL in this interface.
+ \brief    Define general preconditioner interface 
+
+ Wrap the methods implemented by ISTL in this interface.
 	However, the interface is extensible such that new preconditioners
     can be implemented and used with the solvers.
 */
