@@ -973,14 +973,14 @@ namespace Dune {
       //! calculates the determinant of this matrix 
       K determinant () const;
 
-	//! left multiplication
+	//! Multiplies M from the left to this matrix
 	FieldMatrix& leftmultiply (const FieldMatrix<K,n,n>& M)
 	{
 	  fm_leftmultiply(M,*this);
 	  return *this;
 	}
 
-	//! left multiplication
+	//! Multiplies M from the right to this matrix
 	FieldMatrix& rightmultiply (const FieldMatrix<K,n,n>& M)
 	{
 	  fm_rightmultiply(M,*this);
@@ -1039,9 +1039,6 @@ namespace Dune {
 	}
 
 	//===== conversion operator
-
-      /** \brief Returns the entry [0][0] */
-	operator K () const DUNE_DEPRECATED {return p[0][0];}
 
       /** \brief Sends the matrix to an output stream */
 	void print (std::ostream& s) const
