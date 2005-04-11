@@ -306,7 +306,7 @@ namespace Dune
     BufferedCommunicator();
     
     template<class Data>
-    EnableIf<SameType<SizeOne,typename CommPolicy<Data>::IndexedTypeFlag>::value, void> 
+    typename EnableIf<SameType<SizeOne,typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::Type
     build(const Interface<TG,TA,N>& interface);
 
     template<class Data>
@@ -672,7 +672,7 @@ namespace Dune
   
   template<typename TG, typename TA, int N>
   template<class Data>
-  EnableIf<SameType<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void> 
+  typename EnableIf<SameType<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>::Type
   BufferedCommunicator<TG,TA,N>::build(const Interface<TG,TA,N>& interface)
   {
     typedef typename Interface<TG,TA,N>::InformationMap::const_iterator const_iterator;
@@ -697,7 +697,6 @@ namespace Dune
     buffers_[0] = new char[sendStart];
     buffers_[1] = new char[recvStart];
     interface_ = &interface;
-    return EnableIf<SameType<SizeOne, typename CommPolicy<Data>::IndexedTypeFlag>::value, void>();
     
   }  
   
