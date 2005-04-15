@@ -7,6 +7,7 @@
 #include<dune/common/sllist.hh>
 #include<set>
 #include<algorithm>
+#include<limits>
 
 namespace Dune
 {
@@ -243,13 +244,6 @@ namespace Dune
     // forward declaration
     template<class G> class Aggregates;
 
-
-      enum{
-      /**
-       * @brief Identifier of not yet aggregated vertices.
-       */
-      UNAGGREGATED = -1
-	};
     
     /**
      * @brief Class providing information about the mapping of 
@@ -262,6 +256,12 @@ namespace Dune
     class AggregatesMap
     {
     public:
+
+      /**
+       * @brief Identifier of not yet aggregated vertices.
+       */
+      static const V UNAGGREGATED;
+      
       /**
        * @brief The vertex descriptor type.
        */
@@ -646,6 +646,8 @@ namespace Dune
       class Stack
       {
       public:
+	static const Vertex NullEntry;
+	
 	Stack(const MatrixGraph& graph, 
 	      const Aggregates<G>& aggregatesBuilder,
 	      const AggregatesMap<Vertex>& aggregates);
@@ -1122,6 +1124,9 @@ namespace Dune
       return id_;
     }
 
+    template<class V> 
+    const V AggregatesMap<V>::UNAGGREGATED = std::numeric_limits<V>::max();
+    
     template<class V>
     AggregatesMap<V>::AggregatesMap()
       : aggregates_(0)
@@ -1411,7 +1416,7 @@ namespace Dune
     template<class G>
     inline void Aggregates<G>::ConnectivityCounter::operator()(const typename MatrixGraph::ConstEdgeIterator& edge)
     {
-      if(connected_.find(aggregates_[edge.target()]) != connected_.end() || aggregates_[edge.target()]==UNAGGREGATED)
+      if(connected_.find(aggregates_[edge.target()]) != connected_.end() || aggregates_[edge.target()]==AggregatesMap<Vertex>::UNAGGREGATED)
 	Counter::increment();
       else{
 	Counter::increment();
@@ -1444,7 +1449,7 @@ namespace Dune
     template<class G>
     int Aggregates<G>::unusedNeighbours(const Vertex& vertex, const AggregatesMap<Vertex>& aggregates) const
     {
-      return aggregateNeighbours(vertex, UNAGGREGATED, aggregates);
+      return aggregateNeighbours(vertex, AggregatesMap<Vertex>::UNAGGREGATED, aggregates);
     }
     
     template<class G>
@@ -1487,7 +1492,7 @@ namespace Dune
       typedef typename Aggregate<G>::const_iterator Iterator;
       
       for(Iterator vertex=aggregate_->begin(); vertex != aggregate_->end(); ++vertex)
-	visitAggregateNeighbours(*vertex, UNAGGREGATED, aggregates, frontBuilder);
+	visitAggregateNeighbours(*vertex, AggregatesMap<Vertex>::UNAGGREGATED, aggregates, frontBuilder);
     }
 
     template<class G>
@@ -1517,7 +1522,7 @@ namespace Dune
       
       Iterator end = graph_->endEdges(vertex);
       for(Iterator edge = graph_->beginEdges(vertex); edge != end; ++edge){
-	if(aggregates[edge.target()] != UNAGGREGATED &&
+	if(aggregates[edge.target()] != AggregatesMap<Vertex>::UNAGGREGATED &&
 	   graph_->getVertexProperties(edge.target()).isolated() == graph_->getVertexProperties(edge.source()).isolated()){
 	  if( graph_->getVertexProperties(vertex).isolated() || 
 	      ((edge.properties().depends() || edge.properties().influences())
@@ -1525,7 +1530,7 @@ namespace Dune
 	    return edge.target();
 	}
       }
-      return -1;
+      return AggregatesMap<Vertex>::UNAGGREGATED;
     }
     
     template<class G>
@@ -1555,7 +1560,7 @@ namespace Dune
       while(aggregate_->size() < c.minAggregateSize()){
 	int maxTwoCons=0, maxOneCons=0, maxNeighbours=-1, maxCon=-std::numeric_limits<int>::max();
 	
-	Vertex candidate = -1;
+	Vertex candidate = AggregatesMap<Vertex>::UNAGGREGATED;
 	
 	unmarkFront();
 	markFront(aggregates);
@@ -1634,7 +1639,7 @@ namespace Dune
 	}
 	
 	
-	if(candidate < 0)
+	if(candidate == AggregatesMap<Vertex>::UNAGGREGATED)
 	  break; // No more candidates found
 
 	aggregate_->add(candidate);
@@ -1665,7 +1670,7 @@ namespace Dune
       while(true){
 	Vertex seed = stack_.pop();
 	
-	if(seed == -1)
+	if(seed == Stack::NullEntry)
 	  // No more unaggregated vertices. We are finished!
 	  break;
 	else
@@ -1690,7 +1695,7 @@ namespace Dune
 	  
 	  unmarkFront();
 	  markFront(aggregates);
-	  Vertex candidate = -1;
+	  Vertex candidate = AggregatesMap<Vertex>::UNAGGREGATED;
 	  
 	  typedef typename VertexList::const_iterator Iterator;
 	  
@@ -1714,7 +1719,7 @@ namespace Dune
 	    break;
 	  }
 	  	  
-	  if(candidate<0) break; // no more candidates found.
+	  if(candidate == AggregatesMap<Vertex>::UNAGGREGATED) break; // no more candidates found.
 	  
 	  aggregate_->add(candidate);
 	  
@@ -1723,9 +1728,9 @@ namespace Dune
 	// try to merge aggregates consisting of only one nonisolated vertex with other aggregates
 	if(aggregate_->size()==1)
 	  if(!graph.getVertexProperties(seed).isolated()){
-	    int mergedNeighbour = mergeNeighbour(seed, aggregates);
+	    Vertex mergedNeighbour = mergeNeighbour(seed, aggregates);
 
-	    if(mergedNeighbour > -1)
+	    if(mergedNeighbour != AggregatesMap<Vertex>::UNAGGREGATED)
 	      aggregates[seed] = aggregates[mergedNeighbour];
 	    else{
 	      oneAggregates++;
@@ -1785,10 +1790,14 @@ namespace Dune
       delete[] vals_;
     }
     
+    template<class G> 
+    const typename Aggregates<G>::Vertex Aggregates<G>::Stack::NullEntry 
+    = std::numeric_limits<typename G::VertexDescriptor>::max();
+
     template<class G>
     inline void Aggregates<G>::Stack::push(const Vertex& v)
     {
-      if(aggregates_[v] == UNAGGREGATED)
+      if(aggregates_[v] == AggregatesMap<Vertex>::UNAGGREGATED)
 	localPush(v);
     }
     
@@ -1816,7 +1825,7 @@ namespace Dune
       
       for(Iterator vertex = graph_.begin(); vertex != end; ++vertex){
 	// Skip already aggregated vertices
-	if(aggregates_[*vertex] != UNAGGREGATED)
+	if(aggregates_[*vertex] != AggregatesMap<Vertex>::UNAGGREGATED)
 	  continue;
 	
 	if(vertex.properties().isolated()){
@@ -1835,12 +1844,12 @@ namespace Dune
       if(connected > 0){
 	// Connected vertices have higher priority.
 	 for(Iterator vertex = graph_.begin(); vertex != end; ++vertex)
-	   if(aggregates_[*vertex] == UNAGGREGATED && !vertex.properties().isolated() 
+	   if(aggregates_[*vertex] == AggregatesMap<Vertex>::UNAGGREGATED && !vertex.properties().isolated() 
 	      && aggregatesBuilder_.unusedNeighbours(*vertex, aggregates_) == umin)
 	     localPush(*vertex);
       }else{
 	for(Iterator vertex = graph_.begin(); vertex != end; ++vertex)
-	   if(aggregates_[*vertex] == UNAGGREGATED && vertex.properties().isolated() 
+	   if(aggregates_[*vertex] == AggregatesMap<Vertex>::UNAGGREGATED && vertex.properties().isolated() 
 	      && aggregatesBuilder_.unusedNeighbours(*vertex, aggregates_) == umin)
 	     localPush(*vertex);
       }
@@ -1854,7 +1863,7 @@ namespace Dune
 	head_ = (head_ + N -1) % N;
 	size_--;
 	Vertex v = vals_[head_];
-	if(aggregates_[v]==UNAGGREGATED)
+	if(aggregates_[v]==AggregatesMap<Vertex>::UNAGGREGATED)
 	  return v;
       }
       // Stack is empty try to fill it
@@ -1865,23 +1874,23 @@ namespace Dune
 	head_ = (head_ + N -1) % N;
 	size_--;
 	Vertex v = vals_[head_];
-	if(aggregates_[v]==UNAGGREGATED)
+	if(aggregates_[v]==AggregatesMap<Vertex>::UNAGGREGATED)
 	  return v;
       }
-      return -1;
+      return NullEntry;
     }
 
     template<class V>
-    void printAggregates2d(const AggregatesMap<V>& aggregates, int n,  std::ostream& os)
+    void printAggregates2d(const AggregatesMap<V>& aggregates, int n, int m,  std::ostream& os)
     {
       std::ios_base::fmtflags oldOpts=os.flags();
       
       os.setf(std::ios_base::right, std::ios_base::adjustfield);
       
-      int max=-1;
+      V max=0;
       int width=1;
 
-      for(int i=0; i< n*n; i++)
+      for(int i=0; i< n*m; i++)
 	max=std::max(max, aggregates[i]);
       
       for(int i=10; i < 1000000; i*=10)
@@ -1892,7 +1901,7 @@ namespace Dune
 
       std::cout<<"width="<<width<<std::endl;
       
-      for(int j=0, entry=0; j < n; j++){
+      for(int j=0, entry=0; j < m; j++){
 	for(int i=0; i<n; i++, entry++){
 	  os.width(width);
 	  os<<aggregates[entry]<<" ";
