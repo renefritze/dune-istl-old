@@ -18,7 +18,7 @@ class Array
 {
   friend std::ostream& operator<<(std::ostream& os, const Array& a);
 public:
-  typedef double IndexedType;
+  typedef double value_type;
   Array() : size_(-1)
   {}
   
