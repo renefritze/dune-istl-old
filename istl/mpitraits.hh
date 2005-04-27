@@ -1,7 +1,11 @@
 #ifndef __MPITRAITS_HH__
 #define __MPITRAITS_HH__
 
+#include"config.h"
+
+#ifdef HAVE_MPI
 #include"mpi.h"
+#endif
 
 namespace Dune
 {
@@ -35,6 +39,8 @@ namespace Dune
       return m; \
     } \
   };
+
+#ifdef HAVE_MPI
   
   ComposeMPITraits(char, MPI_CHAR);
   ComposeMPITraits(unsigned char,MPI_UNSIGNED_CHAR);
@@ -48,10 +54,11 @@ namespace Dune
   ComposeMPITraits(double,MPI_DOUBLE);
   ComposeMPITraits(long double,MPI_LONG_DOUBLE);
 
+#endif
+
 #undef ComposeMPITraits
 
   /** @} */
 }
-
 
 #endif
