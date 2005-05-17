@@ -98,10 +98,9 @@ public:
         matrix.endrowsizes();
     
         for (int i=0; i<rows_; i++) {
-            for (int j=0; j<indices[i].size(); j++) {
-                //std::cout << "setting index " << i <<", " << rowSizes[i][j] << std::endl;
+            for (unsigned int j=0; j<indices[i].size(); j++)
                 matrix.addindex(i, indices[i][j]);
-            }
+
         }
 
         matrix.endindices();
@@ -131,7 +130,7 @@ private:
         
         // Insert
         nb.push_back(0);
-        for (int j=nb.size()-1; j>i; j--)
+        for (unsigned int j=nb.size()-1; j>i; j--)
             nb[j] = nb[j-1];
         
         nb[i] = idx;
