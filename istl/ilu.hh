@@ -125,9 +125,9 @@ namespace Dune {
   }
 
   template<class K>
-  K& firstmatrixelement (K11Matrix<K>& A)
+  K& firstmatrixelement (FieldMatrix<K,1,1>& A)
   {
-	return A();
+	return A[0][0];
   }
 
 
