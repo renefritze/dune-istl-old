@@ -7,6 +7,7 @@
 #include<iomanip>
 #include<string>
 
+#include"solvercategory.hh"
 #include "istlexception.hh"
 #include "io.hh"
 #include "gsetc.hh"
@@ -71,30 +72,6 @@ namespace Dune {
 	*/
 	virtual void apply (X& v, const Y& d) = 0;
 
-	/*! \brief Dot product of two right-hand side vectors. 
-
-	This
-        method is in the interface for parallel implementations.
-		It will require at least a global communication and also
-		some local communication depending on the consistency model.
-		It allows the solver to be independent of parallelization
-		issues.
-	 */
-	virtual field_type dot (const Y& y, const Y& z) = 0;
-
-	/*! \brief Norm of a right-hand side vector. 
-
-	This
-        method is in the interface for parallel implementations.
-		It will require at least a global communication and also
-		some local communication depending on the consistency model.
-		It allows the solver to be independent of parallelization
-		issues.
-		You may also subclass to overload your favourite norm :-)
-	 */
-	virtual double norm (const Y& y) = 0;
-
-
 	/*! \brief Clean up.
 
 	This method is called after the last apply call for the
@@ -125,6 +102,9 @@ namespace Dune {
 	typedef Y range_type;
 	typedef typename X::field_type field_type;
 
+	//! define the category
+	enum {category=SolverCategory::sequential};
+
     /*! \brief Constructor.
 
     constructor gets all parameters to operate the prec.
@@ -149,19 +129,6 @@ namespace Dune {
 		}
 	}
 
-	//! sequential case: just call vector function
-	virtual field_type dot (const Y& y, const Y& z)
-	{
-	  return y*z;
-	}
-
-	//! sequential case: just call vector function
-	virtual double norm (const Y& y)
-	{
-	  return y.two_norm(); // my favourite norm
-	}
-
-
 	// nothing to do here
 	virtual void post (X& x) {}
 
@@ -184,7 +151,10 @@ namespace Dune {
 	typedef Y range_type;
 	typedef typename X::field_type field_type;
 
-    /*! \brief Constructor.
+ 	//! define the category
+	enum {category=SolverCategory::sequential};
+
+   /*! \brief Constructor.
 
     constructor gets all parameters to operate the prec.
     \param A The matrix to operate on.
@@ -207,19 +177,6 @@ namespace Dune {
 		}
 	}
 
-	//! sequential case: just call vector function
-	virtual field_type dot (const Y& y, const Y& z)
-	{
-	  return y*z;
-	}
-
-	//! sequential case: just call vector function
-	virtual double norm (const Y& y)
-	{
-	  return y.two_norm(); // my favourite norm
-	}
-
-
 	// nothing to do here
 	virtual void post (X& x) {}
 
@@ -241,6 +198,9 @@ namespace Dune {
 	typedef X domain_type;
 	typedef Y range_type;
 	typedef typename X::field_type field_type;
+
+	//! define the category
+	enum {category=SolverCategory::sequential};
 
     /*! \brief Constructor.
 
@@ -265,19 +225,6 @@ namespace Dune {
 		}
 	}
 
-	//! sequential case: just call vector function
-	virtual field_type dot (const Y& y, const Y& z)
-	{
-	  return y*z;
-	}
-
-	//! sequential case: just call vector function
-	virtual double norm (const Y& y)
-	{
-	  return y.two_norm(); // my favourite norm
-	}
-
-
 	// nothing to do here
 	virtual void post (X& x) {}
 
@@ -299,6 +246,9 @@ namespace Dune {
 	typedef X domain_type;
 	typedef Y range_type;
 	typedef typename X::field_type field_type;
+
+	//! define the category
+	enum {category=SolverCategory::sequential};
 
     /*! \brief Constructor.
 
@@ -323,19 +273,6 @@ namespace Dune {
 		}
 	}
 
-	//! sequential case: just call vector function
-	virtual field_type dot (const Y& y, const Y& z)
-	{
-	  return y*z;
-	}
-
-	//! sequential case: just call vector function
-	virtual double norm (const Y& y)
-	{
-	  return y.two_norm(); // my favourite norm
-	}
-
-
 	// nothing to do here
 	virtual void post (X& x) {}
 
@@ -358,6 +295,9 @@ namespace Dune {
 	typedef X domain_type;
 	typedef Y range_type;
 	typedef typename X::field_type field_type;
+
+	//! define the category
+	enum {category=SolverCategory::sequential};
 
     /*! Constructor.
       
@@ -382,19 +322,6 @@ namespace Dune {
 	  v *= _w;
 	}
 
-	//! sequential case: just call vector function
-	virtual field_type dot (const Y& y, const Y& z)
-	{
-	  return y*z;
-	}
-
-	//! sequential case: just call vector function
-	virtual double norm (const Y& y)
-	{
-	  return y.two_norm(); // my favourite norm
-	}
-
-
 	// nothing to do here
 	virtual void post (X& x) {}
 
@@ -415,6 +342,9 @@ namespace Dune {
 	typedef X domain_type;
 	typedef Y range_type;
 	typedef typename X::field_type field_type;
+
+	//! define the category
+	enum {category=SolverCategory::sequential};
 
     /*! \brief Constructor.
       
@@ -440,19 +370,6 @@ namespace Dune {
 	  bilu_backsolve(ILU,v,d);
 	  v *= _w;
 	}
-
-	//! sequential case: just call vector function
-	virtual field_type dot (const Y& y, const Y& z)
-	{
-	  return y*z;
-	}
-
-	//! sequential case: just call vector function
-	virtual double norm (const Y& y)
-	{
-	  return y.two_norm(); // my favourite norm
-	}
-
 
 	// nothing to do here
 	virtual void post (X& x) {}

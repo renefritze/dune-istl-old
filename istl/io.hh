@@ -99,7 +99,7 @@ namespace Dune {
 	  {
 		s << " ";         // space in front of each entry
 		s.width(width);   // set width for each entry anew
-		s << "0";         // yeah, the number !
+		s << ".";         // yeah, the number !
 	  }
   }
 

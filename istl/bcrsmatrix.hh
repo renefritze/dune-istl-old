@@ -904,8 +904,10 @@ namespace Dune {
 	  // check if there are undefined indices
 	  for (int k=0; k<nnz; k++)
 		if (j[k]<0 || j[k]>=m)
-		  DUNE_THROW(ISTLError,"undefined index detected");
-
+		  {
+			std::cout << "j[" << k << "]=" << j[k] << std::endl;
+			DUNE_THROW(ISTLError,"undefined index detected");
+		  }
 	  // if not, set matrix to ready
 	  ready = true;
 	}

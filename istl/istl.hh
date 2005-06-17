@@ -15,12 +15,6 @@
     - They are very flexible
  */
 
-// ISTL includes
-#include <dune/common/fvector.hh>
-#include <dune/common/fmatrix.hh>
-#include "bvector.hh"
-#include "vbvector.hh"
-
 
 namespace Dune {
    
@@ -28,7 +22,6 @@ namespace Dune {
 		@addtogroup ISTL
 		@{
      */
-
  
   /** @} end documentation */
 
