@@ -52,13 +52,14 @@ namespace Dune
        */
       typedef RemoteIndices<GlobalIndex,Attribute,N> RemoteIndices;
       
-      template<typename Graph>
+      template<typename Graph, typename VM>
       static void coarsen(const IndexSet& fineIndices,
-		   const RemoteIndices& fineRemote,
-		   Graph& fineGraph,
-		   AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
-		   IndexSet& coarseIndices,
-		   RemoteIndices& coarseRemote);
+			  const RemoteIndices& fineRemote,
+			  Graph& fineGraph,
+			  VM& visitedMap,
+			  AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
+			  IndexSet& coarseIndices,
+			  RemoteIndices& coarseRemote);
       
     private:
       template<typename G>
@@ -127,9 +128,10 @@ namespace Dune
       };
       
 
-      template<typename Graph>
+      template<typename Graph, typename VM>
       static void buildCoarseIndexSet(const IndexSet& fineIndices,
 				      Graph& fineGraph,
+				      VM& visitedMap,
 				      AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
 				      IndexSet& coarseIndices,
 				      AggregateRenumberer<Graph>& renumberer);
@@ -143,23 +145,25 @@ namespace Dune
     };
       
     template<typename E,typename TG, typename TA, int N>
-    template<typename Graph>
+    template<typename Graph, typename VM>
     void IndicesCoarsener<E,TG,TA,N>::coarsen(const IndexSet& fineIndices,
-				   const RemoteIndices& fineRemote,
-				   Graph& fineGraph,
-				   AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
-				   IndexSet& coarseIndices,
-				   RemoteIndices& coarseRemote)
+					      const RemoteIndices& fineRemote,
+					      Graph& fineGraph,
+					      VM& visitedMap,
+					      AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
+					      IndexSet& coarseIndices,
+					      RemoteIndices& coarseRemote)
     {
       AggregateRenumberer<Graph> renumberer(aggregates);
-      buildCoarseIndexSet(fineIndices, fineGraph, aggregates, coarseIndices, renumberer);
+      buildCoarseIndexSet(fineIndices, fineGraph, visitedMap, aggregates, coarseIndices, renumberer);
       buildCoarseRemoteIndices(fineRemote, aggregates, coarseIndices, coarseRemote, renumberer);
     }
     
     template<typename E,typename TG, typename TA, int N>
-    template<typename Graph>
+    template<typename Graph, typename VM>
     void IndicesCoarsener<E,TG,TA,N>::buildCoarseIndexSet(const IndexSet& fineIndices,
 							  Graph& fineGraph,
+							  VM& visitedMap,
 							  AggregatesMap<typename Graph::VertexDescriptor>& aggregates,
 							  IndexSet& coarseIndices,
 							  AggregateRenumberer<Graph>& renumberer)
@@ -192,7 +196,7 @@ namespace Dune
 	  
 	  // Reconstruct aggregate and mark vertices as visited
 	  aggregates.template breadthFirstSearch<false>(index->local(), aggregates[index->local()], 
-							fineGraph, renumberer);
+							fineGraph, renumberer, visitedMap);
 	  aggregates[index->local()] = renumberer;
 	  coarseIndices.add(index->global(), 
 			    LocalIndex(renumberer, renumberer.attribute(), 

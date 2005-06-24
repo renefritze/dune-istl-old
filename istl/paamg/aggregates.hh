@@ -3,6 +3,7 @@
 #define AGGREGATES_HH
 
 #include"graph.hh"
+#include"properties.hh"
 #include<dune/common/poolallocator.hh>
 #include<dune/common/sllist.hh>
 #include<set>
@@ -263,6 +264,10 @@ namespace Dune
       static const V UNAGGREGATED;
       
       /**
+       * @brief Identifier of isolated vertices.
+       */
+      static const V ISOLATED;
+      /**
        * @brief The vertex descriptor type.
        */
       typedef V VertexDescriptor;
@@ -325,7 +330,6 @@ namespace Dune
       int breadthFirstSearch(const VertexDescriptor& start, int aggregate, 
 			     G& graph) const;
       
-      
       /**
        * @brief Breadth first search within an aggregate
        *
@@ -333,11 +337,23 @@ namespace Dune
        * from. This does not need to belong to the aggregate.
        * @param aggregate The aggregate id.
        * @param graph The matrix graph to perform the search on.
+       * @param visitedMap a map for marking the vertices as visited.
        */
+      template<class G, class VM>
+      int breadthFirstSearch(const VertexDescriptor& start, int aggregate, 
+			     G& graph, VM& visitedMap) const;
+      /**
+       * @brief Breadth first search within an aggregate
+       *
+       * @param start The vertex where the search should start
+       * from. This does not need to belong to the aggregate.
+       * @param aggregate The aggregate id.
+       * @param graph The matrix graph to perform the search on.
+       *
       template<class G, class F1, class F2>
       int breadthFirstSearch(const VertexDescriptor& start, int aggregate, 
 			     G& graph, F1& aggregateVisitor, F2& nongAggregateVisitor) const;
-      
+      */
       /**
        * @brief Breadth first search within an aggregate
        *
@@ -355,11 +371,12 @@ namespace Dune
        * each G::ConstEdgeIterator with an edge pointing to the
        * aggregate. Use DummyVisitor these are of no interest.
        */
-      template<bool reset, class G, class F>
+      template<bool reset, class G, class F, class VM>
       int breadthFirstSearch(const VertexDescriptor& start, int aggregate, 
 			     G& graph,
-			     F& aggregateVisitor) const;
-
+			     F& aggregateVisitor,
+			     VM& visitedMap) const;
+      
       /**
        * @brief Breadth first search within an aggregate
        *
@@ -380,10 +397,11 @@ namespace Dune
        * each G::ConstEdgeIterator with an edge pointing to another
        * aggregate. Use DummyVisitor these are of no interest.
        */
-      template<bool remove, bool reset, class G, class L, class F1, class F2>
+      template<bool remove, bool reset, class G, class L, class F1, class F2, class VM>
       int breadthFirstSearch(const VertexDescriptor& start, int aggregate, 
 			     G& graph, L& visited, F1& aggregateVisitor,
-			     F2& nonAggregateVisitor) const;
+			     F2& nonAggregateVisitor,
+			     VM& visitedMap) const;
 
       /**
        * @brief Allocate memory for holding the information.
@@ -1127,6 +1145,9 @@ namespace Dune
     template<class V> 
     const V AggregatesMap<V>::UNAGGREGATED = std::numeric_limits<V>::max();
     
+    template<class V> 
+    const V AggregatesMap<V>::ISOLATED = -1;
+    
     template<class V>
     AggregatesMap<V>::AggregatesMap()
       : aggregates_(0)
@@ -1182,35 +1203,48 @@ namespace Dune
     inline int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate, 
 						    G& graph) const
     {
-      VertexList vlist;
-      DummyEdgeVisitor dummy;
-      return breadthFirstSearch<true,true>(start, aggregate, graph, vlist, dummy, dummy);
+      typename PropertyMapTypeSelector<VertexVisitedTag,G>::Type visitedMap = get(VertexVisitedTag(), graph);
+      
+      return breadthFirstSearch(start, aggregate, graph,
+					   visitedMap);
     }
     
-    
     template<class V>
-    template<bool reset, class G, class F>
+    template<class G, class VM>
     inline int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate, 
-						    G& graph, F& aggregateVisitor) const
+						    G& graph, VM& visitedMap) const
     {
       VertexList vlist;
       DummyEdgeVisitor dummy;
-      return breadthFirstSearch<true,reset>(start, aggregate, graph, vlist, aggregateVisitor, dummy);
+      return breadthFirstSearch<true,true>(start, aggregate, graph, vlist, dummy, dummy,
+					   visitedMap);
     }
-        
+    
     template<class V>
-    template<bool remove, bool reset, class G, class L, class F1, class F2>
+    template<bool reset, class G, class F,class VM>
+    inline int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate, 
+						    G& graph, F& aggregateVisitor,
+						    VM& visitedMap) const
+    {
+      VertexList vlist;
+      DummyEdgeVisitor dummy;
+      return breadthFirstSearch<true,reset>(start, aggregate, graph, vlist, aggregateVisitor, dummy, visitedMap);
+    }
+      
+    template<class V>
+    template<bool remove, bool reset, class G, class L, class F1, class F2, class VM>
     int AggregatesMap<V>::breadthFirstSearch(const V& start, int aggregate, 
 					     G& graph,
 					     L& visited,
 					     F1& aggregateVisitor,
-					     F2& nonAggregateVisitor) const
+					     F2& nonAggregateVisitor,
+					     VM& visitedMap) const
     {
       typedef typename L::const_iterator iterator;
       int visitedSpheres = 0;
       
       visited.push_back(start);
-      graph.getVertexProperties(start).setVisited();
+      put(visitedMap, start, true);
       
       iterator current = visited.begin();
       iterator end = visited.end();
@@ -1228,9 +1262,9 @@ namespace Dune
 	      edge != end; ++edge){
 	  
 	    if(aggregates_[edge.target()]==aggregate){
-	      if(!graph.getVertexProperties(edge.target()).visited()){
+	      if(!get(visitedMap, edge.target())){
 	    
-		graph.getVertexProperties(edge.target()).setVisited();
+		put(visitedMap, edge.target(), true);
 		visited.push_back(edge.target());
 		aggregateVisitor(edge);
 	      }
@@ -1247,7 +1281,8 @@ namespace Dune
       
       if(reset)
 	for(current = visited.begin(); current != end; ++current)
-	  graph.getVertexProperties(*current).resetVisited();
+	  put(visitedMap, *current, false);
+      
 	
       if(remove)
 	visited.clear();
@@ -1683,10 +1718,13 @@ namespace Dune
 	aggregate_->seed(seed);
 	
 	
-	if(graph.getVertexProperties(seed).isolated())
-	  throw "Juhu!";
-	  //aggregateIsolated();
-	else
+	if(graph.getVertexProperties(seed).isolated()){
+	  // isolated vertices are not aggregated but skipped on the coarser levels.
+	  aggregates[seed]=AggregatesMap<Vertex>::ISOLATED;
+	  ++isoAggregates;
+	  // skip rest as no agglomeration is done.
+	  continue;
+	}else
 	  growAggregate(seed, aggregates, c);
 	
 	
