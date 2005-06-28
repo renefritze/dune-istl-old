@@ -1,6 +1,6 @@
 // $Id$
-#ifndef INDICESCOARSENER_HH
-#define INDICESCOARSENER_HH
+#ifndef DUNE_AMG_INDICESCOARSENER_HH
+#define DUNE_AMG_INDICESCOARSENER_HH
 
 #include<dune/istl/indicessyncer.hh>
 #include<vector>
@@ -186,7 +186,7 @@ namespace Dune
 	throw visited;
       
       // Setup the coarse index set and renumber the aggregate consecutively
-      // starting from zero according to the minimum global index belonging
+      // ascending from zero according to the minimum global index belonging
       // to the aggregate
       for(Iterator index = fineIndices.begin(); index != end; ++index){
 	if(!ExcludedAttributes::contains(index->local().attribute()) && !fineGraph.getVertexProperties(index->local()).visited()){
