@@ -82,7 +82,7 @@ namespace Dune
       
   private:
     IndexSetIterator iter_;
-    const IndexSetIterator& end_;
+    const IndexSetIterator end_;
   };
   
   
