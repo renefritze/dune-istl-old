@@ -1,5 +1,5 @@
-#ifndef __DUNE_ALLOCATOR_HH__
-#define __DUNE_ALLOCATOR_HH__
+#ifndef DUNE_ALLOCATOR_HH
+#define DUNE_ALLOCATOR_HH
 
 #include <stdlib.h>
 
@@ -22,9 +22,15 @@ namespace Dune {
    */
   class ISTLAllocator { // uses new and delete
   public:
+    //! The size type
+    typedef int size_type;
+    
+    //! The difference type to meassure the distance between two pointers
+    typedef std::ptrdiff_t difference_type;
+    
 	//! allocate array of nmemb objects of type T
 	template<class T>
-    static T* malloc (size_t nmemb)
+    static T* malloc (std::size_t nmemb)
 	{
 	  T* p = new T[nmemb];
 	  return p;
