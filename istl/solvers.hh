@@ -110,7 +110,7 @@ namespace Dune {
 	template<class L, class P>
 	LoopSolver (L& op, P& prec,
 				double reduction, int maxit, int verbose) : 
-	  _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+	  ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
 	{
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
@@ -223,7 +223,7 @@ namespace Dune {
 	template<class L, class P>
 	GradientSolver (L& op, P& prec,
 				double reduction, int maxit, int verbose) : 
-	  _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+	  ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
 	{
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
@@ -321,7 +321,7 @@ namespace Dune {
 	//! set up Loop solver
 	template<class L, class P>
 	CGSolver (L& op, P& prec, double reduction, int maxit, int verbose) : 
-	  _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+	  ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
 	{
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
@@ -433,7 +433,7 @@ namespace Dune {
 	template<class L, class P>
 	BiCGSTABSolver (L& op, P& prec,
 				double reduction, int maxit, int verbose) : 
-	  _op(op), ssp(), _sp(ssp), _prec(prec), _reduction(reduction), _maxit(maxit), _verbose(verbose)
+	  ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
 	{
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(SolverCategory::sequential) >::yes();
