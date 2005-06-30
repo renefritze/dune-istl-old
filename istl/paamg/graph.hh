@@ -66,7 +66,7 @@ namespace Dune
        *
        * Each descriptor describes exactly one vertex.
        */
-      typedef std::size_t VertexDescriptor;
+      typedef typename M::size_type VertexDescriptor;
          
       /**
        * @brief The edge descriptor.
