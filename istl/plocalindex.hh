@@ -56,7 +56,7 @@ namespace Dune
      * enum Attributes{owner, border, overlap};
      * </pre>
      */
-    typedef T AttributeType;
+    typedef T Attribute;
     /**
      * @brief Constructor.
      *
@@ -65,7 +65,7 @@ namespace Dune
      * @param isPublic True if the index might also be 
      * known to other processes.
      */
-    ParallelLocalIndex(const AttributeType& attribute, bool isPublic);
+    ParallelLocalIndex(const Attribute& attribute, bool isPublic);
 
     /**
      * @brief Constructor.
@@ -75,7 +75,7 @@ namespace Dune
      * @param isPublic True if the index might also be 
      * known to other processes.
      */
-    ParallelLocalIndex(size_t localIndex, const AttributeType& attribute, bool isPublic);
+    ParallelLocalIndex(size_t localIndex, const Attribute& attribute, bool isPublic);
     /**
      * @brief Parameterless constructor.
      *
@@ -91,20 +91,20 @@ namespace Dune
      * @param isPublic True if the index might also be 
      * known to other processes.
      *
-     ParallelLocalIndex(const AttributeType& attribute, size_t local, 
+     ParallelLocalIndex(const Attribute& attribute, size_t local, 
      bool isPublic);
     */
     /**
      * @brief Get the attribute of the index.
      * @return The associated attribute.
      */
-    inline const AttributeType attribute() const;
+    inline const Attribute attribute() const;
 
     /**
      * @brief Set the attribute of the index.
      * @param attribute The associated attribute.
      */
-    inline void setAttribute(const AttributeType& attribute);
+    inline void setAttribute(const Attribute& attribute);
 
     /**
      * @brief get the local index.
@@ -122,7 +122,7 @@ namespace Dune
      *
      * @param index The new local index.
      */
-    inline ParallelLocalIndex<AttributeType>& operator=(size_t index);
+    inline ParallelLocalIndex<Attribute>& operator=(size_t index);
 
     /** 
      * @brief Check whether the index might also be known other processes.
@@ -204,7 +204,7 @@ namespace Dune
 
   template<class T>
   inline void 
-  ParallelLocalIndex<T>::setAttribute(const AttributeType& attribute)
+  ParallelLocalIndex<T>::setAttribute(const Attribute& attribute)
   {
     attribute_ = attribute;
   }
