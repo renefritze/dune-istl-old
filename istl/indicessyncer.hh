@@ -406,9 +406,6 @@ namespace Dune
       GlobalIndexIterator gEnd   = global->second.end();
       IndexIterator       index  = indexSet.begin();
 
-      int gsize = global->second.size();
-      int rsize = remote->second.first->size();
-      
       assert(rIndex==riEnd || gIndex != global->second.end());
       while(rIndex != riEnd){
 	// Search for the index in the set.
