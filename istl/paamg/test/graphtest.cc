@@ -447,9 +447,9 @@ void testGraph ()
   MatrixGraph mg(laplacian2d);
 
   using Dune::Amg::FirstDiagonal;
-  printWeightedGraph(mg,std::cout,FirstDiagonal<BCRSMat::block_type>());
+  printWeightedGraph(mg,std::cout,FirstDiagonal());
   printWeightedGraph(static_cast<const MatrixGraph&>(mg),
-		     std::cout,FirstDiagonal<BCRSMat::block_type>());
+		     std::cout,FirstDiagonal());
   
   std::vector<bool> excluded(N*N, false);
   
@@ -485,12 +485,11 @@ void testGraph ()
   using Dune::Amg::SymmetricDependency;
   using Dune::Amg::SymmetricCriterion;
   
-  //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
-  SymmetricCriterion<PropertiesGraph,BCRSMat,FirstDiagonal> crit;
+  //SymmetricCriterion<BCRSGraph, FirstDiagonal> crit;
+  SymmetricCriterion<BCRSMat,FirstDiagonal> crit;
 
-  Dune::Amg::Aggregates<PropertiesGraph> aggregates;
   Dune::Amg::AggregatesMap<PropertiesGraph::VertexDescriptor> aggregatesMap(pgraph.maxVertex());
-  aggregates.build(laplacian2d, pgraph,  aggregatesMap, crit);
+  aggregatesMap.buildAggregates(laplacian2d, pgraph,  crit);
   Dune::Amg::printAggregates2d(aggregatesMap, N, N, std::cout);
   
 }
@@ -532,23 +531,19 @@ void testGraph ()
   using Dune::Amg::SymmetricCriterion;
   
   //SymmetricCriterion<BCRSGraph, FirstDiagonal<typename BCRSMat::block_type> > crit;
-  SymmetricCriterion<PropertiesGraph,BCRSMat, FirstDiagonal> crit;
+  SymmetricCriterion<BCRSMat, FirstDiagonal> crit;
 
-  Dune::Amg::Aggregates<PropertiesGraph> aggregates;
-  
-  SymmetricCriterion<SPropertiesGraph,BCRSMat, FirstDiagonal> scrit;
 
-  Dune::Amg::Aggregates<SPropertiesGraph> saggregates;
   Dune::Amg::AggregatesMap<PropertiesGraph::VertexDescriptor> aggregatesMap(pgraph.maxVertex());
   
-  aggregates.build(mat, pgraph, aggregatesMap, crit);
+  aggregatesMap.buildAggregates(mat, pgraph, crit);
   
   Dune::Amg::printAggregates2d(aggregatesMap, N, N, std::cout);
   
   std::cout<<"Excluded!"<<std::endl;
   
   Dune::Amg::AggregatesMap<SPropertiesGraph::VertexDescriptor> saggregatesMap(pgraph.maxVertex());
-  saggregates.build(mat, spgraph, saggregatesMap, scrit);
+  saggregatesMap.buildAggregates(mat, spgraph, crit);
   Dune::Amg::printAggregates2d(saggregatesMap, N, N, std::cout);
   
 

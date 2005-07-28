@@ -280,6 +280,7 @@ namespace Dune
       // indices
       IndicesSyncer<IndexSet> syncer(coarseIndices, coarseRemote);
       syncer.sync(renumberer);
+      
     }
     
     
