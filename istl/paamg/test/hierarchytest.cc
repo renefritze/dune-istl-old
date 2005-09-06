@@ -39,6 +39,9 @@ int main(int argc, char** argv)
   
   hierarchy.build(criterion);
   
+  hierarchy.recalculateGalerkin();
+  
+  
   MPI_Finalize();
   
 }
