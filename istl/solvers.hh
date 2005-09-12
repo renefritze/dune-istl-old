@@ -478,7 +478,7 @@ namespace Dune {
 	//! apply inverse operator
 	virtual void apply (X& x, X& b, InverseOperatorResult& res)
 	{
-	  const double EPSILON=1e-20;
+	  const double EPSILON=1e-40;
     
 	  int                  it;
 	  field_type           rho, rho_new, alpha, beta, h, omega;
