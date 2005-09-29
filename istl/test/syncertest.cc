@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include<dune/istl/indicessyncer.hh>
 #include<dune/common/sllist.hh>
 #include<string>

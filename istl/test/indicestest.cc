@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include<dune/istl/indexset.hh>
 #include<dune/istl/communicator.hh>
 #include<dune/istl/remoteindices.hh>

@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include<iostream>
 #include<dune/istl/selection.hh>
 #include<dune/common/timer.hh>
