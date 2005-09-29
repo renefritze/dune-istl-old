@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include<iostream>
 #include<dune/common/enumset.hh>
 #include<dune/istl/paamg/galerkin.hh>

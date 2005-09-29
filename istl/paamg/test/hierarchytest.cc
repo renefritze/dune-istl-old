@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include"mpi.h"
 #include<dune/istl/paamg/hierarchy.hh>
 #include"anisotropic.hh"
