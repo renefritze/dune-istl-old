@@ -1,3 +1,4 @@
+// $Id$
 #ifndef DUNE_AMGHIERARCHY_HH
 #define DUNE_AMGHIERARCHY_HH
 
@@ -7,6 +8,7 @@
 #include"aggregates.hh"
 #include"graph.hh"
 #include"galerkin.hh"
+#include<dune/istl/bvector.hh>
 #include<dune/istl/indexset.hh>
 #include<dune/istl/remoteindices.hh>
 #include<dune/istl/interface.hh>
@@ -24,35 +26,15 @@ namespace Dune
   namespace Amg
   {
     /**
-     * @brief Traits class for generically constructing non default 
-     * constructable types.
+     * @addtogroup ISTL_PAAMG
      *
-     * Needed because BCRSMatrix and Vector do a deep copy which is
-     * too expensive.
+     * @{
      */
-    template<typename T>
-    class ConstructionTraits
-    {
-    public:
-      /**
-       * @brief A type holding all the arguments needed to call the
-       * constructor.
-       */
-      typedef const void* Arguments;
-      
-      /**
-       * @brief Construct an object with the specified arguments.
-       *
-       * In the default implementation the copy constructor is called.
-       * @param object Pointer to the space allocated for the object.
-       * @param arguments The arguments for the construction.
-       */
-      static inline T* construct(Arguments&  args)
-      {
-	 return new T();
-      }
-    };
     
+    /** @file
+     * @author Markus Blatt
+     * @brief Provides a classes representing the hierarchies in AMG.
+     */
     /**
      * @brief A hierarchy of coantainers (e.g. matrices or vectors)
      * 
@@ -261,6 +243,12 @@ namespace Dune
        */
       ConstIterator coarsest() const;
 
+      /**
+       * @brief Get the number of levels in the hierarchy.
+       * @return The number of levels.
+       */
+      int levels() const;
+      
       /** @brief Destructor. */
       ~Hierarchy();
       
@@ -273,6 +261,8 @@ namespace Dune
       Element* nonAllocated_;
       /** @brief The allocator for the list elements. */
       Allocator allocator_;
+      /** @brief The number of levels in the hierarchy. */
+      int levels_;
     };
     
     /**
@@ -324,7 +314,15 @@ namespace Dune
       void build(const T& criterion);
 
       void recalculateGalerkin();
-      
+
+      template<class V, class TA>
+      void coarsenVector(Hierarchy<BlockVector<V,TA> >& hierarchy);
+
+      /**
+       * @brief Get the number of levels in the hierarchy.
+       * @return The number of levels.
+       */
+      int levels() const;
     private:
       typedef typename ConstructionTraits<ParallelMatrix>::Arguments MatrixArgs;
       /** @brief The type of the aggregates maps list. */
@@ -541,7 +539,25 @@ namespace Dune
 	delete &level->matrix();
       }
     }
-    
+
+    template<class M, class IS, class R, class I>
+    template<class V, class TA>
+    void MatrixHierarchy<M,IS,R,I>::coarsenVector(Hierarchy<BlockVector<V,TA> >& hierarchy)
+    {
+      assert(hierarchy.levels()==1);
+      typedef typename MMatrixHierarchy::ConstIterator Iterator;
+      Iterator coarsest = matrices_.coarsest();
+      int level=0;
+	std::cout<<"Level "<<level<<" has "<<matrices_.finest()->matrix().N()<<" unknows!"<<std::endl;
+      
+      for(Iterator matrix = matrices_.finest(); matrix != coarsest;){
+	++matrix;
+	++level;
+	std::cout<<"Level "<<level<<" has "<<matrix->matrix().N()<<" unknows!"<<std::endl;
+	hierarchy.addCoarser(matrix->matrix().N());
+      }
+    }
+
     template<class M, class IS, class R, class I>
     void MatrixHierarchy<M,IS,R,I>::recalculateGalerkin()
     {
@@ -559,10 +575,16 @@ namespace Dune
 	
       }
     }
-      
+
+    template<class M, class IS, class R, class I>
+    int MatrixHierarchy<M,IS,R,I>::levels() const
+    {
+      return matrices_.levels();
+    }
+    
     template<class T, class A>
     Hierarchy<T,A>::Hierarchy()
-      : finest_(0), coarsest_(0), nonAllocated_(0), allocator_()
+      : finest_(0), coarsest_(0), nonAllocated_(0), allocator_(), levels_(0)
     {}
 
     template<class T, class A>
@@ -573,6 +595,7 @@ namespace Dune
       finest_->element_ = &first;
       nonAllocated_ = finest_;
       coarsest_ = finest_;
+      levels_ = 1;
     }
 
     template<class T, class A>
@@ -588,7 +611,13 @@ namespace Dune
 	current->finer_=0;
       }
     }
-    
+
+    template<class T, class A>
+    int Hierarchy<T,A>::levels() const
+    {
+      return levels_;
+    }
+
     template<class T, class A>
     void Hierarchy<T,A>::addCoarser(Arguments& args)
     {
@@ -603,8 +632,8 @@ namespace Dune
 	coarsest_->coarser_->finer_ = coarsest_;
 	coarsest_ = coarsest_->coarser_;
 	coarsest_->element_ = ConstructionTraits<MemberType>::construct(args);
-      
       }
+      ++levels_;
     }
     
     template<class T, class A>
@@ -622,6 +651,7 @@ namespace Dune
 	finest_ = finest_->finer_;
 	finest_->element = ConstructionTraits<T>::construct(args);
       }
+      ++levels_;
     }
 
     template<class T, class A>
@@ -647,6 +677,7 @@ namespace Dune
     {
       return ConstIterator(coarsest_);
     }
+    /** @} */
   }// namespace Amg
 }// namespace Dune
 
