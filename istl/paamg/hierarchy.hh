@@ -20,6 +20,7 @@
 #include<dune/istl/paamg/graph.hh>
 #include<dune/istl/paamg/indicescoarsener.hh>
 #include<dune/istl/paamg/globalaggregates.hh>
+#include<dune/istl/paamg/construction.hh>
 
 namespace Dune
 {
