@@ -1,6 +1,7 @@
 #ifndef DUNE_AMGCONSTRUCTION_HH
 #define DUNE_AMGCONSTRUCTION_HH
 
+#include<dune/istl/bvector.hh>
 namespace Dune
 {
   namespace Amg
