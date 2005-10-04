@@ -168,18 +168,18 @@ namespace Dune{
     /**
      * @brief Type of the index set we use.
      */
-    typedef T IndexSet;
+    typedef T ParallelIndexSet;
  
    /**
      * @brief The type of the global index.
      */
-    typedef typename IndexSet::GlobalIndex GlobalIndex;
+    typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
     
     
    /**
      * @brief The type of the local index.
      */
-    typedef typename IndexSet::LocalIndex LocalIndex;
+    typedef typename ParallelIndexSet::LocalIndex LocalIndex;
 
     /**
      * @brief The type of the attribute.
@@ -216,7 +216,7 @@ namespace Dune{
      * local mapping at the destination of the communication.
      * May be the same as the source indexset.
      */
-    inline RemoteIndices(const IndexSet& source, const IndexSet& destination, 
+    inline RemoteIndices(const ParallelIndexSet& source, const ParallelIndexSet& destination, 
 			 const MPI_Comm& comm);
 
     /**
@@ -299,10 +299,10 @@ namespace Dune{
     
   private:    
     /** @brief Index set used at the source of the communication. */
-    const IndexSet& source_;
+    const ParallelIndexSet& source_;
 
     /** @brief Index set used at the destination of the communication. */
-    const IndexSet& target_;
+    const ParallelIndexSet& target_;
 
     /** @brief The communicator to use.*/
     const MPI_Comm& comm_;
@@ -363,7 +363,7 @@ namespace Dune{
      * @param indexSet The index set whose indices we count.
      * @return the number of indices marked as public.
      */
-    inline int noPublic(const IndexSet& indexSet);
+    inline int noPublic(const ParallelIndexSet& indexSet);
     
     /** 
      * @brief Pack the indices to send if source_ and target_ are the same.
@@ -377,7 +377,7 @@ namespace Dune{
      * @param position The position to start packing.
      */
     template<bool ignorePublic>
-    inline void packEntries(PairType** myPairs, const IndexSet& indexSet,
+    inline void packEntries(PairType** myPairs, const ParallelIndexSet& indexSet,
 			    char* p_out, MPI_Datatype type, int bufferSize, 
 			    int* position, int n);
     
@@ -435,7 +435,7 @@ namespace Dune{
        *
        * If for example new indices are added to an index set
        * all pointers of the remote indices to the local indices
-       * become invalid after IndexSet::endResize() was called.
+       * become invalid after ParallelIndexSet::endResize() was called.
        */
       MODIFYINDEXSET=mode
     };
@@ -443,17 +443,17 @@ namespace Dune{
     /**
      * @brief Type of the index set we use.
      */
-    typedef T IndexSet;
+    typedef T ParallelIndexSet;
 
     /**
      * @brief The type of the global index.
      */
-    typedef typename IndexSet::GlobalIndex GlobalIndex;
+    typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
 
     /**
      * @brief The type of the local index.
      */
-    typedef typename IndexSet::LocalIndex LocalIndex;
+    typedef typename ParallelIndexSet::LocalIndex LocalIndex;
     
     /**
      * @brief The type of the attribute.
@@ -525,7 +525,7 @@ namespace Dune{
      */
     bool remove(const GlobalIndex& global) throw(InvalidPosition);
     
-    RemoteIndexListModifier(const IndexSet& indexSet,
+    RemoteIndexListModifier(const ParallelIndexSet& indexSet,
 			    RemoteIndexList& rList);
 
     
@@ -536,11 +536,11 @@ namespace Dune{
      *
      * Due to adding new indices or/and deleting indices in the
      * index set all pointers to the local index pair might become
-     * invalid during IndexSet::endResize().
+     * invalid during ParallelIndexSet::endResize().
      * This method repairs them.
      *
      * @exception InvalidIndexSetState Thrown if the underlying
-     * index set is not in IndexSetState::GROUND mode (only when
+     * index set is not in ParallelIndexSetState::GROUND mode (only when
      * compiled with DUNE_ISTL_WITH_CHECKING!).
      */
     void repairLocalIndexPointers() throw(InvalidIndexSetState);
@@ -550,7 +550,7 @@ namespace Dune{
     typedef SLList<GlobalIndex,Allocator> GlobalList;
     typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
     RemoteIndexList* rList_;
-    const IndexSet* indexSet_;
+    const ParallelIndexSet* indexSet_;
     GlobalList* glist_;
     ModifyIterator iter_;
     GlobalModifyIterator giter_;
@@ -571,17 +571,17 @@ namespace Dune{
     /**
      * @brief Type of the index set we use.
      */
-    typedef T IndexSet;
+    typedef T ParallelIndexSet;
 
     /**
      * @brief The type of the global index.
      */
-    typedef typename IndexSet::GlobalIndex GlobalIndex;
+    typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
 
     /**
      * @brief The type of the local index.
      */
-    typedef typename IndexSet::LocalIndex LocalIndex;
+    typedef typename ParallelIndexSet::LocalIndex LocalIndex;
     
     /**
      * @brief The type of the attribute.
@@ -769,8 +769,8 @@ namespace Dune{
   }
   
   template<typename T>
-  inline RemoteIndices<T>::RemoteIndices(const IndexSet& source,
-					     const IndexSet& destination,
+  inline RemoteIndices<T>::RemoteIndices(const ParallelIndexSet& source,
+					     const ParallelIndexSet& destination,
 					     const MPI_Comm& comm)
     : source_(source), target_(destination), comm_(comm), 
       sourceSeqNo_(-1), destSeqNo_(-1), publicIgnored(false), firstBuild(true),
@@ -786,13 +786,13 @@ namespace Dune{
   template<typename T>
   template<bool ignorePublic>
   inline void RemoteIndices<T>::packEntries(IndexPair<GlobalIndex,LocalIndex>** pairs,
-						const IndexSet& indexSet,
+						const ParallelIndexSet& indexSet,
 						char* p_out, MPI_Datatype type, 
 						int bufferSize,
 						int *position, int n)
   {
     // fill with own indices
-    typedef typename IndexSet::const_iterator const_iterator;
+    typedef typename ParallelIndexSet::const_iterator const_iterator;
     typedef IndexPair<GlobalIndex,LocalIndex> PairType;
     const const_iterator end = indexSet.end();
 
@@ -811,9 +811,9 @@ namespace Dune{
   }
   
   template<typename T>
-  inline int RemoteIndices<T>::noPublic(const IndexSet& indexSet)
+  inline int RemoteIndices<T>::noPublic(const ParallelIndexSet& indexSet)
   {
-    typedef typename IndexSet::const_iterator const_iterator;
+    typedef typename ParallelIndexSet::const_iterator const_iterator;
     
     int noPublic=0;
     
@@ -1225,7 +1225,7 @@ namespace Dune{
   }
 
   template<class T, bool mode>
-  RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const IndexSet& indexSet,
+  RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const ParallelIndexSet& indexSet,
 								 RemoteIndexList& rList)
     : rList_(&rList), indexSet_(&indexSet), glist_(new GlobalList()), iter_(rList.beginModify()), end_(rList.end()), first_(true)
   {
@@ -1254,7 +1254,7 @@ namespace Dune{
       if(indexSet_->state()!=GROUND)
 	DUNE_THROW(InvalidIndexSetState, "Index has to be in ground mode for repairing pointers to indices");
 #endif
-      typedef typename IndexSet::const_iterator IndexIterator;
+      typedef typename ParallelIndexSet::const_iterator IndexIterator;
       typedef typename GlobalList::const_iterator GlobalIterator;
       typedef typename RemoteIndexList::iterator Iterator;
       GlobalIterator giter = glist_->begin();

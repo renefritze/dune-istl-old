@@ -6,8 +6,8 @@
 
 int testDeleteIndices()
 {
-  Dune::IndexSet<int,Dune::LocalIndex,15> indexSet;
-  Dune::IndexSet<int,Dune::LocalIndex,25> indexSet1;
+  Dune::ParallelIndexSet<int,Dune::LocalIndex,15> indexSet;
+  Dune::ParallelIndexSet<int,Dune::LocalIndex,25> indexSet1;
 
   indexSet.beginResize();
   indexSet1.beginResize();
@@ -20,7 +20,7 @@ int testDeleteIndices()
   indexSet.endResize();
   indexSet1.endResize();
   
-  typedef Dune::IndexSet<int,Dune::LocalIndex,15>::iterator
+  typedef Dune::ParallelIndexSet<int,Dune::LocalIndex,15>::iterator
     Iterator;
   
   Iterator entry = indexSet.begin();
@@ -50,7 +50,7 @@ int testDeleteIndices()
     ret++;
   }
   
-  Dune::IndexSet<int,Dune::LocalIndex,25>::iterator iter=indexSet1.begin();
+  Dune::ParallelIndexSet<int,Dune::LocalIndex,25>::iterator iter=indexSet1.begin();
   
   // Test whether the local indices changed
   for(entry = indexSet.begin(); entry != end; ++entry){
