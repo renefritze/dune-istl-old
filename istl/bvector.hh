@@ -299,7 +299,8 @@ namespace Dune {
     }
     
     /**
-     * @brief Reserve space.
+     * @brief Reserve space. Values will be copied if data is reallocated.
+     *
      * After calling this method the vector can hold up to
      * capacity values. If the specified capacity is smaller 
      * than the current capacity and bigger than the current size
@@ -313,7 +314,8 @@ namespace Dune {
     }
     
     /**
-     * @brief Reserve space.
+     * @brief Reserve space without copying if template parameter is false.
+     *
      * After calling this method the vector can hold up to
      * capacity values. If the specified capacity is smaller 
      * than the current capacity and bigger than the current size
@@ -369,7 +371,8 @@ namespace Dune {
     }
     
     /**
-     * @brief Resize the vector. 
+     * @brief Resize the vector.  Values will be copied if data is reallocated.
+     *
      * After calling this method ::N() will return size
      * If the capacity of the vector is smaller than the specified
      * size then reserve(size) will be called.
@@ -383,7 +386,8 @@ namespace Dune {
     
     
     /**
-     * @brief Resize the vector. 
+     * @brief Resize the vector without copying if template parameter is false.
+     *
      * After calling this method ::N() will return size
      * If the capacity of the vector is smaller than the specified
      * size then reserve(size) will be called.
