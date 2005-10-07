@@ -883,7 +883,7 @@ namespace Dune
   template<class I>
   GlobalLookupIndexSet<I>::~GlobalLookupIndexSet()
   {
-    delete index_;
+    delete[] index_;
   }
   
 
