@@ -13,19 +13,19 @@
 #include "gsetc.hh"
 #include "ilu.hh"
 
-/** \file
-
- \brief    Define general preconditioner interface 
-
- Wrap the methods implemented by ISTL in this interface.
-	However, the interface is extensible such that new preconditioners
-    can be implemented and used with the solvers.
-*/
 
 namespace Dune {
    
   /** @addtogroup ISTL
 	  @{
+  */
+  /** \file
+      
+  \brief    Define general preconditioner interface 
+  
+  Wrap the methods implemented by ISTL in this interface.
+  However, the interface is extensible such that new preconditioners
+  can be implemented and used with the solvers.
   */
 
 
@@ -43,10 +43,12 @@ namespace Dune {
   template<class X, class Y>
   class Preconditioner {
   public:
-	//! export types, they come from the derived class
-	typedef X domain_type;
-	typedef Y range_type;
-	typedef typename X::field_type field_type;
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
 
 	/*! \brief Prepare the preconditioner. 
 
@@ -80,7 +82,7 @@ namespace Dune {
 	*/
 	virtual void post (X& x) = 0;
 
-	//! every abstract base class has a virtual destructor
+	// every abstract base class has a virtual destructor
 	virtual ~Preconditioner () {}
   };
 
@@ -90,21 +92,29 @@ namespace Dune {
   //=====================================================================
  
 
-  /*! Wraps the naked ISTL generic SOR preconditioner into the
+  /*! 
+    \brief Sequential SSOR preconditioner.
+
+  Wraps the naked ISTL generic SOR preconditioner into the
       solver framework.
    */
   template<class M, class X, class Y>
   class SeqSSOR : public Preconditioner<X,Y> {
   public:
-	//! export types, they come from the derived class
-	typedef M matrix_type;
-	typedef X domain_type;
-	typedef Y range_type;
-	typedef typename X::field_type field_type;
+    //! \brief The matrix type the preconditioner is for.
+    typedef M matrix_type;
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
 
-	//! define the category
-	enum {category=SolverCategory::sequential};
-
+    // define the category
+    enum {
+      //! \brief The category the precondtioner is part of.
+      category=SolverCategory::sequential};
+    
     /*! \brief Constructor.
 
     constructor gets all parameters to operate the prec.
@@ -112,47 +122,58 @@ namespace Dune {
     \param n The number of iterations to perform.
     \param w The relaxation factor.
     */
-	SeqSSOR (const M& A, int n, field_type w)
-	  : _A_(A), _n(n), _w(w)
-	{	}
+    SeqSSOR (const M& A, int n, field_type w)
+      : _A_(A), _n(n), _w(w)
+    {	}
 
-	//! prepare: nothing to do here
-	virtual void pre (X& x, Y& b) {}
+    //! \brief Prepare the preconditioner.
+    virtual void pre (X& x, Y& b) {}
 
-	//! just calls the istl functions
-	virtual void apply (X& v, const Y& d)
-	{
-	  for (int i=0; i<_n; i++)
-		{
-		  bsorf(_A_,v,d,_w);
-		  bsorb(_A_,v,d,_w);
-		}
-	}
+    //! \brief Apply the precondtioner
+    virtual void apply (X& v, const Y& d)
+    {
+      for (int i=0; i<_n; i++){
+	bsorf(_A_,v,d,_w);
+	bsorb(_A_,v,d,_w);
+      }
+    }
 
-	// nothing to do here
-	virtual void post (X& x) {}
+    //! \brief Clean up.
+    virtual void post (X& x) {}
 
   private:
-	const M& _A_;   // my matrix to operate on
-	int _n;        // number of iterations
-	field_type _w; // relaxation factor
+    //! \brief The matrix we operate on.
+    const M& _A_;
+    //! \brief The number of steps to do in apply
+    int _n;
+    //! \brief The relaxation factor to use
+    field_type _w;
   };
 
 
-  /*! Wraps the naked ISTL generic SOR preconditioner into the
-      solver framework.
-   */
+  /*! 
+    \brief Sequential SOR preconditioner.
+    
+    Wraps the naked ISTL generic SOR preconditioner into the
+    solver framework.
+  */
   template<class M, class X, class Y>
   class SeqSOR : public Preconditioner<X,Y> {
   public:
-	//! export types, they come from the derived class
-	typedef M matrix_type;
-	typedef X domain_type;
-	typedef Y range_type;
-	typedef typename X::field_type field_type;
+    //! \brief The matrix type the preconditioner is for.
+    typedef M matrix_type;
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
 
- 	//! define the category
-	enum {category=SolverCategory::sequential};
+    // define the category
+    enum {
+      //! \brief The category the preconditioner is part of.
+      category=SolverCategory::sequential
+    };
 
    /*! \brief Constructor.
 
@@ -161,46 +182,56 @@ namespace Dune {
     \param n The number of iterations to perform.
     \param w The relaxation factor.
     */
-	SeqSOR (const M& A, int n, field_type w)
-	  : _A_(A), _n(n), _w(w)
-	{	}
+    SeqSOR (const M& A, int n, field_type w)
+      : _A_(A), _n(n), _w(w)
+    {	}
 
-	//! prepare: nothing to do here
-	virtual void pre (X& x, Y& b) {}
+    //! \brief Prepare the preconditioner.
+    virtual void pre (X& x, Y& b) {}
 
-	//! just calls the istl functions
-	virtual void apply (X& v, const Y& d)
-	{
-	  for (int i=0; i<_n; i++)
-		{
-		  bsorf(_A_,v,d,_w);
-		}
-	}
+    //! \brief Apply the preconditioner.
+    virtual void apply (X& v, const Y& d)
+    {
+      for (int i=0; i<_n; i++){
+	bsorf(_A_,v,d,_w);
+      }
+    }
 
-	// nothing to do here
-	virtual void post (X& x) {}
+    //! \brief Clean up.
+    virtual void post (X& x) {}
 
   private:
-	const M& _A_;   // my matrix to operate on
-	int _n;        // number of iterations
-	field_type _w; // relaxation factor
+    //! \brief the matrix we operate on.
+    const M& _A_;
+    //! \brief The number of steps to perform in apply.
+    int _n;
+    //! \brief The relaxation factor to use.
+    field_type _w;
   };
 
 
-  /*! Wraps the naked ISTL generic block Gauss-Seidel preconditioner into the
+  /*! \brief Sequential Gauss Seidel preconditioner
+
+  Wraps the naked ISTL generic block Gauss-Seidel preconditioner into the
       solver framework.
    */
   template<class M, class X, class Y>
   class SeqGS : public Preconditioner<X,Y> {
   public:
-	//! export types, they come from the derived class
-	typedef M matrix_type;
-	typedef X domain_type;
-	typedef Y range_type;
-	typedef typename X::field_type field_type;
-
-	//! define the category
-	enum {category=SolverCategory::sequential};
+    //! \brief The matrix type the preconditioner is for.
+    typedef M matrix_type;
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
+	
+    // define the category
+    enum {
+      //! \brief The category the preconditioner is part of.
+      category=SolverCategory::sequential
+    };
 
     /*! \brief Constructor.
 
@@ -209,46 +240,56 @@ namespace Dune {
     \param n The number of iterations to perform.
     \param w The relaxation factor.
     */
-	SeqGS (const M& A, int n, field_type w)
-	  : _A_(A), _n(n), _w(w)
-	{	}
+    SeqGS (const M& A, int n, field_type w)
+      : _A_(A), _n(n), _w(w)
+    {	}
 
-	//! prepare: nothing to do here
-	virtual void pre (X& x, Y& b) {}
+    //! \brief Prepare the preconditioner.
+    virtual void pre (X& x, Y& b) {}
+    
+    //! \brief Apply the preconditioner.
+    virtual void apply (X& v, const Y& d)
+    {
+      for (int i=0; i<_n; i++){
+	dbgs(_A_,v,d,_w);
+      }
+    }
 
-	//! just calls the istl functions
-	virtual void apply (X& v, const Y& d)
-	{
-	  for (int i=0; i<_n; i++)
-		{
-		  dbgs(_A_,v,d,_w);
-		}
-	}
-
-	// nothing to do here
-	virtual void post (X& x) {}
+    //! \brief Clean up.
+    virtual void post (X& x) {}
 
   private:
-	const M& _A_;   // my matrix to operate on
-	int _n;        // number of iterations
-	field_type _w; // relaxation factor
+    //! \brief The matrix we operate on.
+    const M& _A_;
+    //! \brief The number of iterations to perform in apply.
+    int _n;
+    //! \brief The relaxation factor to use.
+    field_type _w;
   };
 
 
-  /*! Wraps the naked ISTL generic block Jacobi preconditioner into the
+  /*! \brief The sequential jacobian preconditioner.
+    
+  Wraps the naked ISTL generic block Jacobi preconditioner into the
       solver framework.
    */
   template<class M, class X, class Y>
   class SeqJac : public Preconditioner<X,Y> {
   public:
-	//! export types, they come from the derived class
-	typedef M matrix_type;
-	typedef X domain_type;
-	typedef Y range_type;
-	typedef typename X::field_type field_type;
+    //! \brief The matrix type the preconditioner is for.
+    typedef M matrix_type;
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
 
-	//! define the category
-	enum {category=SolverCategory::sequential};
+    // define the category
+    enum {
+      //! \brief The category the preconditioner is part of
+      category=SolverCategory::sequential
+    };
 
     /*! \brief Constructor.
 
@@ -257,94 +298,116 @@ namespace Dune {
     \param n The number of iterations to perform.
     \param w The relaxation factor.
     */
-	SeqJac (const M& A, int n, field_type w)
-	  : _A_(A), _n(n), _w(w)
-	{	}
+    SeqJac (const M& A, int n, field_type w)
+      : _A_(A), _n(n), _w(w)
+    {	}
 
-	//! prepare: nothing to do here
-	virtual void pre (X& x, Y& b) {}
+    //! \brief Prepare the preconditioner.
+    virtual void pre (X& x, Y& b) {}
 
-	//! just calls the istl functions
-	virtual void apply (X& v, const Y& d)
-	{
-	  for (int i=0; i<_n; i++)
-		{
-		  dbjac(_A_,v,d,_w);
-		}
-	}
+    //! \brief Apply the preconditioner.
+    virtual void apply (X& v, const Y& d)
+    {
+      for (int i=0; i<_n; i++){
+	dbjac(_A_,v,d,_w);
+      }
+    }
 
-	// nothing to do here
-	virtual void post (X& x) {}
+    // \brief Clean up.
+    virtual void post (X& x) {}
 
   private:
-	const M& _A_;   // my matrix to operate on
-	int _n;        // number of iterations
-	field_type _w; // relaxation factor
+    //! \brief The matrix we operate on.
+    const M& _A_;
+    //! \brief The number of steps to perform during apply.
+    int _n;
+    //! \brief The relaxation parameter to use.
+    field_type _w;
   };
 
 
 
-  /*! Wraps the naked ISTL generic ILU0 preconditioner into the
+  /*! 
+    \brief Sequential ILU0 preconditioner.
+
+  Wraps the naked ISTL generic ILU0 preconditioner into the
       solver framework.
    */
   template<class M, class X, class Y>
   class SeqILU0 : public Preconditioner<X,Y> {
   public:
-	//! export types, they come from the derived class
-	typedef M matrix_type;
-	typedef X domain_type;
-	typedef Y range_type;
-	typedef typename X::field_type field_type;
+    //! \brief The matrix type the preconditioner is for.
+    typedef M matrix_type;
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
 
-	//! define the category
-	enum {category=SolverCategory::sequential};
+    // define the category
+    enum {
+      //! \brief The category the preconditioner is part of.
+      category=SolverCategory::sequential
+    };
 
-    /*! Constructor.
+    /*! \brief Constructor.
       
     Constructor gets all parameters to operate the prec.
     \param A The matrix to operate on.
     \param w The relaxation factor.
     */
-	SeqILU0 (const M& A, field_type w)
-	  : ILU(A) // copy A
-	{
-	  _w =w;
-	  bilu0_decomposition(ILU);	  
-	}
+    SeqILU0 (const M& A, field_type w)
+      : ILU(A) // copy A
+    {
+      _w =w;
+      bilu0_decomposition(ILU);	  
+    }
 
-	//! prepare: nothing to do here
-	virtual void pre (X& x, Y& b) {}
+    //! \brief Prepare the preconditioner.
+    virtual void pre (X& x, Y& b) {}
 
-	//! just calls the istl functions
-	virtual void apply (X& v, const Y& d)
-	{
-	  bilu_backsolve(ILU,v,d);
-	  v *= _w;
-	}
+    //! \brief Apply the preconditoner.
+    virtual void apply (X& v, const Y& d)
+    {
+      bilu_backsolve(ILU,v,d);
+      v *= _w;
+    }
 
-	// nothing to do here
-	virtual void post (X& x) {}
+    //! \brief Clean up
+    virtual void post (X& x) {}
 
   private:
-	field_type _w;
-	M ILU;
+    //! \brief The relaxation factor to use.
+    field_type _w;
+    //! \brief The ILU0 decomposition of the matrix.
+    M ILU;
   };
 
 
-  /*! Wraps the naked ISTL generic ILU(n) preconditioner into the
-      solver framework.
-   */
+  /*! 
+    \brief Sequential ILU(n) preconditioner.
+
+    Wraps the naked ISTL generic ILU(n) preconditioner into the
+    solver framework.
+  */
   template<class M, class X, class Y>
   class SeqILUn : public Preconditioner<X,Y> {
   public:
-	//! export types, they come from the derived class
-	typedef M matrix_type;
-	typedef X domain_type;
-	typedef Y range_type;
-	typedef typename X::field_type field_type;
+    //! \brief The matrix type the preconditioner is for.
+    typedef M matrix_type;
+    //! \brief The domain type of the preconditioner.
+    typedef X domain_type;
+    //! \brief The range type of the preconditioner.
+    typedef Y range_type;
+    //! \brief The field type of the preconditioner.
+    typedef typename X::field_type field_type;
 
-	//! define the category
-	enum {category=SolverCategory::sequential};
+    // define the category
+    enum {
+      //! \brief The category the preconditioner is part of.
+      category=SolverCategory::sequential
+    };
 
     /*! \brief Constructor.
       
@@ -353,31 +416,34 @@ namespace Dune {
     \param n The number of iterations to perform.
     \param w The relaxation factor.
     */
-	SeqILUn (const M& A, int n, field_type w)
-	  : ILU(A.N(),A.M(),M::row_wise)
-	{
-	  _n = n;
-	  _w = w;
-	  bilu_decomposition(A,n,ILU);	  
-	}
+    SeqILUn (const M& A, int n, field_type w)
+      : ILU(A.N(),A.M(),M::row_wise)
+    {
+      _n = n;
+      _w = w;
+      bilu_decomposition(A,n,ILU);	  
+    }
 
-	//! prepare: nothing to do here
-	virtual void pre (X& x, Y& b) {}
+    //! \brief Prepare the preconditioner.
+    virtual void pre (X& x, Y& b) {}
 
-	//! just calls the istl functions
-	virtual void apply (X& v, const Y& d)
-	{
-	  bilu_backsolve(ILU,v,d);
-	  v *= _w;
-	}
+    //! \brief Apply the precondioner.
+    virtual void apply (X& v, const Y& d)
+    {
+      bilu_backsolve(ILU,v,d);
+      v *= _w;
+    }
 
-	// nothing to do here
-	virtual void post (X& x) {}
+    //! \brief Clean up.
+    virtual void post (X& x) {}
 
   private:
-	M ILU;
-	int _n;
-	field_type _w;
+    //! \brief ILU(n) decomposition of the matrix we operate on.
+    M ILU;
+    //! \brief The number of steps to perform in apply.
+    int _n;
+    //! \brief The relaxation factor to use.
+    field_type _w;
   };
 
 

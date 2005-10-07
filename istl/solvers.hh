@@ -362,7 +362,7 @@ namespace Dune {
 	  IsTrue< static_cast<int>(L::category) == static_cast<int>(S::category) >::yes();
 	}
 
-	//! apply inverse operator
+	//! Apply inverse operator
 	virtual void apply (X& x, X& b, InverseOperatorResult& r)
 	{
    	  r.clear();                  // clear solver statistics

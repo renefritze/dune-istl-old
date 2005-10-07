@@ -29,6 +29,7 @@ namespace Dune {
 
   /*! 
     @brief A linear operator.
+
      Abstract base class defining a linear operator \f$ A : X\to Y\f$,
      i.e. \f$ A(\alpha x) = \alpha A(x) \f$ and
       \f$ A(x+y) = A(x)+A(y)\f$ hold. The
@@ -67,7 +68,10 @@ namespace Dune {
   };
 
 
-  /*! Linear Operator that exports the operator in 
+  /*! 
+    \brief A linear operator exporting itself in matrix form.
+
+  Linear Operator that exports the operator in 
     matrix form. This is needed for certain solvers, such as
     LU decomposition, ILU preconditioners or BiCG-Stab (because
     of multiplication with A^T).
@@ -94,7 +98,11 @@ namespace Dune {
   // Implementation for ISTL-matrix based operator
   //=====================================================================
 
-  //! Adapts a matrix to the assembled linear operator interface
+  /*! 
+    \brief Adapter to turn a matrix into a linear operator.
+
+  Adapts a matrix to the assembled linear operator interface
+  */
   template<class M, class X, class Y>
   class MatrixAdapter : public AssembledLinearOperator<M,X,Y>
   {
