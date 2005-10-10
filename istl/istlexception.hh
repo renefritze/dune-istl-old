@@ -1,5 +1,5 @@
-#ifndef __DUNE_ISTLEXC_HH__
-#define __DUNE_ISTLEXC_HH__
+#ifndef DUNE_ISTLEXC_HH
+#define DUNE_ISTLEXC_HH
 
 #include <stdlib.h>
 

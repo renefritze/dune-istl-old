@@ -1,5 +1,5 @@
-#ifndef __DUNE_ISTLOPERATORS_HH__
-#define __DUNE_ISTLOPERATORS_HH__
+#ifndef DUNE_ISTLOPERATORS_HH
+#define DUNE_ISTLOPERATORS_HH
 
 #include<math.h>
 #include<complex>

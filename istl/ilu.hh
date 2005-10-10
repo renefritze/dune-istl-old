@@ -1,5 +1,5 @@
-#ifndef __DUNE_ILU_HH__
-#define __DUNE_ILU_HH__
+#ifndef DUNE_ILU_HH
+#define DUNE_ILU_HH
 
 #include<math.h>
 #include<complex>
