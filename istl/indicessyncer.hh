@@ -704,6 +704,8 @@ namespace Dune
 	packAndSend(oldNeighbours[i]);
       }
     }
+
+    delete[] buffer_;
     
     // No need for the iterator tuples any more
     iteratorsMap_.clear();

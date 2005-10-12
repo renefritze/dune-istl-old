@@ -567,13 +567,15 @@ namespace Dune
       
       for(Iterator level=matrices_.coarsest(), finest=matrices_.finest(); level != finest;  --level, ++amap){
 	delete *amap;
+	std::cout<<&(*level)<<std::endl;
+	/*
 	if(level.isRedistributed()){
 	  ParallelMatrix& mat = level.getRedistributed();
 	  delete &mat.remoteIndices();
 	  delete &mat.indexSet();
 	  delete &mat.matrix();
 	}
-	
+	*/
 	delete &level->remoteIndices();
 	delete &level->indexSet();
 	delete &level->matrix();
@@ -657,8 +659,10 @@ namespace Dune
     {
       finest_ = allocator_.allocate(1,0);
       finest_->element_ = &first;
+      finest_->redistributed_ = 0;
       nonAllocated_ = finest_;
       coarsest_ = finest_;
+      coarsest_->coarser_ = coarsest_->finer_ = 0;
       levels_ = 1;
     }
 
@@ -670,9 +674,9 @@ namespace Dune
 	coarsest_ = coarsest_->finer_;
 	if(current != nonAllocated_){
 	  current->element_->~T();
-	  allocator_.deallocate(current, 1);
 	}
-	current->finer_=0;
+	allocator_.deallocate(current, 1);
+	//coarsest_->coarser_ = 0;
       }
     }
 
@@ -690,13 +694,16 @@ namespace Dune
 	coarsest_ = allocator_.allocate(1,0);
 	coarsest_->element_ = ConstructionTraits<MemberType>::construct(args);
 	finest_ = coarsest_;
-	coarsest_->coarser_ = coarsest_->finer_ = 0;
+	coarsest_->finer_ = 0;
+	coarsest_->redistributed_ = 0;
       }else{
 	coarsest_->coarser_ = allocator_.allocate(1,0);
 	coarsest_->coarser_->finer_ = coarsest_;
 	coarsest_ = coarsest_->coarser_;
 	coarsest_->element_ = ConstructionTraits<MemberType>::construct(args);
+	finest_->redistributed_ = 0;
       }
+      coarsest_->coarser_=0;
       ++levels_;
     }
     
@@ -713,6 +720,7 @@ namespace Dune
 	finest_->finer_ = allocator_.allocate(1,0);
 	finest_->finer_->coarser_ = finest_;
 	finest_ = finest_->finer_;
+	finest_->finer = 0;
 	finest_->element = ConstructionTraits<T>::construct(args);
       }
       ++levels_;
