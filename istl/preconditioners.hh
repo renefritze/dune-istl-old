@@ -61,6 +61,9 @@ namespace Dune {
 	  Note: The ILU decomposition could also be computed in the constructor
       or with a seperate method of the derived method if several
       linear systems with the same matrix are to be solved.
+
+      \param x The left hand side of the equation.
+      \param b The right hand side of the equation.
 	*/
 	virtual void pre (X& x, Y& b) = 0;
 
@@ -71,6 +74,8 @@ namespace Dune {
       one step computes \f$ v = M^{-1} d \f$ where \f$ M \f$ is the
       approximate inverse of the operator \f$ A \f$ characterizing 
       the preconditioner.
+      \param[out] v The update to be computed
+      \param d The current defect.
 	*/
 	virtual void apply (X& v, const Y& d) = 0;
 
@@ -79,6 +84,8 @@ namespace Dune {
 	This method is called after the last apply call for the
       linear system to be solved. Memory may be deallocated safely
       here. x is the solution of the linear equation.
+
+      \param x The right hand side of the equation.
 	*/
 	virtual void post (X& x) = 0;
 
@@ -126,10 +133,18 @@ namespace Dune {
       : _A_(A), _n(n), _w(w)
     {	}
 
-    //! \brief Prepare the preconditioner.
+    /*! 
+      \brief Prepare the preconditioner.
+      
+      \copydoc Preconditioner::pre(X&,Y&)
+    */
     virtual void pre (X& x, Y& b) {}
 
-    //! \brief Apply the precondtioner
+    /*! 
+      \brief Apply the precondtioner
+      
+      \copydoc Preconditioner::apply(X&,Y&)
+    */
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
@@ -138,7 +153,11 @@ namespace Dune {
       }
     }
 
-    //! \brief Clean up.
+    /*! 
+      \brief Clean up.
+      
+      \copydoc Preconditioner::post(X&)
+    */
     virtual void post (X& x) {}
 
   private:
@@ -186,10 +205,18 @@ namespace Dune {
       : _A_(A), _n(n), _w(w)
     {	}
 
-    //! \brief Prepare the preconditioner.
+    /*!
+      \brief Prepare the preconditioner.
+      
+      \copydoc Preconditioner::pre(X&,Y&)
+    */
     virtual void pre (X& x, Y& b) {}
 
-    //! \brief Apply the preconditioner.
+    /*!
+      \brief Apply the preconditioner.
+      
+      \copydoc Preconditioner::apply(X&,Y&)
+    */
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
@@ -197,7 +224,11 @@ namespace Dune {
       }
     }
 
-    //! \brief Clean up.
+    /*!
+      \brief Clean up.
+      
+      \copydoc Preconditioner::post(X&)
+    */
     virtual void post (X& x) {}
 
   private:
@@ -244,10 +275,18 @@ namespace Dune {
       : _A_(A), _n(n), _w(w)
     {	}
 
-    //! \brief Prepare the preconditioner.
+    /*!
+      \brief Prepare the preconditioner.
+      
+      \copydoc Preconditioner::pre(X&,Y&)
+    */
     virtual void pre (X& x, Y& b) {}
     
-    //! \brief Apply the preconditioner.
+    /*!
+      \brief Apply the preconditioner.
+      
+      \copydoc Preconditioner::apply(X&,Y&)
+    */
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
@@ -255,7 +294,11 @@ namespace Dune {
       }
     }
 
-    //! \brief Clean up.
+    /*!
+      \brief Clean up.
+      
+      \copydoc Preconditioner::post(X&)
+    */
     virtual void post (X& x) {}
 
   private:
@@ -302,10 +345,18 @@ namespace Dune {
       : _A_(A), _n(n), _w(w)
     {	}
 
-    //! \brief Prepare the preconditioner.
+    /*!
+      \brief Prepare the preconditioner.
+      
+      \copydoc Preconditioner::pre(X&,Y&)
+    */
     virtual void pre (X& x, Y& b) {}
 
-    //! \brief Apply the preconditioner.
+    /*!
+      \brief Apply the preconditioner.
+      
+      \copydoc Preconditioner::apply(X&,Y&)
+    */
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
@@ -313,7 +364,11 @@ namespace Dune {
       }
     }
 
-    // \brief Clean up.
+    /*!
+      \brief Clean up.
+      
+      \copydoc Preconditioner::post(X&)
+    */
     virtual void post (X& x) {}
 
   private:
@@ -364,17 +419,29 @@ namespace Dune {
       bilu0_decomposition(ILU);	  
     }
 
-    //! \brief Prepare the preconditioner.
+    /*!
+      \brief Prepare the preconditioner.
+      
+      \copydoc Preconditioner::pre(X&,Y&)
+    */
     virtual void pre (X& x, Y& b) {}
 
-    //! \brief Apply the preconditoner.
+    /*!
+      \brief Apply the preconditoner.
+      
+      \copydoc Preconditioner::apply(X&,Y&)
+    */
     virtual void apply (X& v, const Y& d)
     {
       bilu_backsolve(ILU,v,d);
       v *= _w;
     }
 
-    //! \brief Clean up
+    /*!
+      \brief Clean up.
+      
+      \copydoc Preconditioner::post(X&)
+    */
     virtual void post (X& x) {}
 
   private:
@@ -424,17 +491,29 @@ namespace Dune {
       bilu_decomposition(A,n,ILU);	  
     }
 
-    //! \brief Prepare the preconditioner.
+    /*!
+      \brief Prepare the preconditioner.
+      
+      \copydoc Preconditioner::pre(X&,Y&)
+    */
     virtual void pre (X& x, Y& b) {}
 
-    //! \brief Apply the precondioner.
+    /*!
+      \brief Apply the precondioner.
+      
+      \copydoc Preconditioner::apply(X&,Y&)
+    */
     virtual void apply (X& v, const Y& d)
     {
       bilu_backsolve(ILU,v,d);
       v *= _w;
     }
 
-    //! \brief Clean up.
+    /*!
+      \brief Clean up.
+      
+      \copydoc Preconditioner::post(X&)
+    */
     virtual void post (X& x) {}
 
   private:
