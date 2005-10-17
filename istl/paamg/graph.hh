@@ -2,7 +2,6 @@
 #ifndef DUNE_AMG_GRAPH_HH
 #define DUNE_AMG_GRAPH_HH
 
-#include<iostream>
 #include<cstddef>
 #include<algorithm>
 #include<vector>

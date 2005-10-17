@@ -8,6 +8,7 @@
 #include"aggregates.hh"
 #include"graph.hh"
 #include"galerkin.hh"
+#include<dune/common/stdstreams.hh>
 #include<dune/istl/bvector.hh>
 #include<dune/istl/indexset.hh>
 #include<dune/istl/remoteindices.hh>
@@ -487,8 +488,7 @@ namespace Dune
 	int noAggregates = aggregatesMap->buildAggregates(mlevel->matrix(), pg, criterion);
 
 	if(noAggregates < criterion.coarsenTarget() && procs>1){
-	  std::cerr<<"Accumulation to fewer processes not yet implemented!"<<std::endl;
-	  throw "Not implemented!";
+	  DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
 	}
 	
 	ParallelIndexSet*      coarseIndices = new ParallelIndexSet();
@@ -567,7 +567,6 @@ namespace Dune
       
       for(Iterator level=matrices_.coarsest(), finest=matrices_.finest(); level != finest;  --level, ++amap){
 	delete *amap;
-	std::cout<<&(*level)<<std::endl;
 	/*
 	if(level.isRedistributed()){
 	  ParallelMatrix& mat = level.getRedistributed();
@@ -590,12 +589,12 @@ namespace Dune
       typedef typename ParallelMatrixHierarchy::ConstIterator Iterator;
       Iterator coarsest = matrices_.coarsest();
       int level=0;
-	std::cout<<"Level "<<level<<" has "<<matrices_.finest()->matrix().N()<<" unknows!"<<std::endl;
+      Dune::dverb<<"Level "<<level<<" has "<<matrices_.finest()->matrix().N()<<" unknows!"<<std::endl;
       
       for(Iterator matrix = matrices_.finest(); matrix != coarsest;){
 	++matrix;
 	++level;
-	std::cout<<"Level "<<level<<" has "<<matrix->matrix().N()<<" unknows!"<<std::endl;
+	Dune::dverb<<"Level "<<level<<" has "<<matrix->matrix().N()<<" unknows!"<<std::endl;
 	hierarchy.addCoarser(matrix->matrix().N());
       }
     }
@@ -612,7 +611,6 @@ namespace Dune
       Iterator coarsest = matrices_.coarsest();
       int level=0;
       for(Iterator matrix = matrices_.finest(); matrix != coarsest; ++matrix){
-	std::cout<<"level "<<level++<<" "<<&matrix->matrix();
 	cargs.setMatrix(matrix->matrix());
 	smoothers.addCoarser(cargs);
       }

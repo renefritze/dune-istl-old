@@ -411,7 +411,6 @@ namespace Dune
 	  // Skip isolated vertices
 	  if(aggregates[index->local()] != AggregatesMap<typename G::VertexDescriptor>::ISOLATED){
 	    if(overlap.contains(index->local().attribute())){
-	      std::cout<<"Overlap"<<std::endl;
 	      constructOverlapConnectivity(connected, graph, visitedMap, aggregates, overlapVertices);
 	    }else{
 	      constructConnectivity(connected, graph, visitedMap, aggregates, index->local());
@@ -537,9 +536,8 @@ namespace Dune
       
       int procs;
       MPI_Comm_size(MPI_COMM_WORLD, &procs);
-      if(procs > 1)
-      std::cerr <<"Process borders should be set to dirichlet borders"<<std::endl;
-      
+
+#warning "Galerkin: Process borders should be set to dirichlet borders"
     }
     
     
