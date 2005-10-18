@@ -398,9 +398,6 @@ namespace Dune
       Vertex vend = graph.end();
       for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
 	put(visitedMap, *vertex, false);
-
-      for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
-	assert(!get(visitedMap, *vertex));
       
       typedef typename I::const_iterator IndexIterator;
       const IndexIterator end = indices.end();
