@@ -10,6 +10,7 @@
 #include<dune/common/sllist.hh>
 #include<cassert>
 #include<cmath>
+#include<limits>
 
 namespace Dune
 {
