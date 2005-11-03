@@ -9,6 +9,7 @@
 #include"graph.hh"
 #include"galerkin.hh"
 #include<dune/common/stdstreams.hh>
+#include<dune/common/timer.hh>
 #include<dune/istl/bvector.hh>
 #include<dune/istl/indexset.hh>
 #include<dune/istl/remoteindices.hh>
@@ -460,8 +461,12 @@ namespace Dune
       CommIterator commlevel = communicators_.finest();
       
       MPI_Comm_size(mlevel->remoteIndices().communicator(), &procs);
+      int level=0;
       
-      for(int level=0; level < criterion.maxLevel(); ++level, ++mlevel){
+      for(; level < criterion.maxLevel(); ++level, ++mlevel){
+
+	dinfo<<"Level "<<level<<" has "<<mlevel->matrix().N()<<" unknows!"<<std::endl;
+	
 	
 	if(coarsenTargetReached(criterion, mlevel))
 	   // No further coarsening needed
@@ -488,11 +493,14 @@ namespace Dune
 
 	aggregatesMaps_.push_back(aggregatesMap);
 		
+	Timer watch;
+	watch.reset();
 	int noAggregates = aggregatesMap->buildAggregates(mlevel->matrix(), pg, criterion);
 
 	if(noAggregates < criterion.coarsenTarget() && procs>1){
 	  DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
 	}
+	dinfo << "Building aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;
 	
 	ParallelIndexSet*      coarseIndices = new ParallelIndexSet();
 	RemoteIndices* coarseRemote = new RemoteIndices(*coarseIndices, *coarseIndices, 
@@ -501,6 +509,7 @@ namespace Dune
 	typename PropertyMapTypeSelector<VertexVisitedTag,PropertiesGraph>::Type visitedMap = 
 	  get(VertexVisitedTag(), pg);
   
+	watch.reset();
 	IndicesCoarsener<OverlapFlags,ParallelIndexSet>::coarsen(mlevel->indexSet(),
 							 mlevel->remoteIndices(),
 							 pg,
@@ -508,7 +517,9 @@ namespace Dune
 							 *aggregatesMap,
 							 *coarseIndices,
 							 *coarseRemote);
-	
+	dinfo<<" Coarsening of index sets took "<<watch.elapsed()<<" seconds."<<std::endl;
+
+	watch.reset();
 	const void* args;
 	communicators_.addCoarser(args);
 	++commlevel;
@@ -523,6 +534,9 @@ namespace Dune
 
 	commlevel->free();
 	
+	dinfo<<"Communicating global aggregate numbers took "<<watch.elapsed()<<" seconds."<<std::endl;
+	
+	watch.reset();
 	std::vector<bool>& visited=excluded;
 	
 	typedef std::vector<bool>::iterator Iterator;
@@ -536,14 +550,20 @@ namespace Dune
 	Matrix* coarseMatrix = productBuilder.build(mlevel->matrix(), mg, visitedMap2, 
 						    mlevel->indexSet(), 
 						    *aggregatesMap,
+						    coarseIndices->size(),
 						    OverlapFlags());
 	productBuilder.calculate(mlevel->matrix(), *aggregatesMap, *coarseMatrix);
+	
+	dinfo<<"Calculation of Galerkin product took "<<watch.elapsed()<<" seconds."<<std::endl;
 	
 	matrices_.addCoarser(MatrixArgs(*coarseMatrix, *coarseIndices, *coarseRemote));
       }
       built_=true;
       AggregatesMap* aggregatesMap=new AggregatesMap(0);
       aggregatesMaps_.push_back(aggregatesMap);
+      
+      if(level==criterion.maxLevel())
+	dinfo<<"Level "<<level<<" has "<<mlevel->matrix().N()<<" unknows!"<<std::endl;
     }
     
     template<class M, class IS, class R, class I>

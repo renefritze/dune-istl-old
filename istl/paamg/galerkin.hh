@@ -30,12 +30,14 @@ namespace Dune
        * @param fine The matrix on the fine level.
        * @param fineGraph The graph of the fine matrix.
        * @param aggregates The mapping of the fine level unknowns  onto aggregates.
+       * @param size The number of columns and rows of the coarse matrix.
        * @param coarse A reference to a matrix were the resulting coarse martix should
        * be stored
        */
       template<class M, class G, class V, class I, class Set>
       M* build(const M& fine, G& fineGraph, V& visitedMap, const I& fineIndices, 
 	       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+	       const typename M::size_type& size,
 	       const Set& overlap);
       
       /**
@@ -186,30 +188,6 @@ namespace Dune
 				 const typename G::VertexDescriptor& seed) const;
 
       /**
-       * @brief Functor for counting the nonzeros and unknowns using examineConnectivity.
-       */
-      template<class Set>
-      class NonZeroCounter
-      {
-      public:
-	/** @brief Constructor. */
-	NonZeroCounter();
-	
-	/** 
-	 * @brief Count the connected vertices and update.
-	 * @param connected The set of connected vertices.
-	 */
-	void operator()(const Set& connect);
-	
-	/** @brief Get the number of unknowns and nonzeros.*/
-	const std::pair<int,int>& getUnknownsNonZeros();
-
-      private:
-	/** @brief Pair of the number of unknowns and the number of nonzeros. */
-	std::pair<int,int> unknownsNonZeros_;
-      };
-      
-      /**
        * @brief Functor for building the sparsity pattern of the matrix
        * using examineConnectivity.
        */
@@ -232,6 +210,10 @@ namespace Dune
 	 */
 	void operator()(const Set& connected);
 
+	void insert(const typename M::size_type& index);
+	
+	void operator++();
+	
       private:
 	/** @brief Create iterator for the current row. */
 	typename M::CreateIterator row_;
@@ -257,21 +239,6 @@ namespace Dune
 			       const OverlapVertex<typename G::VertexDescriptor>* overlapVertices,
 			       Functor& func) const;
       
-      /**
-       * @brief Count the number of nonzero blocks of the coarse matrix.
-       * @param connected Set to store the connected vertices in.
-       * @param graph The fine level matrix graph.
-       * @param visitedMap The map for marking the vertices as visited.
-       * @param indices The fine level indices.
-       * @param overlap The set of flags identifying the overlap vertices.
-       * @param overlapVertices helper array for efficient building of overlap aggregates.
-       */
-      template<class S, class G, class V, class I, class Set>
-      std::pair<int,int> countNonZeros(S& connected, G& graph, V& visitedMap, const I& indices,
-				       const AggregatesMap<typename G::VertexDescriptor>& aggregates, 
-				       const Set& overlap,
-				       const OverlapVertex<typename G::VertexDescriptor>* overlapVertices) const;
-
       /**
        * @brief Initialize the sparsity patteren from the aggregates.
        * @param connected Set to store the connected vertices in.
@@ -365,7 +332,10 @@ namespace Dune
 	  overlapVertices[overlapCount].vertex = pair->local();
 	  ++overlapCount;
 	}
+
+      dinfo << overlapCount<<" overlap vertices"<<std::endl;
       
+      //if(overlapCount)
       std::sort(overlapVertices, overlapVertices+overlapCount, OVLess<Vertex>());
 
       overlapStart_ = new std::size_t[graph.maxVertex()];
@@ -408,39 +378,23 @@ namespace Dune
 	  // Skip isolated vertices
 	  if(aggregates[index->local()] != AggregatesMap<typename G::VertexDescriptor>::ISOLATED){
 	    if(overlap.contains(index->local().attribute())){
-	      constructOverlapConnectivity(connected, graph, visitedMap, aggregates, overlapVertices);
+	      constructOverlapConnectivity(func, graph, visitedMap, aggregates, overlapVertices);
 	    }else{
-	      constructConnectivity(connected, graph, visitedMap, aggregates, index->local());
+	      constructConnectivity(func, graph, visitedMap, aggregates, index->local());
 	    }
-	    func(connected);
+	    //func(connected);
+	    ++func;
 	  }
 	}
       }
       connected.clear();
     }
-    
-    template<class Set>
-    GalerkinProduct::NonZeroCounter<Set>::NonZeroCounter()
-      : unknownsNonZeros_(std::make_pair(0,0))
-    {}
-    
-    template<class Set>
-    void GalerkinProduct::NonZeroCounter<Set>::operator()(const Set& connected)
-    {
-      ++unknownsNonZeros_.first;
-      unknownsNonZeros_.second+=connected.size();
-    }
-    template<class Set>
-    const std::pair<int, int>& GalerkinProduct::NonZeroCounter<Set>::getUnknownsNonZeros()
-    {
-      return unknownsNonZeros_;
-    }
-    
+        
     template<class Set, class M, class V>
     GalerkinProduct::SparsityBuilder<Set,M,V>::SparsityBuilder(M& matrix, const AggregatesMap<V>& aggregates)
       : row_(matrix.createbegin()), aggregates_(aggregates)
     {}
-    
+    /*
     template<class Set, class M, class V>
     void GalerkinProduct::SparsityBuilder<Set,M,V>::operator()(const Set& connected)
     {
@@ -451,32 +405,25 @@ namespace Dune
       
       ++row_;
     }
+    */
     
-    template<class S, class G, class V, class I, class Set>
-    std::pair<int,int> 
-    GalerkinProduct::countNonZeros(S& connected, G& graph, V& visitedMap,
-				     const I& indices,
-				     const AggregatesMap<typename G::VertexDescriptor>& aggregates, 
-				     const Set& overlap, 
-				     const OverlapVertex<typename G::VertexDescriptor>* overlapVertices)
-      const
+    template<class Set, class M, class V>
+    void GalerkinProduct::SparsityBuilder<Set,M,V>::operator++()
     {
-
-      NonZeroCounter<S> counter;
-      examineConnectivity(connected, graph, visitedMap, indices, aggregates, overlap, overlapVertices, counter);
-      
-      typedef typename G::VertexIterator Vertex;
-      Vertex vend = graph.end();
-      for(Vertex vertex = graph.begin(); vertex != vend; ++vertex)
-	assert(get(visitedMap, *vertex));
-
-      return  counter.getUnknownsNonZeros();
+      ++row_;
+    }
+    
+    template<class Set, class M, class V>
+    void GalerkinProduct::SparsityBuilder<Set,M,V>::insert(const typename M::size_type& index)
+    {
+      row_.insert(index);
     }
     
     template<class M, class G, class V, class I, class Set>
     M* GalerkinProduct::build(const M& fine, G& fineGraph, V& visitedMap,
 			      const I& fineIndices, 
 			      const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+			      const typename M::size_type& size,
 			      const Set& overlap)
     {
       
@@ -486,6 +433,7 @@ namespace Dune
 							       fineIndices,
 							       aggregates,
 							       overlap);
+      /*
       std::pair<int,int> res = countNonZeros(connected,
 					     fineGraph,
 					     visitedMap,
@@ -493,8 +441,8 @@ namespace Dune
 					     aggregates,
 					     overlap,
 					     overlapVertices);
-
-      M* coarseMatrix = new M(res.first, res.first, res.second, M::row_wise);
+      */
+      M* coarseMatrix = new M(size, size, M::row_wise);
 
       setupSparsityPattern(connected, fineGraph, visitedMap, fineIndices, aggregates, 
 			   *coarseMatrix, overlap, overlapVertices);
