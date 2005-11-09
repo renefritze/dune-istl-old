@@ -224,7 +224,7 @@ int testVertex()
   flags.resetVisited();
 
   ret+=testVertexReset(flags);
-
+  /*
   flags.setExcluded();
   
   if(!flags.excluded()){
@@ -234,6 +234,7 @@ int testVertex()
   }
   
   flags.resetExcluded();
+  */
   ret+=testVertexReset(flags);
 
   return ret;
