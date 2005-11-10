@@ -1,3 +1,5 @@
+#ifndef ANISOTROPIC_HH
+#define  ANISOTROPIC_HH
 #include<dune/istl/indexset.hh>
 #include<dune/istl/communicator.hh>
 #include<dune/istl/interface.hh>
@@ -11,6 +13,18 @@ typedef Dune::ParallelIndexSet<int,LocalIndex,101> ParallelIndexSet;
 typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
 typedef Dune::Interface<ParallelIndexSet> Interface;
 typedef Dune::BufferedCommunicator<ParallelIndexSet> Communicator;
+
+template<int N, class M>
+void setupPattern(M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
+		  int start, int end);
+
+template<int N, class M>
+void fillValues(M& mat, int overlapStart, int overlapEnd, int start, int end);
+
+
+template<int N, int BS>
+Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(ParallelIndexSet& indices, int *nout);
+
 
 template<int N, class M>
 void setupPattern(M& mat, ParallelIndexSet& indices, int overlapStart, int overlapEnd,
@@ -163,3 +177,4 @@ Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(ParallelIn
 
   return mat;
 }
+#endif
