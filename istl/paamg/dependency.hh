@@ -35,10 +35,11 @@ namespace Dune
     class EdgeProperties
     {
       friend std::ostream& operator<<(std::ostream& os, const EdgeProperties& props);
-      
-    private:
+    public:
       /** @brief Flags of the link.*/
       enum{INFLUENCE, DEPEND, SIZE};
+
+    private:
       
       std::bitset<SIZE> flags_;
     public:
@@ -121,9 +122,9 @@ namespace Dune
      */
     class VertexProperties{
       friend std::ostream& operator<<(std::ostream& os, const VertexProperties& props);
-      
-    private:
+    public:
       enum{ ISOLATED, VISITED, FRONT, /* EXCLUDED, */ SIZE };
+    private:
       
       /** @brief The attribute flags. */    
       std::bitset<SIZE> flags_;
