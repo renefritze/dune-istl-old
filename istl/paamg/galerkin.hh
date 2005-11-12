@@ -301,7 +301,10 @@ namespace Dune
     template<class G, class S, class V>
     void GalerkinProduct::ConnectedBuilder<G,S,V>::operator()(const ConstEdgeIterator& edge)
     {
-      connected_.insert(aggregates_[edge.target()]);
+      typedef typename G::VertexDescriptor Vertex;
+      const Vertex& vertex = aggregates_[edge.target()];
+      if(vertex!= AggregatesMap<Vertex>::ISOLATED)
+	connected_.insert(vertex);
     }
     
     template<class G, class I, class Set>
@@ -374,7 +377,6 @@ namespace Dune
       for(IndexIterator index=indices.begin(); index != end; ++index){
 	connected.clear();
 	if(!get(visitedMap, index->local())){
-	  
 	  // Skip isolated vertices
 	  if(aggregates[index->local()] != AggregatesMap<typename G::VertexDescriptor>::ISOLATED){
 	    if(overlap.contains(index->local().attribute())){
@@ -384,7 +386,8 @@ namespace Dune
 	    }
 	    //func(connected);
 	    ++func;
-	  }
+	  }else
+	    put(visitedMap, index->local(), false);
 	}
       }
       connected.clear();

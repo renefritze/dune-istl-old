@@ -49,7 +49,7 @@ namespace Dune
        */
       AggregationCriterion()
 	: maxDistance_(2), minAggregateSize_(4), maxAggregateSize_(6), 
-	  connectivity_(10), debugLevel_(3)
+	  connectivity_(15), debugLevel_(3)
       {}
       
       
@@ -180,7 +180,7 @@ namespace Dune
      * @brief Dependency policy for symmetric matrices.
      */
     template<class M, class N>
-    class SymmetricDependency : public DependencyParameters
+    class Dependency : public DependencyParameters
     {
     public:
       /**
@@ -226,6 +226,56 @@ namespace Dune
       typename Matrix::field_type diagonal_;
     };
         
+    /**
+     * @brief Dependency policy for symmetric matrices.
+     */
+    template<class M, class N>
+    class SymmetricDependency : public DependencyParameters
+    {
+    public:
+      /**
+       * @brief The matrix type we build the dependency of.
+       */
+      typedef M Matrix;
+      
+      /**
+       * @brief The norm to use for examining the matrix entries.
+       */
+      typedef N Norm;
+
+      /**
+       * @brief Constant Row iterator of the matrix.
+       */
+      typedef typename Matrix::row_type Row;
+
+      /**
+       * @brief Constant column iterator of the matrix.
+       */
+      typedef typename Matrix::ConstColIterator ColIter;
+      
+      void init(const Matrix* matrix);
+      
+      void initRow(const Row& row, int index);
+
+      void examine(const ColIter& col);
+      
+      template<class G>
+      void examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col);
+
+      bool isIsolated();
+    private:
+      /** @brief The matrix we work on. */
+      const Matrix* matrix_;
+      /** @brief The current max value.*/
+      typename Matrix::field_type maxValue_;
+      /** @brief The functor for calculating the norm. */
+      Norm norm_;      
+      /** @brief index of the currently evaluated row. */
+      int row_;
+      /** @brief The norm of the current diagonal. */
+      typename Matrix::field_type diagonal_;
+    };
+
     class FirstDiagonal
     {
     public:
@@ -1118,7 +1168,8 @@ namespace Dune
     {
       maxValue_ = std::max(maxValue_, 
 			   (norm_(*col) * norm_(matrix_->operator[](col.index())[row_]))/
-			   (norm_(matrix_->operator[](col.index())[col.index()]) * diagonal_));
+			   //(norm_(matrix_->operator[](col.index())[col.index()]) * diagonal_));
+			   (diagonal_*diagonal_));
     }
     
     template<class M, class N>
@@ -1126,7 +1177,8 @@ namespace Dune
     inline void SymmetricDependency<M,N>::examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col)
     {      
       if(norm_(matrix_->operator[](edge.target())[edge.source()]) * norm_(*col)/
-	 (norm_(matrix_->operator[](edge.target())[edge.target()]) * diagonal_) > alpha() * maxValue_){
+	 //(norm_(matrix_->operator[](edge.target())[edge.target()]) * diagonal_) > alpha() * maxValue_){
+	 (diagonal_ * diagonal_) > alpha() * maxValue_){
 	edge.properties().setDepends();
 	edge.properties().setInfluences();
 
@@ -1138,6 +1190,44 @@ namespace Dune
     
     template<class M, class N>
     inline bool SymmetricDependency<M,N>::isIsolated()
+    {
+      return maxValue_  < beta();
+    }
+    
+    
+    template<class M, class N>
+    inline void Dependency<M,N>::init(const Matrix* matrix)
+    {
+      matrix_ = matrix;
+    }
+    
+    template<class M, class N>
+    inline void Dependency<M,N>::initRow(const Row& row, int index)
+    {
+      maxValue_ = std::min(- std::numeric_limits<typename Matrix::field_type>::max(), std::numeric_limits<typename Matrix::field_type>::min());
+      row_ = index;
+      diagonal_ = norm_(matrix_->operator[](row_)[row_]);
+    }
+
+    template<class M, class N>
+    inline void Dependency<M,N>::examine(const ColIter& col)
+    {
+      maxValue_ = std::max(maxValue_, 
+			   (norm_(*col)));
+    }
+    
+    template<class M, class N>
+    template<class G>
+    inline void Dependency<M,N>::examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col)
+    {      
+      if(norm_(*col) >= maxValue_ * alpha()){
+	edge.properties().setDepends();
+	edge.properties().setInfluences();
+      }
+    }
+    
+    template<class M, class N>
+    inline bool Dependency<M,N>::isIsolated()
     {
       return maxValue_  < beta();
     }
@@ -2007,7 +2097,7 @@ namespace Dune
 	Dune::dinfo<<" one node aggregates: "<<oneAggregates<<std::endl;
       
       delete aggregate_;
-      delete distanceSpheres_;
+      delete[] distanceSpheres_;
       return conAggregates+isoAggregates;
     }
     
@@ -2099,7 +2189,7 @@ namespace Dune
       }else{
 	for(Iterator vertex = graph_.begin(); vertex != end; ++vertex)
 	   if(aggregates_[*vertex] == AggregatesMap<Vertex>::UNAGGREGATED && vertex.properties().isolated() 
-	      && aggregatesBuilder_.unusedNeighbours(*vertex, aggregates_) == umin)
+	      && aggregatesBuilder_.unusedNeighbours(*vertex, aggregates_) == isoumin)
 	     localPush(*vertex);
       }
       maxSize_ = std::max(size_, maxSize_);

@@ -48,7 +48,7 @@ namespace Dune
       };
   
       /**
-       * @brief Constructor.
+       * @brief Construct a new amg with a specific coarse solver.
        * @param matrix The matrix we precondition for.
        * @param solverArgs The arguments needed for the construction of the 
        * direct solver to use at the coarsest level.
@@ -59,7 +59,7 @@ namespace Dune
       AMG(const MatrixHierarchy& matrices, CoarseSolver& coarseSolver, 
 	  const SmootherArgs& smootherArgs, std::size_t gamma,
 	  std::size_t smoothingSteps);
-  
+
       void pre(Domain& x, Range& b);
 
       void apply(Domain& v, const Range& d);
