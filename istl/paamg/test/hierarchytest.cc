@@ -34,7 +34,7 @@ int main(int argc, char** argv)
   Interface interface;
   
   typedef Dune::EnumItem<GridFlag,overlap> OverlapFlags;
-  typedef Dune::Amg::MatrixHierarchy<BCRSMat,ParallelIndexSet,OverlapFlags> Hierarchy;
+  typedef Dune::Amg::MatrixHierarchy<BCRSMat,ParallelIndexSet> Hierarchy;
   typedef Dune::Amg::Hierarchy<Vector> VHierarchy;
 
   interface.build(remoteIndices, Dune::NegateSet<OverlapFlags>(), OverlapFlags());
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 
   Criterion criterion(10,4);
   
-  hierarchy.build(criterion);
+  hierarchy.build<OverlapFlags>(criterion);
   hierarchy.coarsenVector(vh);
   
   typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
