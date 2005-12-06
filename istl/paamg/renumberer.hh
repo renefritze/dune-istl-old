@@ -68,7 +68,7 @@ namespace Dune
 	  aggregates[index1.index()] = renumberer;
 	  ++renumberer;
 	}
-      for(index; index != endIndex; ++index)
+      for(; index != endIndex; ++index)
 	put(visitedMap, index.index(), false);
     }
     
