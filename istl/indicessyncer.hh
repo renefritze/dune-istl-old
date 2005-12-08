@@ -724,9 +724,7 @@ namespace Dune
     globalMap_.clear();
 	
     // update the sequence number
-    remoteIndices_.sourceSeqNo_ = remoteIndices_.destSeqNo_ = indexSet_.seqNo();
-    
-    remoteIndices_.built_ = true;
+    remoteIndices_.sourceSeqNo_ = remoteIndices_.destSeqNo_ = indexSet_.seqNo();    
   }
 
   

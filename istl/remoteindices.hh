@@ -281,12 +281,6 @@ namespace Dune{
     inline CollectiveIterator<T> iterator() const;
 
     /**
-     * @brief Test whether the index lists are built.
-     * @return True if the index lists are built.
-     */
-    inline bool isBuilt() const;
-
-    /**
      * @brief Free the index lists.
      */
     inline void free();
@@ -331,12 +325,7 @@ namespace Dune{
      * @brief Whether the next build will be the first build ever.
      */
     bool firstBuild;
-    
-    /**
-     * @brief Whether the indices are built.
-     */
-    bool built_;
-    
+        
     /** @brief The index pair type. */
     typedef IndexPair<GlobalIndex, LocalIndex> 
     PairType;
@@ -525,6 +514,11 @@ namespace Dune{
      */
     bool remove(const GlobalIndex& global) throw(InvalidPosition);
     
+    /**
+     * @brief Create a modifier for a remote index list.
+     * @param indexSet The set of indices the process knows.
+     * @param rList The list of remote indices to modify.
+     */
     RemoteIndexListModifier(const ParallelIndexSet& indexSet,
 			    RemoteIndexList& rList);
 
@@ -549,6 +543,7 @@ namespace Dune{
     
     typedef SLList<GlobalIndex,Allocator> GlobalList;
     typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
+    RemoteIndices<ParallelIndexSet>* remoteIndices_;
     RemoteIndexList* rList_;
     const ParallelIndexSet* indexSet_;
     GlobalList* glist_;
@@ -773,8 +768,7 @@ namespace Dune{
 					     const ParallelIndexSet& destination,
 					     const MPI_Comm& comm)
     : source_(source), target_(destination), comm_(comm), 
-      sourceSeqNo_(-1), destSeqNo_(-1), publicIgnored(false), firstBuild(true),
-      built_(false)
+      sourceSeqNo_(-1), destSeqNo_(-1), publicIgnored(false), firstBuild(true)
   {}
 
   template<typename T>
@@ -1121,13 +1115,7 @@ namespace Dune{
     }
     
   }
-  
-  template<typename T>
-  inline bool RemoteIndices<T>::isBuilt() const
-  {
-    return built_;
-  }
-  
+    
   template<typename T>
   inline void RemoteIndices<T>::free()
   {
@@ -1167,7 +1155,6 @@ namespace Dune{
       destSeqNo_ = target_.seqNo();
       firstBuild=false;
       publicIgnored=ignorePublic;
-      built_ = true;
     }
     
     
@@ -1198,6 +1185,8 @@ namespace Dune{
 	found = remoteIndices_.find(process);
       }
     
+    firstBuild = false;
+    
     if(send)
       return RemoteIndexListModifier<T,mode>(source_, *(found->second.first));
     else
@@ -1226,7 +1215,7 @@ namespace Dune{
 
   template<class T, bool mode>
   RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const ParallelIndexSet& indexSet,
-								 RemoteIndexList& rList)
+							   RemoteIndexList& rList)
     : rList_(&rList), indexSet_(&indexSet), glist_(new GlobalList()), iter_(rList.beginModify()), end_(rList.end()), first_(true)
   {
     if(MODIFYINDEXSET){
@@ -1239,10 +1228,11 @@ namespace Dune{
 
   template<typename T, bool mode>
   RemoteIndexListModifier<T,mode>::RemoteIndexListModifier(const RemoteIndexListModifier<T,mode>& other)
-    : rList_(other.rList_), indexSet_(other.indexSet_), glist_(other.glist_), iter_(other.iter_),
-      giter_(other.giter_), end_(other.end_), first_(other.first_), last_(other.last_)
+    : remoteIndices_(other.remoteIndices), rList_(other.rList_), indexSet_(other.indexSet_), 
+      glist_(other.glist_), iter_(other.iter_), giter_(other.giter_), end_(other.end_), 
+      first_(other.first_), last_(other.last_)
   {}
-  
+    
   template<typename T, bool mode>
   inline void RemoteIndexListModifier<T,mode>::repairLocalIndexPointers() throw(InvalidIndexSetState)
   {
