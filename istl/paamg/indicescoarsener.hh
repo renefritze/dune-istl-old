@@ -225,9 +225,6 @@ namespace Dune
 
       coarseIndices.endResize();
 
-      assert(coarseIndices.size()==renumberer);
-      assert((coarseIndices.begin()+(coarseIndices.size()-1))->local()==renumberer-1);
-      
       // Reset the visited flags
       typedef typename Graph::ConstVertexIterator VertexIterator;
       VertexIterator vend = fineGraph.end();
