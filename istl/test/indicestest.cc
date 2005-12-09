@@ -21,7 +21,7 @@ class Array
   friend std::ostream& operator<<(std::ostream& os, const Array& a);
 public:
   typedef double value_type;
-  Array() : size_(-1)
+  Array() : size_(0), vals_(0)
   {}
   
   Array(int size) :size_(size)
@@ -44,7 +44,8 @@ public:
   
   ~Array()
   {
-    delete[] vals_;
+    if(vals_!=0)
+      delete[] vals_;
   }
   
   const double& operator[](int i) const
@@ -57,6 +58,8 @@ public:
     return vals_[i];
   }
 private:
+  Array(const Array&)
+  {}
   double *vals_;
   int size_;
 };
