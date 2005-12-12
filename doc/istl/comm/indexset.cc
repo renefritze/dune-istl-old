@@ -1,4 +1,7 @@
 // $Id$
+
+#include "config.h"
+
 #include<dune/istl/indexset.hh>
 #include<dune/istl/plocalindex.hh>
 #include<iostream>
