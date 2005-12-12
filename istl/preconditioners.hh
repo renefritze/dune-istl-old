@@ -105,7 +105,7 @@ namespace Dune {
   Wraps the naked ISTL generic SOR preconditioner into the
       solver framework.
    */
-  template<class M, class X, class Y>
+  template<class M, class X, class Y, int l=1>
   class SeqSSOR : public Preconditioner<X,Y> {
   public:
     //! \brief The matrix type the preconditioner is for.
@@ -148,8 +148,8 @@ namespace Dune {
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
-	bsorf(_A_,v,d,_w);
-	bsorb(_A_,v,d,_w);
+	bsorf(_A_,v,d,_w,BL<l>());
+	bsorb(_A_,v,d,_w,BL<l>());
       }
     }
 
@@ -169,70 +169,6 @@ namespace Dune {
     field_type _w;
   };
 
-
-    template<class M, class X, class Y, int l>
-  class SeqSuperSSOR : public Preconditioner<X,Y> {
-  public:
-    //! \brief The matrix type the preconditioner is for.
-    typedef M matrix_type;
-    //! \brief The domain type of the preconditioner.
-    typedef X domain_type;
-    //! \brief The range type of the preconditioner.
-    typedef Y range_type;
-    //! \brief The field type of the preconditioner.
-    typedef typename X::field_type field_type;
-
-    // define the category
-    enum {
-      //! \brief The category the precondtioner is part of.
-      category=SolverCategory::sequential};
-    
-    /*! \brief Constructor.
-
-    constructor gets all parameters to operate the prec.
-    \param A The matrix to operate on.
-    \param n The number of iterations to perform.
-    \param w The relaxation factor.
-    */
-    SeqSuperSSOR (const M& A, int n, field_type w)
-      : _A_(A), _n(n), _w(w)
-    {	}
-
-    /*! 
-      \brief Prepare the preconditioner.
-      
-      \copydoc Preconditioner::pre(X&,Y&)
-    */
-    virtual void pre (X& x, Y& b) {}
-
-    /*! 
-      \brief Apply the precondtioner
-      
-      \copydoc Preconditioner::apply(X&,Y&)
-    */
-    virtual void apply (X& v, const Y& d)
-    {
-      for (int i=0; i<_n; i++){
-          bsorf(_A_,v,d,_w,BL<l>());
-          bsorb(_A_,v,d,_w,BL<l>());
-      }
-    }
-
-    /*! 
-      \brief Clean up.
-      
-      \copydoc Preconditioner::post(X&)
-    */
-    virtual void post (X& x) {}
-
-  private:
-    //! \brief The matrix we operate on.
-    const M& _A_;
-    //! \brief The number of steps to do in apply
-    int _n;
-    //! \brief The relaxation factor to use
-    field_type _w;
-  };
 
 
   /*! 
@@ -241,7 +177,7 @@ namespace Dune {
     Wraps the naked ISTL generic SOR preconditioner into the
     solver framework.
   */
-  template<class M, class X, class Y>
+  template<class M, class X, class Y, int l=1>
   class SeqSOR : public Preconditioner<X,Y> {
   public:
     //! \brief The matrix type the preconditioner is for.
@@ -285,7 +221,7 @@ namespace Dune {
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
-	bsorf(_A_,v,d,_w);
+	bsorf(_A_,v,d,_w,BL<l>());
       }
     }
 
@@ -311,7 +247,7 @@ namespace Dune {
   Wraps the naked ISTL generic block Gauss-Seidel preconditioner into the
       solver framework.
    */
-  template<class M, class X, class Y>
+  template<class M, class X, class Y, int l=1>
   class SeqGS : public Preconditioner<X,Y> {
   public:
     //! \brief The matrix type the preconditioner is for.
@@ -355,7 +291,7 @@ namespace Dune {
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
-	dbgs(_A_,v,d,_w);
+	dbgs(_A_,v,d,_w,BL<l>());
       }
     }
 
@@ -381,7 +317,7 @@ namespace Dune {
   Wraps the naked ISTL generic block Jacobi preconditioner into the
       solver framework.
    */
-  template<class M, class X, class Y>
+  template<class M, class X, class Y, int l=1>
   class SeqJac : public Preconditioner<X,Y> {
   public:
     //! \brief The matrix type the preconditioner is for.
@@ -425,7 +361,7 @@ namespace Dune {
     virtual void apply (X& v, const Y& d)
     {
       for (int i=0; i<_n; i++){
-	dbjac(_A_,v,d,_w);
+	dbjac(_A_,v,d,_w,BL<l>());
       }
     }
 
