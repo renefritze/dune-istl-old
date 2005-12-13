@@ -406,7 +406,9 @@ namespace Dune {
 	}    
 
     BlockVector (const BlockVector& a) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "BlockVector Copy Constructor BlockVector\n";
+#endif
       capacity_ = a.capacity_;
       if (capacity_>0) 
         this->p = A::template malloc<B>(capacity_);
@@ -421,7 +423,9 @@ namespace Dune {
     }
     template <class V>
     BlockVector (Dune::ExprTmpl::Expression<V> op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "BlockVector Copy Constructor Expression\n";
+#endif
       capacity_ = op.N();
       if (capacity_>0) 
         this->p = A::template malloc<B>(capacity_);
@@ -435,7 +439,9 @@ namespace Dune {
     }
     template <class V>
     BlockVector (const Dune::ExprTmpl::Vector<V> & op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "BlockVector Copy Constructor Vector\n";
+#endif
       capacity_ = op.N();
       if (capacity_>0) 
         this->p = A::template malloc<B>(capacity_);
@@ -450,13 +456,17 @@ namespace Dune {
     BlockVector& operator = (const BlockVector& a) {
 	  if (&a!=this) // check if this and a are different objects
 		{
+#ifdef DUNE_VVERBOSE
           Dune::dvverb << INDENT
                        << "BlockVector Assignment Operator BlockVector\n";
+#endif
 		  // adjust size of vector
 		  if (capacity_!=a.capacity_) // check if size is different
 			{
+#ifdef DUNE_VVERBOSE
               Dune::dvverb << INDENT
                            << "BlockVector Resize to size(BlockVector)\n";
+#endif
 			  if (capacity_>0) A::template free<B>(this->p); // delete old memory
 			  capacity_ = a.capacity_;
 			  if (capacity_>0) 
@@ -475,11 +485,15 @@ namespace Dune {
     }
     template <class E>
     BlockVector&  operator = (Dune::ExprTmpl::Expression<E> op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "BlockVector Assignment Operator Expression\n";
+#endif
       // adjust size of vector
       if (capacity_ < op.N()) // check if size is different
       {
+#ifdef DUNE_VVERBOSE
         Dune::dvverb << INDENT << "BlockVector Resize to size(Expression)\n";
+#endif
         if (capacity_>0) A::template free<B>(this->p); // delete old memory
         capacity_ = op.N();
         if (capacity_>0) 
@@ -495,11 +509,15 @@ namespace Dune {
     }
     template <class V>
     BlockVector& operator = (const Dune::ExprTmpl::Vector<V> & op) {
+#ifdef DUNE_VVERBOSE
       Dune::dvverb << INDENT << "BlockVector Assignment Operator Vector\n";
+#endif
       // adjust size of vector
       if (capacity_ < op.N()) // check if size is different
       {
+#ifdef DUNE_VVERBOSE
         Dune::dvverb << INDENT << "BlockVector Resize to size(Vector)\n";
+#endif
         if (capacity_>0) A::template free<B>(this->p); // delete old memory
         capacity_ = op.N();
         if (capacity_>0) 
