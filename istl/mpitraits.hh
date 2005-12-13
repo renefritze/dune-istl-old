@@ -1,5 +1,6 @@
-#ifndef __MPITRAITS_HH__
-#define __MPITRAITS_HH__
+// $Id$
+#ifndef DUNE_MPITRAITS_HH
+#define DUNE_MPITRAITS_HH
 
 #ifdef HAVE_MPI
 #include"mpi.h"

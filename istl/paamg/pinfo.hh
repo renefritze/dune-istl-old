@@ -2,15 +2,22 @@
 #ifndef DUNE_AMG_PINFO_HH
 #define DUNE_AMG_PINFO_HH
 
+#ifdef HAVE_MPI
+
 #include<dune/istl/mpitraits.hh>
 #include<dune/istl/remoteindices.hh>
 #include<dune/istl/interface.hh>
 #include<dune/istl/communicator.hh>
+
+#endif
+
 #include<dune/istl/solvercategory.hh>
 namespace Dune
 {
   namespace Amg
   {
+
+#ifdef HAVE_MPI
 
     template<class T>
     class ParallelInformation
@@ -71,7 +78,8 @@ namespace Dune
       Interface* interface_;
       Communicator* communicator_;
     };
-    
+
+#endif    
 
     class SequentialInformation
     {
@@ -107,7 +115,8 @@ namespace Dune
       SequentialInformation(const SequentialInformation&)
       {}
     };
-    
+
+#ifdef HAVE_MPI    
     template<class T>
     ParallelInformation<T>::ParallelInformation(const MPI_Comm& comm)
       : indexSet_(new IndexSet()), 
@@ -222,6 +231,9 @@ namespace Dune
     const typename ParallelInformation<T>::Interface& ParallelInformation<T>::interface() const{
       return interface_;
     }
+
+#endif
+
   }// namespace Amg
 } //namespace Dune
 #endif
