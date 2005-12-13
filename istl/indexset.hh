@@ -536,7 +536,7 @@ namespace Dune
     /**
      * @brief Array with the positions of the corresponding index pair of the index set.
      */
-    std::vector<IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*> indices_;
+    std::vector<const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*> indices_;
     
   };
   
