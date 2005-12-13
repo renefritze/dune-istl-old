@@ -24,13 +24,14 @@ namespace Dune
       typedef T Vertex;
       
       GlobalAggregatesMap(AggregatesMap<Vertex>& aggregates,
-			  const ParallelIndexSet& indexset)
-	: aggregates_(aggregates), indexset_(indexset)
+			  const ParallelIndexSet& indexset,
+			  std::size_t size)
+	: aggregates_(aggregates), indexset_(indexset, size)
       {}
   
       inline const GlobalIndex& operator[](std::size_t index)const
       {
-	const Vertex& aggregate = aggregates_[index];
+	const Vertex& aggregate = aggregates_[index]->lcoal().local();
 	const Dune::IndexPair<GlobalIndex,LocalIndex >& pair = indexset_.pair(aggregate);
 	return pair.global();
       }
@@ -66,16 +67,40 @@ namespace Dune
     template<typename T, typename O, typename I>
     struct AggregatesPublisher
     {
+      /*
       typedef T Vertex;
       typedef O OverlapFlags;
       typedef I ParallelInformation;
       typedef typename ParallelInformation::IndexSet IndexSet;
       
       static void publish(AggregatesMap<Vertex>& aggregates, 
-			  ParallelInformation& pinfo)
+			  ParallelInformation& pinfo,
+			  std::size_t size)
       {
 	typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
-	GlobalMap gmap(aggregates, pinfo.indexSet());
+	GlobalMap gmap(aggregates, pinfo.indexSet(), size);
+	pinfo.template buildInterface<OverlapFlags>();
+	pinfo.template buildCommunicator<GlobalMap>(gmap, gmap);
+	pinfo.template communicateForward<AggregatesGatherScatter<Vertex,IndexSet> >(gmap, gmap);
+	pinfo.freeCommunicator();
+      }
+      */
+    };
+    
+    template<typename T, typename O, typename T1>
+    struct AggregatesPublisher<T,O,ParallelInformation<T1> >
+    {
+      typedef T Vertex;
+      typedef O OverlapFlags;
+      typedef ParallelInformation<T1> ParallelInformation;
+      typedef typename ParallelInformation::IndexSet IndexSet;
+      
+      static void publish(AggregatesMap<Vertex>& aggregates, 
+			  ParallelInformation& pinfo,
+			  std::size_t size)
+      {
+	typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
+	GlobalMap gmap(aggregates, pinfo.indexSet(), size);
 	pinfo.template buildInterface<OverlapFlags>();
 	pinfo.template buildCommunicator<GlobalMap>(gmap, gmap);
 	pinfo.template communicateForward<AggregatesGatherScatter<Vertex,IndexSet> >(gmap, gmap);
@@ -83,7 +108,6 @@ namespace Dune
       }
       
     };
-    
     template<typename T, typename O>
     struct AggregatesPublisher<T,O,SequentialInformation>
     {
@@ -91,7 +115,8 @@ namespace Dune
       typedef SequentialInformation ParallelInformation;
       
       static void publish(AggregatesMap<Vertex>& aggregates, 
-			  ParallelInformation& pinfo)
+			  ParallelInformation& pinfo,
+			  std::size_t size)
       {} 
     };
     

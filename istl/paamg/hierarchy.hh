@@ -483,7 +483,7 @@ namespace Dune
 
 	typedef typename PropertiesGraph::VertexDescriptor Vertex;
 	
-	std::vector<bool> excluded(mlevel->getmat().N());
+	std::vector<bool> excluded(mlevel->getmat().N(), false);
 
 	GraphTuple graphs = GraphCreator::create(*mlevel, excluded, *infoLevel, OverlapFlags());
 	
@@ -526,7 +526,8 @@ namespace Dune
 	watch.reset();
 
 	AggregatesPublisher<Vertex,OverlapFlags,ParallelInformation>::publish(*aggregatesMap,
-									      *infoLevel);
+									      *infoLevel,
+									      mlevel->getmat().N());
 		
 	dinfo<<"Communicating global aggregate numbers took "<<watch.elapsed()<<" seconds."<<std::endl;
 	
