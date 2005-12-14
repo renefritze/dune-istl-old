@@ -70,7 +70,7 @@ void testCoarsenIndices(int N)
   RemoteIndices coarseRemote = coarseInfo.remoteIndices();
   
   typename Dune::PropertyMapTypeSelector<Dune::Amg::VertexVisitedTag,PropertiesGraph>::Type visitedMap = Dune::get(Dune::Amg::VertexVisitedTag(), pg);
-  
+
   Dune::Amg::IndicesCoarsener<ParallelInformation,Dune::EnumItem<GridFlag,overlap> >::coarsen(pinfo,
 											      pg,
 											      visitedMap,
@@ -86,13 +86,14 @@ void testCoarsenIndices(int N)
 
   typedef Dune::Amg::GlobalAggregatesMap<Vertex,ParallelIndexSet> GlobalMap;
 
-  GlobalMap gmap(aggregatesMap,coarseIndices, mat.N());
+  GlobalMap gmap(aggregatesMap, pinfo.globalLookup());
   
   communicator.build<GlobalMap>(interface);
 
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
   
   communicator.template forward<Dune::Amg::AggregatesGatherScatter<typename MatrixGraph::VertexDescriptor,ParallelIndexSet> >(gmap);
+  pinfo.freeGlobalLookup();
 
   std::cout<<"Communicated: ";
   Dune::Amg::printAggregates2d(aggregatesMap, n, N, std::cout);
