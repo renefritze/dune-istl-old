@@ -18,6 +18,7 @@
 
 #include"dune/common/tripel.hh"
 #include<dune/common/enumset.hh>
+#include<dune/common/collectivecommunication.hh>
 
 #include"indexset.hh"
 #include"communicator.hh"
@@ -205,21 +206,13 @@ namespace Dune {
 	  result = 0;
 	  for (int i=0; i<x.size(); i++)
 		result += x[i].operator*(y[i])*mask[i];
-	  int procs;
-	  MPI_Comm_size(comm,&procs);
-	  if (procs==1) return;
-	  double res; // assumes that result is double \todo: template magick to treat complex<...>
-	  MPI_Allreduce(&result,&res,1,MPI_DOUBLE,MPI_SUM,comm);
-	  result = res;
+	  result = cc.sum(result);
 	  return;
 	}
 
 	template<class T1>
 	double norm (const T1& x) const
 	{
-	  int rank;
-	  MPI_Comm_rank(comm,&rank);
-	  
 	  // set up mask vector
 	  if (mask.size()!=x.size())
 		{
@@ -231,17 +224,8 @@ namespace Dune {
 		}
 	  double result = 0;
 	  for (int i=0; i<x.size(); i++)
-		{
-		  result += x[i].two_norm2()*mask[i];
-// 		  if (mask[i]==1)
-// 			std::cout << rank << ": " << "index=" << i << " value=" << x[i].two_norm2() << std::endl;
-		}
-	  int procs;
-	  MPI_Comm_size(comm,&procs);
-	  if (procs==1) return sqrt(result);
-	  double res;
-	  MPI_Allreduce(&result,&res,1,MPI_DOUBLE,MPI_SUM,comm);
-	  return sqrt(res);
+		result += x[i].two_norm2()*mask[i];
+	  return sqrt(cc.sum(result));
 	}
 
 	template<class T1>
@@ -257,14 +241,8 @@ namespace Dune {
 	// containers of IndexTripel and RemoteIndexTripel sorted appropriately
 	// size is the size 
 	OwnerOverlapCopyCommunication (const IndexInfoFromGrid<GlobalIdType,LocalIdType>& indexinfo, MPI_Comm comm_)
-	  : OwnerToAllInterfaceBuilt(false),OwnerOverlapToAllInterfaceBuilt(false)
+	  : cc(comm_),OwnerToAllInterfaceBuilt(false),OwnerOverlapToAllInterfaceBuilt(false)
 	{
-	  // Process configuration
-	  int procs, rank;
-	  comm = comm_;
-	  MPI_Comm_size(comm, &procs);
-	  MPI_Comm_rank(comm, &rank);
-
 	  // set up an ISTL index set
 	  pis.beginResize();
 	  for (localindex_iterator i=indexinfo.localIndices().begin(); i!=indexinfo.localIndices().end(); ++i)
@@ -275,13 +253,13 @@ namespace Dune {
 			pis.add(i->first,LI(i->second,overlap,true));
 		  if (i->third==copy)
 			pis.add(i->first,LI(i->second,copy,true));
-// 		  std::cout << rank << ": adding index " << i->first << " " << i->second << " " << i->third << std::endl;
+// 		  std::cout << cc.rank() << ": adding index " << i->first << " " << i->second << " " << i->third << std::endl;
 		}
 	  pis.endResize();
 
 	  // build remote indices WITHOUT communication
-// 	  std::cout << rank << ": build remote indices" << std::endl;
-	  ri.setIndexSets(pis,pis,comm);
+// 	  std::cout << cc.rank() << ": build remote indices" << std::endl;
+	  ri.setIndexSets(pis,pis,cc);
 	  if (indexinfo.remoteIndices().size()>0)
 		{
 		  remoteindex_iterator i=indexinfo.remoteIndices().begin();
@@ -305,7 +283,7 @@ namespace Dune {
 				DUNE_THROW(ISTLError,"OwnerOverlapCopyCommunication: global index not in index set");
 			  
 			  // insert entry
-// 			  std::cout << rank << ": adding remote index " << i->first << " " << i->second << " " << i->third << std::endl;
+// 			  std::cout << cc.rank() << ": adding remote index " << i->first << " " << i->second << " " << i->third << std::endl;
 			  if (i->third==owner)
 				modifier.insert(RX(owner,&(*pi)));
 			  if (i->third==overlap)
@@ -325,7 +303,7 @@ namespace Dune {
 	}
 
   private:
-	MPI_Comm comm;
+	CollectiveCommunication<MPI_Comm> cc;
 	PIS pis;
 	RI ri;
 	mutable IF OwnerToAllInterface;
