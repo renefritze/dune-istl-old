@@ -512,7 +512,7 @@ namespace Dune
 		    visitedMap,
 		    *aggregatesMap,
 		    *coarseInfo);
-	
+		
 	GraphCreator::free(graphs);
 	
 	parallelInformation_.addCoarser(*coarseInfo);
