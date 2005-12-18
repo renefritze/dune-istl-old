@@ -21,10 +21,12 @@
 #include<dune/common/enumset.hh>
 #include<dune/common/collectivecommunication.hh>
 
+#if HAVE_MPI
 #include"indexset.hh"
 #include"communicator.hh"
 #include"remoteindices.hh"
 #include"istlexception.hh"
+#endif
 
 namespace Dune {
    
@@ -40,12 +42,12 @@ namespace Dune {
 	  owner=1, overlap=2, copy=0 };
   };
 
-  template <class G, class LocalIdType>
+  template <class G, class L>
   class IndexInfoFromGrid
   {
   public:
     /** @brief The type of the global index. */
-    typedef G GlobalIdType
+    typedef G GlobalIdType;
 
     /** @brief The type of the local index. */
     typedef L LocalIdType;
