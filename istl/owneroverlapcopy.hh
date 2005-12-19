@@ -34,14 +34,34 @@ namespace Dune {
      @addtogroup ISTL
      @{
   */
-  
 
+  /**
+   * @file
+   * @brief Classes providing communication interfaces for
+   * overlapping Schwarz methods.
+   * @author Peter Bastian
+   */
+
+  /**
+   * @brief Attribute set for overlapping schwarz.
+   */
   class OwnerOverlapCopyAttributeSet
   {
 	enum AttributeSet { 
 	  owner=1, overlap=2, copy=0 };
   };
 
+  /**
+   * @brief Information about the index distribution.
+   *
+   * This class conatins information about indices local to
+   * the process together with information about on which 
+   * processes those indices are also present together with the
+   * attribute they have there.
+   *
+   * This information might be used to set up an IndexSet together with
+   * an RemoteIndices object needed for the ISTL communication classes.
+   */
   template <class G, class L>
   class IndexInfoFromGrid
   {
@@ -134,10 +154,10 @@ namespace Dune {
 
   /**
    * @brief A class setting up standard communication for a two-valued
-     attribute set with owner/overlap/copy semantics.
+   * attribute set with owner/overlap/copy semantics.
+   *
+   * set up communication from known distribution with owner/overlap/copy semantics
    */
-
-  // set up communication from known distribution with owner/overlap/copy semantics
   template <class GlobalIdType, class LocalIdType>
   class OwnerOverlapCopyCommunication
   {
