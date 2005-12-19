@@ -400,7 +400,7 @@ namespace Dune {
 	}
 
     //! dimension of the vector space
-	int N () const
+	size_type N () const
 	{
 	  return block_vector_unmanaged<B,A>::N();
 	}    
