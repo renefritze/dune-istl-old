@@ -17,16 +17,19 @@
 #endif
 
 
-#include"dune/common/tripel.hh"
+#include<dune/common/tripel.hh>
 #include<dune/common/enumset.hh>
-#include<dune/common/collectivecommunication.hh>
 
 #if HAVE_MPI
 #include"indexset.hh"
 #include"communicator.hh"
 #include"remoteindices.hh"
-#include"istlexception.hh"
+#include<dune/common/mpicollectivecommunication.hh>
 #endif
+
+#include"solvercategory.hh"
+#include"istlexception.hh"
+#include<dune/common/collectivecommunication.hh>
 
 namespace Dune {
    
@@ -45,7 +48,7 @@ namespace Dune {
   /**
    * @brief Attribute set for overlapping schwarz.
    */
-  class OwnerOverlapCopyAttributeSet
+  struct OwnerOverlapCopyAttributeSet
   {
 	enum AttributeSet { 
 	  owner=1, overlap=2, copy=0 };
@@ -235,6 +238,9 @@ namespace Dune {
 	}
 
   public:
+      enum{
+	category = SolverCategory::overlapping
+	  };
     /**
      * @brief Communicate values from owner data points to all other data points.
      *
@@ -319,6 +325,49 @@ namespace Dune {
 		result += x[i].two_norm2()*mask[i];
 	  return sqrt(cc.sum(result));
 	}
+    
+    /** @brief The type of the parallel index set. */
+    typedef ParallelIndexSet<GlobalIdType,LI,512> ParallelIndexSet;
+
+    /** @brief The type of the remote indices. */
+    typedef RemoteIndices<PIS> RemoteIndices;
+
+    /** 
+     * @brief Get the underlying parallel index set.
+     * @return The underlying parallel index set.
+     */
+    const ParallelIndexSet& indexSet() const
+    {
+      return pis;
+    }
+    
+    /**
+     * @brief Get the underlying remote indices.
+     * @return The underlying remote indices.
+     */
+    const RemoteIndices& remoteIndices() const
+    {
+      return ri;
+    }
+    
+    /** 
+     * @brief Get the underlying parallel index set.
+     * @return The underlying parallel index set.
+     */
+    ParallelIndexSet& indexSet()
+    {
+      return pis;
+    }
+    
+
+    /**
+     * @brief Get the underlying remote indices.
+     * @return The underlying remote indices.
+     */
+    RemoteIndices& remoteIndices()
+    {
+      return ri;
+    }
 
     /**
      * @brief Project a vector to somewhat???
@@ -334,6 +383,18 @@ namespace Dune {
 	}
 
 
+    /**
+     * @brief Construct the communication without any indices.
+     *
+     * The local index set and the remote indices have to be set up
+     * later on.
+     * @param comm_ The MPI Communicator to use, e. g. MPI_COMM_WORLD
+     */
+    OwnerOverlapCopyCommunication (MPI_Comm comm_)
+      : cc(comm_), pis(), ri(pis,pis,comm_), 
+	OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false)
+    {}
+    
     /**
      * @brief Constructor
      * @param indexinfo The set of IndexTripels describing the local and remote indices.
