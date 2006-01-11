@@ -3,6 +3,8 @@
 
 #include<dune/istl/paamg/construction.hh>
 #include<dune/istl/preconditioners.hh>
+#include<dune/istl/schwarz.hh>
+
 namespace Dune
 {
   namespace Amg
@@ -64,7 +66,7 @@ namespace Dune
     /**
      * @brief Construction Arguments for the default smoothers
      */
-    template<class T>
+    template<class T, class C=SequentialInformation>
     class DefaultConstructionArgs
     {
       friend class ConstructionTraits<T>;
@@ -81,9 +83,15 @@ namespace Dune
       {
 	args_=&args;
       }
+      void setComm(const C& comm)
+      {
+	comm_ = &comm_;
+      }
+      
     private:
       const Matrix* matrix_;
       const DefaultSmootherArgs<T>* args_;
+      const C* comm_;
     };
     
     
@@ -98,7 +106,7 @@ namespace Dune
       static inline SeqSSOR<M,X,Y>* construct(Arguments& args)
       {
 	return new SeqSSOR<M,X,Y>(*(args.matrix_), args.args_->iterations,
-			       args.args_->relaxationFactor);
+				  args.args_->relaxationFactor);
       }
       
     };
@@ -114,7 +122,24 @@ namespace Dune
       static inline SeqJac<M,X,Y>* construct(Arguments& args)
       {
 	return new SeqJac<M,X,Y>(*(args.matrix_), args.args_->iterations,
-			       args.args_->relaxationFactor);
+				 args.args_->relaxationFactor);
+      }
+      
+    };
+
+    /**
+     * @brief Policy for the construction of the ParSSOR smoother
+     */
+    template<class M, class X, class Y, class C>
+    struct ConstructionTraits<ParSSOR<M,X,Y,C> >
+    {
+      typedef DefaultConstructionArgs<ParSSOR<M,X,Y,C>,C> Arguments;
+      
+      static inline ParSSOR<M,X,Y,C>* construct(Arguments& args)
+      {
+	return new ParSSOR<M,X,Y,C>(*(args.matrix_), args.args_->iterations,
+				    args.args_->relaxationFactor,
+				    *args.comm_);
       }
       
     };

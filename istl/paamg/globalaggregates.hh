@@ -36,6 +36,29 @@ namespace Dune
 	return pair->global();
       }
   
+
+      class Proxy
+      {
+      public:
+	Proxy(const GlobalLookupIndexSet<ParallelIndexSet>& indexset, Vertex& aggregate)
+	  : indexset_(&indexset), aggregate_(&aggregate)
+	{}
+	
+	Proxy& operator=(const GlobalIndex& global)
+	{
+	  *aggregate_ = indexset_->operator[](global).local();
+	  return *this;
+	}
+      private:
+	const GlobalLookupIndexSet<ParallelIndexSet>* indexset_;
+	Vertex* aggregate_;
+      };
+      
+      inline Proxy operator[](std::size_t index)
+      {
+	return Proxy(indexset_, aggregates_[index]);
+      }
+
       inline void put(const GlobalIndex& global, size_t i)
       {
 	aggregates_[i]=indexset_[global].local();
@@ -67,24 +90,6 @@ namespace Dune
     template<typename T, typename O, typename I>
     struct AggregatesPublisher
     {
-      /*
-      typedef T Vertex;
-      typedef O OverlapFlags;
-      typedef I ParallelInformation;
-      typedef typename ParallelInformation::IndexSet IndexSet;
-      
-      static void publish(AggregatesMap<Vertex>& aggregates, 
-			  ParallelInformation& pinfo,
-			  std::size_t size)
-      {
-	typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
-	GlobalMap gmap(aggregates, pinfo.indexSet(), size);
-	pinfo.template buildInterface<OverlapFlags>();
-	pinfo.template buildCommunicator<GlobalMap>(gmap, gmap);
-	pinfo.template communicateForward<AggregatesGatherScatter<Vertex,IndexSet> >(gmap, gmap);
-	pinfo.freeCommunicator();
-      }
-      */
     };
     
     template<typename T, typename O, typename T1>
@@ -93,7 +98,7 @@ namespace Dune
       typedef T Vertex;
       typedef O OverlapFlags;
       typedef ParallelInformation<T1> ParallelInformation;
-      typedef typename ParallelInformation::IndexSet IndexSet;
+      typedef typename ParallelInformation::ParallelIndexSet IndexSet;
       
       static void publish(AggregatesMap<Vertex>& aggregates, 
 			  ParallelInformation& pinfo,
@@ -109,6 +114,28 @@ namespace Dune
       }
       
     };
+
+    
+    template<typename T, typename O, typename T1, typename T2>
+    struct AggregatesPublisher<T,O,OwnerOverlapCopyCommunication<T1,T2> >
+    {
+      typedef T Vertex;
+      typedef O OverlapFlags;
+      typedef OwnerOverlapCopyCommunication<T1,T2> ParallelInformation;
+      typedef typename ParallelInformation::ParallelIndexSet IndexSet;
+      
+      static void publish(AggregatesMap<Vertex>& aggregates, 
+			  ParallelInformation& pinfo,
+			  std::size_t size)
+      {
+	typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
+	pinfo.buildGlobalLookup(size);
+	GlobalMap gmap(aggregates, pinfo.globalLookup());
+	pinfo.copyOwnerToAll(gmap,gmap);
+      }
+      
+    };
+
     template<typename T, typename O>
     struct AggregatesPublisher<T,O,SequentialInformation>
     {
