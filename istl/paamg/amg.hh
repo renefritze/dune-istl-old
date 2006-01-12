@@ -206,13 +206,12 @@ namespace Dune
       RIterator rhs = rhs_->finest();
       DIterator lhs = lhs_->finest();
       
-      if(rhs!=rhs_->coarsest())
+      if(rhs!=rhs_->coarsest()){
 	smoother->pre(*lhs,*rhs);
-      
-      if(smoother != coarsest)
 	for(++smoother, ++lhs, ++rhs; smoother != coarsest; ++smoother, ++lhs, ++rhs)
 	  smoother->pre(*lhs,*rhs);
-
+      }
+      
       if(buildHierarchy_){
 	// Create the coarse Solver
 	SmootherArgs sargs(smootherArgs_);
@@ -221,6 +220,7 @@ namespace Dune
 	typename ConstructionTraits<Smoother>::Arguments cargs;
 	cargs.setArgs(sargs);
 	cargs.setMatrix(matrices_->matrices().coarsest()->getmat());
+	cargs.setComm(*matrices_->parallelInformation().coarsest());
 	
 	coarseSmoother_ = ConstructionTraits<Smoother>::construct(cargs);
 	scalarProduct_ = new OverlappingSchwarzScalarProduct<X,P>(*matrices_->parallelInformation().coarsest());

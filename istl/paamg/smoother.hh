@@ -85,7 +85,7 @@ namespace Dune
       }
       void setComm(const C& comm)
       {
-	comm_ = &comm_;
+	comm_ = &comm;
       }
       
     private:
