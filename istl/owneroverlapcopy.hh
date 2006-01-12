@@ -169,9 +169,11 @@ namespace Dune {
 	typedef typename IndexInfoFromGrid<GlobalIdType,LocalIdType>::RemoteIndexTripel RemoteIndexTripel;
 	typedef typename std::set<IndexTripel>::const_iterator localindex_iterator;
 	typedef typename std::set<RemoteIndexTripel>::const_iterator remoteindex_iterator;
-	enum AttributeSet { owner=OwnerOverlapCopyAttributeSet::owner, 
-						overlap=OwnerOverlapCopyAttributeSet::overlap, 
-						copy=OwnerOverlapCopyAttributeSet::copy };
+    typedef typename OwnerOverlapCopyAttributeSet::AttributeSet AttributeSet;
+    enum attributes { owner=OwnerOverlapCopyAttributeSet::owner, 
+		      overlap=OwnerOverlapCopyAttributeSet::overlap, 
+		      copy=OwnerOverlapCopyAttributeSet::copy };
+    
 	typedef ParallelLocalIndex<AttributeSet> LI;
 	typedef ParallelIndexSet<GlobalIdType,LI,512> PIS;
 	typedef RemoteIndices<PIS> RI;
@@ -241,6 +243,12 @@ namespace Dune {
       enum{
 	category = SolverCategory::overlapping
 	  };
+
+    const CollectiveCommunication<MPI_Comm>& communicator() const
+    {
+      return cc;
+    }
+    
     /**
      * @brief Communicate values from owner data points to all other data points.
      *
@@ -332,6 +340,10 @@ namespace Dune {
     /** @brief The type of the remote indices. */
     typedef RemoteIndices<PIS> RemoteIndices;
 
+    /**
+     * @brief The type of the reverse lookup of indices. */
+    typedef GlobalLookupIndexSet<ParallelIndexSet> GlobalLookupIndexSet;
+
     /** 
      * @brief Get the underlying parallel index set.
      * @return The underlying parallel index set.
@@ -369,6 +381,23 @@ namespace Dune {
       return ri;
     }
 
+    void buildGlobalLookup(std::size_t size)
+    {
+      globalLookup_ = new GlobalLookupIndexSet(pis, size);
+    }
+
+    void freeGlobalLookup()
+    {
+      delete globalLookup_;
+      globalLookup_=0;
+    }    
+
+    const GlobalLookupIndexSet& globalLookup() const
+    {
+      assert(globalLookup_ != 0);
+      return *globalLookup_;
+    }
+    
     /**
      * @brief Project a vector to somewhat???
      *
@@ -392,7 +421,7 @@ namespace Dune {
      */
     OwnerOverlapCopyCommunication (MPI_Comm comm_)
       : cc(comm_), pis(), ri(pis,pis,comm_), 
-	OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false)
+	OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false), globalLookup_(0)
     {}
     
     /**
@@ -401,7 +430,7 @@ namespace Dune {
      * @param comm_ The communicator to use in the communication.
      */
 	OwnerOverlapCopyCommunication (const IndexInfoFromGrid<GlobalIdType,LocalIdType>& indexinfo, MPI_Comm comm_)
-	  : cc(comm_),OwnerToAllInterfaceBuilt(false),OwnerOverlapToAllInterfaceBuilt(false)
+	  : cc(comm_),OwnerToAllInterfaceBuilt(false),OwnerOverlapToAllInterfaceBuilt(false), globalLookup_(0)
 	{
 	  // set up an ISTL index set
 	  pis.beginResize();
@@ -463,6 +492,8 @@ namespace Dune {
 	}
 
   private:
+    OwnerOverlapCopyCommunication (const OwnerOverlapCopyCommunication&)
+    {}
 	CollectiveCommunication<MPI_Comm> cc;
 	PIS pis;
 	RI ri;
@@ -471,6 +502,7 @@ namespace Dune {
 	mutable IF OwnerOverlapToAllInterface;
 	mutable bool OwnerOverlapToAllInterfaceBuilt;
 	mutable std::vector<double> mask;
+    GlobalLookupIndexSet* globalLookup_;
   };
 
 #endif
