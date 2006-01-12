@@ -47,7 +47,9 @@ namespace Dune {
 	typedef Y range_type;
     //! \brief The field type of the range
 	typedef typename X::field_type field_type;
-
+    //! \brief The type of the communication object
+    typedef C communication_type;
+    
 	enum {
 	  //! \brief The solver category.
 	  category=SolverCategory::overlapping
@@ -60,7 +62,7 @@ namespace Dune {
      * @param com The communication object for syncing overlap and copy
      * data points. (E.~g. OwnerOverlapCommunication )
      */
-	OverlappingSchwarzOperator (const M& A, const C& com) 
+	OverlappingSchwarzOperator (const matrix_type& A, const communication_type& com) 
 	  : _A_(A), communication(com) 
 	{}
 
@@ -82,14 +84,14 @@ namespace Dune {
 	}
 
 	//! get matrix via *
-	virtual const M& getmat () const
+	virtual const matrix_type& getmat () const
 	{
 	  return _A_;
 	}
 
   private:
-	const M& _A_;
-	const C& communication;
+	const matrix_type& _A_;
+	const communication_type& communication;
   };
 
 
@@ -107,7 +109,9 @@ namespace Dune {
 	typedef X domain_type;
     //!  \brief The type of the range
 	typedef typename X::field_type field_type;
-
+    //! \brief The type of the communication object
+    typedef C communication_type;
+    
 	//! define the category
 	enum {category=SolverCategory::overlapping};
 
@@ -115,7 +119,7 @@ namespace Dune {
 	 * \param com The communication object for syncing overlap and copy
 	 * data points. (E.~g. OwnerOverlapCommunication )
 	 */
-	OverlappingSchwarzScalarProduct (const C& com)
+	OverlappingSchwarzScalarProduct (const communication_type& com)
 	  : communication(com)
 	{}
 
@@ -139,7 +143,7 @@ namespace Dune {
 	}
 
   private:
-	const C& communication;
+	const communication_type& communication;
   };
 
 
@@ -157,7 +161,9 @@ namespace Dune {
     typedef Y range_type;
     //! \brief The field type of the preconditioner.
     typedef typename X::field_type field_type;
-
+    //! \briefe The type of the communication object.
+    typedef C communication_type;
+    
     // define the category
     enum {
       //! \brief The category the precondtioner is part of.
@@ -172,7 +178,7 @@ namespace Dune {
     \param com The communication object for syncing overlap and copy
      * data points. (E.~g. OwnerOverlapCommunication )
     */
-    ParSSOR (const M& A, int n, field_type w, const C& c)
+    ParSSOR (const matrix_type& A, int n, field_type w, const communication_type& c)
       : _A_(A), _n(n), _w(w), communication(c)
     {	}
 
@@ -209,13 +215,13 @@ namespace Dune {
 
   private:
     //! \brief The matrix we operate on.
-    const M& _A_;
+    const matrix_type& _A_;
     //! \brief The number of steps to do in apply
     int _n;
     //! \brief The relaxation factor to use
     field_type _w;
 	//! \brief the communication object
-	const C& communication;
+	const communication_type& communication;
   };
 
 
@@ -236,6 +242,8 @@ namespace Dune {
     typedef Y range_type;
     //! \brief The field type of the preconditioner.
     typedef typename X::field_type field_type;
+    //! \briefe The type of the communication object.
+    typedef C communication_type;
 
     // define the category
     enum {
@@ -249,7 +257,7 @@ namespace Dune {
     \param c The communication object for syncing overlap and copy
     data points. (E.~g. OwnerOverlapCommunication )
     */
-    BlockPreconditioner (Preconditioner<X,Y>& p, const C& c)
+    BlockPreconditioner (Preconditioner<X,Y>& p, const communication_type& c)
       : preconditioner(p), communication(c)
     {	}
 
@@ -290,7 +298,7 @@ namespace Dune {
 	Preconditioner<X,Y>& preconditioner;
 
 	//! \brief the communication object
-	const C& communication;
+	const communication_type& communication;
   };
 
   /** @} end documentation */
