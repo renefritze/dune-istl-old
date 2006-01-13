@@ -114,7 +114,7 @@ namespace Dune
 	return t;
       }
       
-      SequentialInformation(void*)
+      SequentialInformation(const CollectiveCommunication<void*>&)
       {}
 
       SequentialInformation()
