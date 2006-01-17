@@ -1,6 +1,6 @@
 // $Id$
-#ifndef DUNE_OWNERCOPY_HH
-#define DUNE_OWNERCOPY_HH
+#ifndef DUNE_OWNEROVERLAPCOPY_HH
+#define DUNE_OWNEROVERLAPCOPY_HH
 
 #include<new>
 #include<iostream>
