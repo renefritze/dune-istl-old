@@ -172,8 +172,7 @@ namespace Dune {
     typedef typename OwnerOverlapCopyAttributeSet::AttributeSet AttributeSet;
     enum attributes { owner=OwnerOverlapCopyAttributeSet::owner, 
 		      overlap=OwnerOverlapCopyAttributeSet::overlap, 
-		      copy=OwnerOverlapCopyAttributeSet::copy };
-    
+		      copy=OwnerOverlapCopyAttributeSet::copy };    
 	typedef ParallelLocalIndex<AttributeSet> LI;
 	typedef ParallelIndexSet<GlobalIdType,LI,512> PIS;
 	typedef RemoteIndices<PIS> RI;
@@ -300,7 +299,7 @@ namespace Dune {
 		  mask.resize(x.size());
 		  for (int i=0; i<mask.size(); i++) mask[i] = 1;
 		  for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
-			if (i->local().attribute()!=owner)
+			if (i->local().attribute()!=OwnerOverlapCopyAttributeSet::owner)
 			  mask[i->local().local()] = 0;
 		}
 	  result = 0;
@@ -325,7 +324,7 @@ namespace Dune {
 		  mask.resize(x.size());
 		  for (int i=0; i<mask.size(); i++) mask[i] = 1;
 		  for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
-			if (i->local().attribute()!=owner)
+			if (i->local().attribute()!=OwnerOverlapCopyAttributeSet::owner)
 			  mask[i->local().local()] = 0;
 		}
 	  double result = 0;
@@ -407,7 +406,7 @@ namespace Dune {
 	void project (T1& x) const
 	{
 	  for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
-		if (i->local().attribute()==copy)
+		if (i->local().attribute()==OwnerOverlapCopyAttributeSet::copy)
 		  x[i->local().local()] = 0;
 	}
 
