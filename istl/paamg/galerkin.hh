@@ -24,6 +24,31 @@ namespace Dune
      * based on a aggregation scheme.
      */
 
+    template<class T>
+    struct OverlapVertex
+    {
+      /**
+       * @brief The aggregate descriptor.
+       */
+      typedef T Aggregate;
+      
+      /**
+       * @brief The vertex descriptor.
+       */
+      typedef T Vertex;
+	
+      /**
+       * @brief The aggregate the vertex belongs to.
+       */
+      Aggregate aggregate;
+      
+      /**
+       * @brief The vertex descriptor.
+       */
+      Vertex vertex;
+    };
+
+
     class GalerkinProduct
     {
     public:
@@ -73,35 +98,12 @@ namespace Dune
        * @param aggregates The aggregate mapping.
        * @param coarse The coarse Matric.
        */
-      template<class M, class V>
-      void calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse);
+      template<class M, class V, class I, class O>
+      void calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse,
+		     const I& pinfo, const O& copy);
       
     private:
       std::size_t* overlapStart_;
-
-      template<class T>
-      struct OverlapVertex
-      {
-	/**
-	 * @brief The aggregate descriptor.
-	 */
-	typedef T Aggregate;
-	
-	
-	/**
-	 * @brief The vertex descriptor.
-	 */
-	typedef T Vertex;
-	/**
-	 * @brief The aggregate the vertex belongs to.
-	 */
-	Aggregate aggregate;
-
-	/**
-	 * @brief The vertex descriptor.
-	 */
-	Vertex vertex;
-      };
 
       /**
        * @brief Builds the data structure needed for rebuilding the aggregates int the overlap.
@@ -119,70 +121,6 @@ namespace Dune
        * @brief Deallocate the data structure needed for rebuilding the aggregates in the overlap.
        */
       void freeOverlapAggregates();
-            
-      /**
-       * @brief Visitor for identifying connected aggregates during a breadthFirstSearch.
-       */
-      template<class G, class S, class V>
-      class ConnectedBuilder
-      {
-      public:
-	/**
-	 * @brief The type of the graph.
-	 */
-	typedef G Graph;
-	/**
-	 * @brief The constant edge iterator.
-	 */
-	typedef typename Graph::ConstEdgeIterator ConstEdgeIterator;
-	
-	/**
-	 * @brief The type of the connected set.
-	 */
-	typedef S Set;
-	
-	/**
-	 * @brief The type of the map for marking vertices as visited.
-	 */
-	typedef V VisitedMap;
-	
-	/**
-	 * @brief The vertex descriptor of the graph.
-	 */
-	typedef typename Graph::VertexDescriptor Vertex;
-	
-	/**
-	 * @brief Constructor
-	 * @param aggregates The mapping of the vertices onto the aggregates.
-	 * @param connected The set to added the connected aggregates to.
-	 */
-	ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, Graph& graph, 
-			 VisitedMap& visitedMap, Set& connected);
-	
-	/**
-	 * @brief Process an edge pointing to another aggregate.
-	 * @param edge The iterator positioned at the edge.
-	 */
-	void operator()(const ConstEdgeIterator& edge);
-		
-      private:
-	/**
-	 * @brief The mapping of the vertices onto the aggregates.
-	 */
-	const AggregatesMap<Vertex>& aggregates_;
-	
-	Graph& graph_;
-
-	/**
-	 * @brief The map for marking vertices as visited.
-	 */
-	VisitedMap& visitedMap_;
-
-	/**
-	 * @brief The set to add the connected aggregates to.
-	 */
-	Set& connected_;
-      };
       
       template<class T>
       struct OVLess
@@ -250,23 +188,7 @@ namespace Dune
       private:
 	MatrixRowIterator row_;
       };
-            
-      struct BaseConnectivityConstructor
-      {
-	template<class R, class G, class V>
-	static void constructOverlapConnectivity(R& row, G& graph, V& visitedMap,
-					  const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-					  const OverlapVertex<typename G::VertexDescriptor>*& seed);
-      
-	/**
-	 * @brief Construct the connectivity of an aggregate in the overlap.
-	 */
-	template<class R, class G, class V>
-	static void constructNonOverlapConnectivity(R& row, G& graph, V& visitedMap,
-						    const AggregatesMap<typename G::VertexDescriptor>& aggregates, 
-						    const typename G::VertexDescriptor& seed);
-      };
-      
+                  
       /**
        * @brief Functor for counting the nonzeros and unknowns using examineConnectivity.
        */
@@ -343,40 +265,138 @@ namespace Dune
 	const AggregatesMap<V>& aggregates_;
 	
       };
+      
+    };
+    
+    
+    struct BaseConnectivityConstructor
+    {
+      template<class R, class G, class V>
+      static void constructOverlapConnectivity(R& row, G& graph, V& visitedMap,
+					       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+					       const OverlapVertex<typename G::VertexDescriptor>*& seed);
+      
+      /**
+       * @brief Construct the connectivity of an aggregate in the overlap.
+       */
+      template<class R, class G, class V>
+      static void constructNonOverlapConnectivity(R& row, G& graph, V& visitedMap,
+						  const AggregatesMap<typename G::VertexDescriptor>& aggregates, 
+						  const typename G::VertexDescriptor& seed);
 
-      template<class G, class T>
-      struct ConnectivityConstructor: public BaseConnectivityConstructor
+                  
+      /**
+       * @brief Visitor for identifying connected aggregates during a breadthFirstSearch.
+       */
+      template<class G, class S, class V>
+      class ConnectedBuilder
       {
-	typedef typename G::VertexDescriptor Vertex;
+      public:
+	/**
+	 * @brief The type of the graph.
+	 */
+	typedef G Graph;
+	/**
+	 * @brief The constant edge iterator.
+	 */
+	typedef typename Graph::ConstEdgeIterator ConstEdgeIterator;
 	
-	template<class V, class O, class R>
-	static void examine(G& graph, 
-			    V& visitedMap, 
-			    const T& pinfo,
-			    const AggregatesMap<Vertex>& aggregates,
-			    const O& overlap,
-			    const OverlapVertex<Vertex>* overlapVertices,
-			    R& row);
+	/**
+	 * @brief The type of the connected set.
+	 */
+	typedef S Set;
+	
+	/**
+	 * @brief The type of the map for marking vertices as visited.
+	 */
+	typedef V VisitedMap;
+	
+	/**
+	 * @brief The vertex descriptor of the graph.
+	 */
+	typedef typename Graph::VertexDescriptor Vertex;
+	
+	/**
+	 * @brief Constructor
+	 * @param aggregates The mapping of the vertices onto the aggregates.
+	 * @param connected The set to added the connected aggregates to.
+	 */
+	ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, Graph& graph, 
+			 VisitedMap& visitedMap, Set& connected);
+	
+	/**
+	 * @brief Process an edge pointing to another aggregate.
+	 * @param edge The iterator positioned at the edge.
+	 */
+	void operator()(const ConstEdgeIterator& edge);
+		
+      private:
+	/**
+	 * @brief The mapping of the vertices onto the aggregates.
+	 */
+	const AggregatesMap<Vertex>& aggregates_;
+	
+	Graph& graph_;
+
+	/**
+	 * @brief The map for marking vertices as visited.
+	 */
+	VisitedMap& visitedMap_;
+
+	/**
+	 * @brief The set to add the connected aggregates to.
+	 */
+	Set& connected_;
       };
 
-      template<class G>
-      struct ConnectivityConstructor<G,SequentialInformation> : public BaseConnectivityConstructor
-      {
-	typedef typename G::VertexDescriptor Vertex;
-	
-	template<class V, class R>
-	static void examine(G& graph, 
-			    V& visitedMap, 
-			    const SequentialInformation& pinfo,
-			    const AggregatesMap<Vertex>& aggregates,
-			    R& row);
-      };
+    };
+
+    template<class G, class T>
+    struct ConnectivityConstructor: public BaseConnectivityConstructor
+    {
+      typedef typename G::VertexDescriptor Vertex;
+      
+      template<class V, class O, class R>
+      static void examine(G& graph, 
+			  V& visitedMap, 
+			  const T& pinfo,
+			  const AggregatesMap<Vertex>& aggregates,
+			  const O& overlap,
+			  const OverlapVertex<Vertex>* overlapVertices,
+			  R& row);
+    };
+    
+    template<class G>
+    struct ConnectivityConstructor<G,SequentialInformation> : public BaseConnectivityConstructor
+    {
+      typedef typename G::VertexDescriptor Vertex;
+      
+      template<class V, class R>
+      static void examine(G& graph, 
+			  V& visitedMap, 
+			  const SequentialInformation& pinfo,
+			  const AggregatesMap<Vertex>& aggregates,
+			  R& row);
+    };
+    
+    template<class T>
+    struct DirichletBoundarySetter
+    {
+      template<class M, class O>
+      static void set(M& coarse, const T& pinfo, const O& copy);
+    };
+    
+    template<>
+    struct DirichletBoundarySetter<SequentialInformation>
+    {
+      template<class M, class O>
+      static void set(M& coarse, const SequentialInformation& pinfo, const O& copy);
     };
 
     template<class R, class G, class V>
-    void GalerkinProduct::BaseConnectivityConstructor::constructNonOverlapConnectivity(R& row, G& graph, V& visitedMap,
-						const AggregatesMap<typename G::VertexDescriptor>& aggregates, 
-						const typename G::VertexDescriptor& seed)
+    void BaseConnectivityConstructor::constructNonOverlapConnectivity(R& row, G& graph, V& visitedMap,
+								      const AggregatesMap<typename G::VertexDescriptor>& aggregates, 
+								      const typename G::VertexDescriptor& seed)
     {
       row.insert(aggregates[seed]);
       ConnectedBuilder<G,R,V> conBuilder(aggregates, graph, visitedMap, row);
@@ -391,9 +411,9 @@ namespace Dune
     }
     
     template<class R, class G, class V>
-    void GalerkinProduct::BaseConnectivityConstructor::constructOverlapConnectivity(R& row, G& graph, V& visitedMap,
-						       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-						       const OverlapVertex<typename G::VertexDescriptor>*& seed)
+    void BaseConnectivityConstructor::constructOverlapConnectivity(R& row, G& graph, V& visitedMap,
+								   const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+								   const OverlapVertex<typename G::VertexDescriptor>*& seed)
     {
       const typename G::VertexDescriptor aggregate=seed->aggregate;
       row.insert(aggregate);
@@ -408,14 +428,14 @@ namespace Dune
     }
     
     template<class G, class S, class V>
-    GalerkinProduct::ConnectedBuilder<G,S,V>::ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, 
+    BaseConnectivityConstructor::ConnectedBuilder<G,S,V>::ConnectedBuilder(const AggregatesMap<Vertex>& aggregates, 
 							     Graph& graph, VisitedMap& visitedMap,
 							     Set& connected)
       : aggregates_(aggregates), graph_(graph), visitedMap_(visitedMap), connected_(connected)
     {}
           
     template<class G, class S, class V>
-    void GalerkinProduct::ConnectedBuilder<G,S,V>::operator()(const ConstEdgeIterator& edge)
+    void BaseConnectivityConstructor::ConnectedBuilder<G,S,V>::operator()(const ConstEdgeIterator& edge)
     {
       typedef typename G::VertexDescriptor Vertex;
       const Vertex& vertex = aggregates_[edge.target()];
@@ -425,7 +445,7 @@ namespace Dune
     }
     
     template<class G, class I, class Set>
-    const GalerkinProduct::OverlapVertex<typename G::VertexDescriptor>*
+    const OverlapVertex<typename G::VertexDescriptor>*
     GalerkinProduct::buildOverlapVertices(const G& graph, const I& pinfo,
 					  const AggregatesMap<typename G::VertexDescriptor>& aggregates,
 					  const Set& overlap)
@@ -487,14 +507,13 @@ namespace Dune
 
     template<class G, class T>
     template<class V, class O, class R>
-    void GalerkinProduct::
-    ConnectivityConstructor<G,T>::examine(G& graph, 
-					  V& visitedMap, 
-					  const T& pinfo,
-					  const AggregatesMap<Vertex>& aggregates,
-					  const O& overlap,
-					  const OverlapVertex<Vertex>* overlapVertices,
-					  R& row)
+    void ConnectivityConstructor<G,T>::examine(G& graph, 
+					       V& visitedMap, 
+					       const T& pinfo,
+					       const AggregatesMap<Vertex>& aggregates,
+					       const O& overlap,
+					       const OverlapVertex<Vertex>* overlapVertices,
+					       R& row)
     {	  
       typedef typename T::GlobalLookupIndexSet GlobalLookup;
       const GlobalLookup& lookup = pinfo.globalLookup();
@@ -535,12 +554,11 @@ namespace Dune
     
     template<class G>
     template<class V, class R>
-    void GalerkinProduct::
-      ConnectivityConstructor<G,SequentialInformation>::examine(G& graph, 
-								V& visitedMap, 
-								const SequentialInformation& pinfo,
-								const AggregatesMap<Vertex>& aggregates,
-								R& row)
+    void ConnectivityConstructor<G,SequentialInformation>::examine(G& graph, 
+								   V& visitedMap, 
+								   const SequentialInformation& pinfo,
+								   const AggregatesMap<Vertex>& aggregates,
+								   R& row)
     {	  
       typedef typename G::VertexIterator VertexIterator;
       
@@ -637,8 +655,9 @@ namespace Dune
       return coarseMatrix;
     }
 
-    template<class M, class V>
-    void GalerkinProduct::calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse)
+    template<class M, class V, class P, class O>
+    void GalerkinProduct::calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse, 
+				    const P& pinfo, const O& copy)
     {
        coarse = static_cast<typename M::field_type>(0);
       
@@ -659,14 +678,45 @@ namespace Dune
 	    } 
 	}
 
-      // Set the dirichlet border
-      //typedef D::ConstIterator DirichletIterator;
-      //DirichletIterator endborder = dirichlet.end();
-      
-      int procs;
-      MPI_Comm_size(MPI_COMM_WORLD, &procs);
+      // Set the dirichlet border      
+      DirichletBoundarySetter<P>::template set<M>(coarse, pinfo, copy);
+    
+    }
 
-#warning "Galerkin: Process borders should be set to dirichlet borders"
+    template<class T>
+    template<class M, class O>
+    void DirichletBoundarySetter<T>::set(M& coarse, const T& pinfo, const O& copy)
+    {
+      typedef typename T::ParallelIndexSet::const_iterator ConstIterator;
+      ConstIterator end = pinfo.indexSet().end();
+      
+      for(ConstIterator index = pinfo.indexSet().begin();
+	  index != end; ++index){
+	if(copy.contains(index->local().attribute())){
+	  typedef typename M::ColIterator ColIterator;
+	  typedef typename M::row_type Row;
+	  Row row = coarse[index->local()];
+	  ColIterator cend = row.find(index->local());
+	  ColIterator col  = row.begin();
+	  for(; col != cend; ++col)
+	    *col = 0;
+	  
+	  cend = row.end();
+	  
+	  assert(col != cend); // There should be a diagonal entry
+	  *col = 1;
+	  
+	  for(++col; col != cend; ++col)
+	    *col = 0;
+	}
+      }
+    }
+
+    template<class M, class O>
+    void DirichletBoundarySetter<SequentialInformation>::set(M& coarse, 
+							     const SequentialInformation& pinfo,
+							     const O& overlap)
+    {
     }
     
   }// namespace Amg
