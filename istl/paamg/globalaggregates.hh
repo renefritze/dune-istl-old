@@ -31,11 +31,25 @@ namespace Dune
       inline const GlobalIndex& operator[](std::size_t index)const
       {
 	const Vertex& aggregate = aggregates_[index];
-	const Dune::IndexPair<GlobalIndex,LocalIndex >* pair = indexset_.pair(aggregate);
-	assert(pair!=0);
-	return pair->global();
+	if(aggregate >= AggregatesMap<Vertex>::ISOLATED){
+	  assert(aggregate != AggregatesMap<Vertex>::UNAGGREGATED);
+	  return isolatedMarker;
+	}else{
+	  const Dune::IndexPair<GlobalIndex,LocalIndex >* pair = indexset_.pair(aggregate);
+	  assert(pair!=0);
+	  return pair->global();
+	}
       }
   
+      
+      inline GlobalIndex& get(std::size_t index)
+      {
+	const Vertex& aggregate = aggregates_[index];
+	assert(index < AggregatesMap<Vertex>::ISOLATED);
+	const Dune::IndexPair<GlobalIndex,LocalIndex >* pair = indexset_.pair(aggregate);
+	assert(pair!=0);
+	return const_cast<GlobalIndex&>(pair->global());
+      }
 
       class Proxy
       {
@@ -46,7 +60,12 @@ namespace Dune
 	
 	Proxy& operator=(const GlobalIndex& global)
 	{
-	  *aggregate_ = indexset_->operator[](global).local();
+	  if(global==isolatedMarker)
+	    *aggregate_ = AggregatesMap<Vertex>::ISOLATED;
+	  else{
+	    //assert(global < AggregatesMap<Vertex>::ISOLATED);
+	    *aggregate_ = indexset_->operator[](global).local();
+	  }
 	  return *this;
 	}
       private:
@@ -68,8 +87,12 @@ namespace Dune
     private:
       AggregatesMap<Vertex>& aggregates_;
       const GlobalLookupIndexSet<ParallelIndexSet>& indexset_;
+      static const GlobalIndex isolatedMarker;
     };
 
+    template<typename T, typename TI>
+    const typename TI::GlobalIndex GlobalAggregatesMap<T,TI>::isolatedMarker = -1;
+    
     template<typename T, typename TI>
     struct AggregatesGatherScatter
     {
@@ -83,7 +106,12 @@ namespace Dune
   
       static void scatter(GlobalAggregatesMap<T,TI>& ga, GlobalIndex global, size_t i)
       {
-	ga.put(global, i);
+	if(global < AggregatesMap<T>::ISOLATED)
+	  ga.put(global, i);
+	else{
+	  assert(global != AggregatesMap<T>::UNAGGREGATED);
+	  ga.get(i)=global;
+	}
       }
     };
 
@@ -102,11 +130,10 @@ namespace Dune
       
       static void publish(AggregatesMap<Vertex>& aggregates, 
 			  ParallelInformation& pinfo,
-			  std::size_t size)
+			  const GlobalLookupIndexSet<IndexSet>& globalLookup)
       {
 	typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
-	pinfo.buildGlobalLookup(size);
-	GlobalMap gmap(aggregates, pinfo.globalLookup());
+	GlobalMap gmap(aggregates, globalLookup);
 	pinfo.template buildInterface<OverlapFlags>();
 	pinfo.template buildCommunicator<GlobalMap>(gmap, gmap);
 	pinfo.template communicateForward<AggregatesGatherScatter<Vertex,IndexSet> >(gmap, gmap);
@@ -130,15 +157,15 @@ namespace Dune
       typedef T Vertex;
       typedef O OverlapFlags;
       typedef OwnerOverlapCopyCommunication<T1,T2> ParallelInformation;
+      typedef typename ParallelInformation::GlobalLookupIndexSet GlobalLookupIndexSet;
       typedef typename ParallelInformation::ParallelIndexSet IndexSet;
       
       static void publish(AggregatesMap<Vertex>& aggregates, 
 			  ParallelInformation& pinfo,
-			  std::size_t size)
+			  const GlobalLookupIndexSet& globalLookup)
       {
 	typedef Dune::Amg::GlobalAggregatesMap<Vertex,IndexSet> GlobalMap;
-	pinfo.buildGlobalLookup(size);
-	GlobalMap gmap(aggregates, pinfo.globalLookup());
+	GlobalMap gmap(aggregates, globalLookup);
 	pinfo.copyOwnerToAll(gmap,gmap);
       }
       
@@ -149,10 +176,11 @@ namespace Dune
     {
       typedef T Vertex;
       typedef SequentialInformation ParallelInformation;
+      typedef typename ParallelInformation::GlobalLookupIndexSet GlobalLookupIndexSet;
       
       static void publish(AggregatesMap<Vertex>& aggregates, 
 			  ParallelInformation& pinfo,
-			  std::size_t size)
+			  const GlobalLookupIndexSet& globalLookup)
       {} 
     };
     
