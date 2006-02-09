@@ -93,6 +93,7 @@ namespace Dune
     {
     public:
       typedef CollectiveCommunication<void*> MPICommunicator;
+      typedef EmptySet<int> CopyFlags;
       
       enum{
 	category = SolverCategory::sequential
@@ -114,6 +115,17 @@ namespace Dune
 	return t;
       }
       
+      typedef int GlobalLookupIndexSet;
+      
+      void buildGlobalLookup(std::size_t);
+
+      void freeGlobalLookup();
+
+      const GlobalLookupIndexSet& globalLookup() const
+      {
+	return gli;
+      }
+
       SequentialInformation(const CollectiveCommunication<void*>&)
       {}
 
@@ -124,6 +136,7 @@ namespace Dune
       {}
     private:
       MPICommunicator comm_;
+      GlobalLookupIndexSet gli;
     };
 
 #ifdef HAVE_MPI    
