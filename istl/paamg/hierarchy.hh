@@ -464,9 +464,13 @@ namespace Dune
       
       int procs = infoLevel->communicator().size();
       int level = 0;
-       
+      int rank = 0;
+      
+      infoLevel->buildGlobalLookup(mlevel->getmat().N());
+
       for(; level < criterion.maxLevel(); ++level, ++mlevel){
 
+	rank = infoLevel->communicator().rank();
 	dinfo<<infoLevel->communicator().rank()<<": Level "<<level<<" has "<<mlevel->getmat().N()<<" unknows!"<<std::endl;
 	
 	
@@ -547,6 +551,8 @@ namespace Dune
 					    aggregates,
 					    OverlapFlags());
 	
+	fineInfo->freeGlobalLookup();
+	
 	delete Element<0>::get(graphs);
 	productBuilder.calculate(mlevel->getmat(), *aggregatesMap, *coarseMatrix, *infoLevel, OverlapFlags());
 	
@@ -556,6 +562,9 @@ namespace Dune
 	
 	matrices_.addCoarser(args);
       }
+
+      infoLevel->freeGlobalLookup();
+      
       built_=true;
       AggregatesMap* aggregatesMap=new AggregatesMap(0);
       aggregatesMaps_.push_back(aggregatesMap);
