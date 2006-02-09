@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
   
-  const int BS=1, N=8;
+  const int BS=1, N=100;
   
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
   typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
     Criterion;
 
-  Criterion criterion(10,4);
+  Criterion criterion(100,4);
   
   hierarchy.build<OverlapFlags>(criterion);
   hierarchy.coarsenVector(vh);
