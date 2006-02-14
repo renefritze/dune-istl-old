@@ -49,196 +49,7 @@ namespace Dune
     };
 
 
-    class GalerkinProduct
-    {
-    public:
-      /**
-       * @brief Calculates the coarse matrix via a Galerkin product.
-       * @param fine The matrix on the fine level.
-       * @param fineGraph The graph of the fine matrix.
-       * @param visitedMap Map for marking vertices as visited.
-       * @param pinfo Parallel information about the fine level.
-       * @param aggregates The mapping of the fine level unknowns  onto aggregates.
-       * @param size The number of columns and rows of the coarse matrix.
-       */
-      template<class M, class G, class V, class I, class Set>
-      M* build(const M& fine, G& fineGraph, V& visitedMap, const I& pinfo, 
-	       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-	       const typename M::size_type& size,
-	       const Set& overlap);
-      /**
-       * @brief Calculates the coarse matrix via a Galerkin product.
-       * @param fine The matrix on the fine level.
-       * @param fineGraph The graph of the fine matrix.
-       * @param visitedMap Map for marking vertices as visited.
-       * @param pinfo Parallel information about the fine level.
-       * @param aggregates The mapping of the fine level unknowns  onto aggregates.
-       * @param size The number of columns and rows of the coarse matrix.
-       */
-      template<class M, class G, class V, class Set>
-      M* build(const M& fine, G& fineGraph, V& visitedMap, 
-	       const SequentialInformation& pinfo, 
-	       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-	       const typename M::size_type& size,
-	       const Set& overlap);
-      /**
-       * @brief Calculates the coarse matrix via a Galerkin product.
-       * @param fine The matrix on the fine level.
-       * @param fineGraph The graph of the fine matrix.
-       * @param aggregates The mapping of the fine level unknowns  onto aggregates.
-       * @param size The number of columns and rows of the coarse matrix.
-       *
-      template<class M, class G, class V>
-      M* build(const M& fine, G& fineGraph, V& visitedMap, 
-	       const AggregatesMap<typename G::VertexDescriptor>& aggregates);
-      */
-      /**
-       * @brief Calculate the galerkin product.
-       * @param fine The fine matrix.
-       * @param aggregates The aggregate mapping.
-       * @param coarse The coarse Matric.
-       */
-      template<class M, class V, class I, class O>
-      void calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse,
-		     const I& pinfo, const O& copy);
-      
-    private:
-      std::size_t* overlapStart_;
 
-      /**
-       * @brief Builds the data structure needed for rebuilding the aggregates int the overlap.
-       * @param graph The graph of the matrix.
-       * @param pinfo The parallel information.
-       * @param aggregates The mapping onto the aggregates.
-       */
-      template<class G, class I, class Set>
-      const OverlapVertex<typename G::VertexDescriptor>*
-      buildOverlapVertices(const G& graph,  const I& pinfo,
-			   const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-			   const Set& overlap,
-			   int& overlapCount);
-            
-      /**
-       * @brief Deallocate the data structure needed for rebuilding the aggregates in the overlap.
-       */
-      void freeOverlapAggregates();
-      
-      template<class T>
-      struct OVLess
-      {
-	bool operator()(const OverlapVertex<T>& o1, const OverlapVertex<T>& o2)
-	{
-	  return o1.aggregate < o2.aggregate;
-	}
-      };
-
-      /** @brief Wrapper to addres matrix row iterator as index iterator. */
-      template<class T>
-      class RowToIndex
-      {
-      public:
-	/** @brief The type of the matrix. */
-	typedef T Matrix;
-	
-	/** @brief The type of the matrix row iterator. */
-	typedef typename Matrix::ConstRowIterator MatrixRowIterator;
-	
-	RowToIndex(const MatrixRowIterator& row)
-	  : row_(row)
-	{}
-	
-	std::size_t local() const
-	{
-	  return row_.index();
-	}
-	
-	void operator++()
-	{
-	  ++row_;
-	}
-	bool operator==(const RowToIndex other) const
-	{
-	  return row_ == other.row_;
-	}
-
-	bool operator!=(const RowToIndex other) const
-	{
-	  return row_ != other.row_;
-	}
-	
-	RowToIndex* operator->()
-	{
-	  return this;
-	}
-	
-	RowToIndex& operator*()
-	{
-	  return *this;
-	}
-	
-	
-	const RowToIndex* operator->() const
-	{
-	  return this;
-	}
-	
-	const RowToIndex& operator*() const
-	{
-	  return *this;
-	}
-      private:
-	MatrixRowIterator row_;
-      };
-                  
-      /**
-       * @brief Functor for counting the nonzeros and unknowns using examineConnectivity.
-       */
-      template<class T>
-      class NonZeroCounter
-      {
-      public:
-	typedef T Matrix;
-	
-	/** @brief Constructor. */
-	NonZeroCounter()
-	  : unknownsNonZeros_(std::make_pair(0,0)), connected_()
-	{}
-	
-	/** 
-	 * @brief Count the connected vertices and update.
-	 * @param connected The set of connected vertices.
-	 
-	void operator(Set connected)
-	{
-	  ++unknowsNonZeros_.first;
-	  unknownsNonZeros.second += connected.size();
-	}   
-	*/
-
-	void insert(const typename Matrix::size_type& index)
-	{
-	  connected_.insert(index);
-	}
-	
-	void operator++()
-	{
-	  ++unknownsNonZeros_.first;
-	  unknownsNonZeros_.second+=connected_.size();
-	  connected_.clear();
-	}
-	
-	/** @brief Get the number of unknowns and nonzeros.*/
-	const std::pair<int,int>& getUnknownsNonZeros()
-	{
-	  return unknownsNonZeros_;
-	}
-
-      private:
-	/** @brief Pair of the number of unknowns and the number of nonzeros. */
-	std::pair<int,int> unknownsNonZeros_;
-	std::set<typename Matrix::size_type> connected_;
-      };
-      
       /**
        * @brief Functor for building the sparsity pattern of the matrix
        * using examineConnectivity.
@@ -266,9 +77,89 @@ namespace Dune
 	const AggregatesMap<V>& aggregates_;
 	
       };
+
+    class BaseGalerkinProduct
+    {
+    public:
+      /**
+       * @brief Calculate the galerkin product.
+       * @param fine The fine matrix.
+       * @param aggregates The aggregate mapping.
+       * @param coarse The coarse Matric.
+       */
+      template<class M, class V, class I, class O>
+      void calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse,
+		     const I& pinfo, const O& copy);
       
     };
     
+    template<class T>
+    class GalerkinProduct
+      : public BaseGalerkinProduct
+    {
+    public:
+      typedef T ParallelInformation;
+      
+      /**
+       * @brief Calculates the coarse matrix via a Galerkin product.
+       * @param fine The matrix on the fine level.
+       * @param fineGraph The graph of the fine matrix.
+       * @param visitedMap Map for marking vertices as visited.
+       * @param pinfo Parallel information about the fine level.
+       * @param aggregates The mapping of the fine level unknowns  onto aggregates.
+       * @param size The number of columns and rows of the coarse matrix.
+       */
+      template<class M, class G, class V, class Set>
+      M* build(const M& fine, G& fineGraph, V& visitedMap, 
+	       const ParallelInformation& pinfo, 
+	       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+	       const typename M::size_type& size,
+	       const Set& overlap);
+    private:
+      std::size_t* overlapStart_;
+
+      /**
+       * @brief Builds the data structure needed for rebuilding the aggregates int the overlap.
+       * @param graph The graph of the matrix.
+       * @param pinfo The parallel information.
+       * @param aggregates The mapping onto the aggregates.
+       */
+      template<class G, class I, class Set>
+      const OverlapVertex<typename G::VertexDescriptor>*
+      buildOverlapVertices(const G& graph,  const I& pinfo,
+			   const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+			   const Set& overlap,
+			   int& overlapCount);
+      
+      template<class A>
+      struct OVLess
+      {
+	bool operator()(const OverlapVertex<A>& o1, const OverlapVertex<A>& o2)
+	{
+	  return o1.aggregate < o2.aggregate;
+	}
+      };
+    };
+    
+    template<>
+    class GalerkinProduct<SequentialInformation>
+    {
+            /**
+       * @brief Calculates the coarse matrix via a Galerkin product.
+       * @param fine The matrix on the fine level.
+       * @param fineGraph The graph of the fine matrix.
+       * @param visitedMap Map for marking vertices as visited.
+       * @param pinfo Parallel information about the fine level.
+       * @param aggregates The mapping of the fine level unknowns  onto aggregates.
+       * @param size The number of columns and rows of the coarse matrix.
+       */
+      template<class M, class G, class V, class Set>
+      M* build(const M& fine, G& fineGraph, V& visitedMap, 
+	       const SequentialInformation& pinfo, 
+	       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+	       const typename M::size_type& size,
+      	       const Set& overlap);
+    };
     
     struct BaseConnectivityConstructor
     {
@@ -448,9 +339,10 @@ namespace Dune
 	connected_.insert(vertex);
     }
     
+    template<class T>
     template<class G, class I, class Set>
     const OverlapVertex<typename G::VertexDescriptor>*
-    GalerkinProduct::buildOverlapVertices(const G& graph, const I& pinfo,
+    GalerkinProduct<T>::buildOverlapVertices(const G& graph, const I& pinfo,
 					  const AggregatesMap<typename G::VertexDescriptor>& aggregates,
 					  const Set& overlap,
 					  int& overlapCount)
@@ -579,25 +471,26 @@ namespace Dune
     }
 
     template<class M, class V>
-    GalerkinProduct::SparsityBuilder<M,V>::SparsityBuilder(M& matrix, const AggregatesMap<V>& aggregates)
+    SparsityBuilder<M,V>::SparsityBuilder(M& matrix, const AggregatesMap<V>& aggregates)
       : row_(matrix.createbegin()), aggregates_(aggregates)
     {}
     
     template<class M, class V>
-    void GalerkinProduct::SparsityBuilder<M,V>::operator++()
+    void SparsityBuilder<M,V>::operator++()
     {
       ++row_;
     }
     
     template<class M, class V>
-    void GalerkinProduct::SparsityBuilder<M,V>::insert(const typename M::size_type& index)
+    void SparsityBuilder<M,V>::insert(const typename M::size_type& index)
     {
       row_.insert(index);
     }
     
-    template<class M, class G, class V, class I, class Set>
-    M* GalerkinProduct::build(const M& fine, G& fineGraph, V& visitedMap,
-			      const I& pinfo, 
+    template<class T>
+    template<class M, class G, class V, class Set>
+    M* GalerkinProduct<T>::build(const M& fine, G& fineGraph, V& visitedMap,
+			      const ParallelInformation& pinfo, 
 			      const AggregatesMap<typename G::VertexDescriptor>& aggregates,
 			      const typename M::size_type& size,
 			      const Set& overlap)
@@ -626,7 +519,7 @@ namespace Dune
       
       SparsityBuilder<M,typename G::VertexDescriptor> sparsityBuilder(*coarseMatrix, aggregates);
 
-      ConnectivityConstructor<G,I>::examine(fineGraph, visitedMap, pinfo, 
+      ConnectivityConstructor<G,T>::examine(fineGraph, visitedMap, pinfo, 
 					    aggregates, overlap, overlapVertices,
 					    overlapVertices+count,
 					    sparsityBuilder);
@@ -638,13 +531,13 @@ namespace Dune
       
       return coarseMatrix;
     }
-    
+
     template<class M, class G, class V, class Set>
-    M* GalerkinProduct::build(const M& fine, G& fineGraph, V& visitedMap,
-			      const SequentialInformation& pinfo, 
-			      const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-			      const typename M::size_type& size,
-			      const Set& overlap)
+    M* GalerkinProduct<SequentialInformation>::build(const M& fine, G& fineGraph, V& visitedMap,
+						     const SequentialInformation& pinfo, 
+						     const AggregatesMap<typename G::VertexDescriptor>& aggregates,
+						     const typename M::size_type& size,
+						     const Set& overlap)
     {     
       M* coarseMatrix = new M(size, size, M::row_wise);
       
@@ -666,7 +559,7 @@ namespace Dune
     }
 
     template<class M, class V, class P, class O>
-    void GalerkinProduct::calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse, 
+    void BaseGalerkinProduct::calculate(const M& fine, const AggregatesMap<V>& aggregates, M& coarse, 
 				    const P& pinfo, const O& copy)
     {
        coarse = static_cast<typename M::field_type>(0);

@@ -457,7 +457,7 @@ namespace Dune
       typedef typename ParallelMatrixHierarchy::Iterator MatIterator;
       typedef typename ParallelInformationHierarchy::Iterator PInfoIterator;
       
-      GalerkinProduct productBuilder;
+      GalerkinProduct<ParallelInformation> productBuilder;
       MatIterator mlevel = matrices_.finest();
       PInfoIterator infoLevel = parallelInformation_.finest();
       
@@ -659,7 +659,7 @@ namespace Dune
       typedef typename ParallelInformationHierarchy::Iterator InfoIterator;
       
       AggregatesMapIterator amap = aggregatesMaps_.begin();
-      GalerkinProduct productBuilder;
+      BaseGalerkinProduct productBuilder;
       InfoIterator info = parallelInformation_.finest();
       
       for(Iterator level = matrices_.finest(), coarsest=matrices_.coarsest(); level!=coarsest; ++amap){
