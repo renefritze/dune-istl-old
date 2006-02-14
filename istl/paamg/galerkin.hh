@@ -115,7 +115,8 @@ namespace Dune
       const OverlapVertex<typename G::VertexDescriptor>*
       buildOverlapVertices(const G& graph,  const I& pinfo,
 			   const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-			   const Set& overlap);
+			   const Set& overlap,
+			   int& overlapCount);
             
       /**
        * @brief Deallocate the data structure needed for rebuilding the aggregates in the overlap.
@@ -274,7 +275,8 @@ namespace Dune
       template<class R, class G, class V>
       static void constructOverlapConnectivity(R& row, G& graph, V& visitedMap,
 					       const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-					       const OverlapVertex<typename G::VertexDescriptor>*& seed);
+					       const OverlapVertex<typename G::VertexDescriptor>*& seed,
+					       const OverlapVertex<typename G::VertexDescriptor>* overlapEnd);
       
       /**
        * @brief Construct the connectivity of an aggregate in the overlap.
@@ -363,6 +365,7 @@ namespace Dune
 			  const AggregatesMap<Vertex>& aggregates,
 			  const O& overlap,
 			  const OverlapVertex<Vertex>* overlapVertices,
+			  const OverlapVertex<Vertex>* overlapEnd,
 			  R& row);
     };
     
@@ -413,12 +416,13 @@ namespace Dune
     template<class R, class G, class V>
     void BaseConnectivityConstructor::constructOverlapConnectivity(R& row, G& graph, V& visitedMap,
 								   const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-								   const OverlapVertex<typename G::VertexDescriptor>*& seed)
+								   const OverlapVertex<typename G::VertexDescriptor>*& seed,
+								   const OverlapVertex<typename G::VertexDescriptor>* overlapEnd)
     {
       const typename G::VertexDescriptor aggregate=seed->aggregate;
       row.insert(aggregate);
       ConnectedBuilder<G,R,V> conBuilder(aggregates, graph, visitedMap, row);
-      while(aggregate == seed->aggregate){
+      while(seed != overlapEnd && aggregate == seed->aggregate){
 	// Walk over all neighbours and add them to the connected array.
 	visitNeighbours(graph, seed->vertex, conBuilder);
 	// Mark vertex as visited
@@ -448,7 +452,8 @@ namespace Dune
     const OverlapVertex<typename G::VertexDescriptor>*
     GalerkinProduct::buildOverlapVertices(const G& graph, const I& pinfo,
 					  const AggregatesMap<typename G::VertexDescriptor>& aggregates,
-					  const Set& overlap)
+					  const Set& overlap,
+					  int& overlapCount)
     {
       // count the overlap vertices.
       typedef typename G::ConstVertexIterator ConstIterator;
@@ -456,7 +461,7 @@ namespace Dune
       typedef typename GlobalLookup::IndexPair IndexPair;
       
       const ConstIterator end = graph.end();
-      int overlapCount = 0;
+      overlapCount = 0;
       
       const GlobalLookup& lookup=pinfo.globalLookup();
       
@@ -513,6 +518,7 @@ namespace Dune
 					       const AggregatesMap<Vertex>& aggregates,
 					       const O& overlap,
 					       const OverlapVertex<Vertex>* overlapVertices,
+					       const OverlapVertex<Vertex>* overlapEnd,
 					       R& row)
     {	  
       typedef typename T::GlobalLookupIndexSet GlobalLookup;
@@ -547,7 +553,7 @@ namespace Dune
 	  assert(pair!=0 && overlap.contains(pair->local().attribute()));
 #endif
 
-	  constructOverlapConnectivity(row, graph, visitedMap, aggregates, overlapVertices);
+	  constructOverlapConnectivity(row, graph, visitedMap, aggregates, overlapVertices, overlapEnd);
 	  ++row;
 	}
     }
@@ -599,10 +605,13 @@ namespace Dune
       
       typedef OverlapVertex<typename G::VertexDescriptor> OverlapVertex;
       
+      int count;
+      
       const OverlapVertex* overlapVertices = buildOverlapVertices(fineGraph,
 								  pinfo,
 								  aggregates,
-								  overlap);
+								  overlap,
+								  count);
       M* coarseMatrix = new M(size, size, M::row_wise);
 
       // Reset the visited flags of all vertices.
@@ -618,8 +627,9 @@ namespace Dune
       SparsityBuilder<M,typename G::VertexDescriptor> sparsityBuilder(*coarseMatrix, aggregates);
 
       ConnectivityConstructor<G,I>::examine(fineGraph, visitedMap, pinfo, 
-					   aggregates, overlap, overlapVertices,
-					   sparsityBuilder);
+					    aggregates, overlap, overlapVertices,
+					    overlapVertices+count,
+					    sparsityBuilder);
       
       delete[] overlapVertices;
       delete[] overlapStart_;
