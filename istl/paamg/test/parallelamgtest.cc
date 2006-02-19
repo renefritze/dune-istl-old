@@ -109,7 +109,7 @@ int main(int argc, char** argv)
   b=0;
   x=100;
   
-  setBoundary(x, N, comm.indexSet());
+  setBoundary(x, b, N, comm.indexSet());
 
   Vector b1=b, x1=x;
 
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
   
   SmootherArgs smootherArgs;
     
-  smootherArgs.iterations = 1;
+  smootherArgs.iterations = 2;
   
   
   Criterion criterion(15,coarsenTarget);
