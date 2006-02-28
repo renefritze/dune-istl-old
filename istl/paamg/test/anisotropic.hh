@@ -1,4 +1,3 @@
-// $Id$
 #ifndef ANISOTROPIC_HH
 #define  ANISOTROPIC_HH
 #include<dune/istl/indexset.hh>
