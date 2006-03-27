@@ -233,7 +233,7 @@ namespace Dune
 	
 	coarseSmoother_ = ConstructionTraits<Smoother>::construct(cargs);
 	scalarProduct_ = ScalarProductChooser::construct(*matrices_->parallelInformation().coarsest());
-	
+
 	solver_ = new BiCGSTABSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()), 
 				  *scalarProduct_, 
 				  *coarseSmoother_, 1E-20, 10000, 0);
@@ -271,16 +271,16 @@ namespace Dune
       if(matrix == matrices_->matrices().coarsest()){
 	// Solve directly
 	InverseOperatorResult res;
+	pinfo->copyOwnerToAll(*rhs, *rhs);
 	solver_->apply(*lhs, *rhs, res);
 	if(!res.converged)
 	  DUNE_THROW(MathError, "Coarse solver did not converge");
       }else{
-	
 	// presmoothing
 	for(std::size_t i=0; i < steps_; ++i){
 	  smoother->apply(*lhs, *rhs);
 	}
-	
+		
 	// calculate defect
 	*defect = *rhs;
 	matrix->applyscaleadd(-1,static_cast<const Domain&>(*lhs), *defect);
@@ -291,7 +291,7 @@ namespace Dune
 	
 	Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
 	  ::restrict(*(*aggregates), *rhs, static_cast<const Range&>(*defect), *pinfo);
-
+	
 	// prepare coarse system
 	++lhs;
 	++defect;
@@ -314,20 +314,21 @@ namespace Dune
 	--level;
 	//prolongate and add the correction (update is in coarse left hand side)
 	--matrix;
-	--pinfo;
-	
+
 	typename Hierarchy<Domain,A>::Iterator coarseLhs = lhs--;
+
+	--pinfo;
 	
 	Transfer<typename MatrixHierarchy::AggregatesMap::AggregateDescriptor,Range,ParallelInformation>
 	  ::prolongate(*(*aggregates), *coarseLhs, *lhs, 1.6);
 	
 	--rhs;
 	--defect;
-	
+		
 	// postsmoothing
 	for(std::size_t i=0; i < steps_; ++i){
 	  smoother->apply(*lhs, *rhs);
-	}	
+	}
       }
     }
 
