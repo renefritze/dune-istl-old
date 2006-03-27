@@ -509,7 +509,7 @@ namespace Dune
 	  DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
 	}
 	
-	dinfo << "Building aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;
+	dinfo << "Building "<<noAggregates<<" aggregates (took "<<watch.elapsed()<<" seconds."<<std::endl;
 	
 	
 	parallelInformation_.addCoarser(infoLevel->communicator());
@@ -537,9 +537,9 @@ namespace Dune
 	AggregatesPublisher<Vertex,OverlapFlags,ParallelInformation>::publish(*aggregatesMap,
 									      *fineInfo,
 									      infoLevel->globalLookup());
-		
+
 	dinfo<<"Communicating global aggregate numbers took "<<watch.elapsed()<<" seconds."<<std::endl;
-	
+      
 	watch.reset();
 	std::vector<bool>& visited=excluded;
 	
