@@ -2202,8 +2202,6 @@ namespace Dune
 	  width++;
 	else
 	  break;
-
-      std::cout<<"width="<<width<<std::endl;
       
       for(int j=0, entry=0; j < m; j++){
 	for(int i=0; i<n; i++, entry++){
