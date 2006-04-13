@@ -1,7 +1,7 @@
 #ifndef DUNE_ALLOCATOR_HH
 #define DUNE_ALLOCATOR_HH
 
-#include <stdlib.h>
+#include <cstdlib>
 
 
 namespace Dune {
