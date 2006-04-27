@@ -193,7 +193,6 @@ namespace Dune
     {
       Range* copy = new Range(b);
       rhs_ = new Hierarchy<Range,A>(*copy);
-      copy = new Range(b);
       Domain* dcopy = new Domain(x);
       lhs_ = new Hierarchy<Domain,A>(*dcopy);
       dcopy = new Domain(x);
@@ -235,7 +234,7 @@ namespace Dune
 	coarseSmoother_ = ConstructionTraits<Smoother>::construct(cargs);
 	scalarProduct_ = ScalarProductChooser::construct(*matrices_->parallelInformation().coarsest());
 
-	solver_ = new BiCGSTABSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()), 
+	solver_ = new CGSolver<X>(const_cast<M&>(*matrices_->matrices().coarsest()), 
 				  *scalarProduct_, 
 				  *coarseSmoother_, 1E-20, 10000, 0);
       }
