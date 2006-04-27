@@ -387,7 +387,7 @@ namespace Dune
 	}
       }
       
-      dinfo << overlapCount<<" overlap vertices"<<std::endl;
+      dverb << overlapCount<<" overlap vertices"<<std::endl;
       
       std::sort(overlapVertices, overlapVertices+overlapCount, OVLess<Vertex>());
 
