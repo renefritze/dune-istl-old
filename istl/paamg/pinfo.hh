@@ -130,6 +130,10 @@ namespace Dune
       void copyOwnerToAll(V& v, V& v1) const
       {}
 
+      template<class V>
+      void project(V& v) const
+      {}
+      
       SequentialInformation(const CollectiveCommunication<void*>&)
       {}
 
