@@ -11,6 +11,8 @@
 #include<map>
 #include<utility>
 #include<iostream>
+
+#ifdef HAVE_MPI
 #include"mpitraits.hh"
 #include"mpi.h"
 
@@ -1501,4 +1503,6 @@ namespace Dune{
   }
   /** @} */
 }
+
+#endif
 #endif

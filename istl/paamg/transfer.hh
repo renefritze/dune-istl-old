@@ -5,7 +5,7 @@
 #include<dune/istl/owneroverlapcopy.hh>
 #include<dune/istl/paamg/aggregates.hh>
 #include<dune/common/exceptions.hh>
-#include<dune/istl/communicator.hh>
+
 namespace Dune
 {
   namespace Amg
@@ -48,6 +48,8 @@ namespace Dune
       static void restrict(const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector& fine,
 			   const SequentialInformation& comm);
     };
+
+#ifdef HAVE_MPI
     
     template<class V,class B, class T>
     class Transfer<V,BlockVector<B>,ParallelInformation<T> > 
@@ -74,6 +76,8 @@ namespace Dune
       static void restrict(const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector& fine,
 			   OwnerOverlapCopyCommunication<T1,T2>& comm);
     };
+
+#endif
 
     template<class V, class B>
     inline void Transfer<V,BlockVector<B>,SequentialInformation>::prolongate(const AggregatesMap<Vertex>& aggregates,
@@ -111,6 +115,7 @@ namespace Dune
       }
     }
 
+#ifdef HAVE_MPI
     template<class V, class B, class T>
     inline void Transfer<V,BlockVector<B>,ParallelInformation<T> >::prolongate(const AggregatesMap<Vertex>& aggregates,
 									       Vector& coarse, Vector& fine, 
@@ -143,6 +148,7 @@ namespace Dune
       Transfer<V,BlockVector<B>,SequentialInformation>::restrict(aggregates, coarse, fine, SequentialInformation());
       //      comm.project(coarse);
     }
+#endif
 	/** @} */
       }// namspace Amg
     } // namspace Dune

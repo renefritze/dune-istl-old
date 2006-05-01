@@ -154,6 +154,7 @@ namespace Dune
     };
     
 
+#ifdef HAVE_MPI
     template<typename T>
     class ConstructionTraits<ParallelInformation<T> >
     {
@@ -166,6 +167,7 @@ namespace Dune
       }
     };
     
+
     template<class T1, class T2>
     class ConstructionTraits<OwnerOverlapCopyCommunication<T1,T2> >
     {
@@ -177,6 +179,8 @@ namespace Dune
 	return new OwnerOverlapCopyCommunication<T1,T2>(args);
       }
     };
+
+#endif
     
 /** @} */
 } // namespace Amg
