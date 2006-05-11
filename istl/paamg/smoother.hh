@@ -130,8 +130,34 @@ namespace Dune
 				    args.getArgs().relaxationFactor);
       }
       
+      static inline void deconstruct(SeqSSOR<M,X,Y>* ssor)
+      {
+	delete ssor;
+      }
+      
     };
 
+    
+    /**
+     * @brief Policy for the construction of the SeqSOR smoother
+     */
+    template<class M, class X, class Y>
+    struct ConstructionTraits<SeqSOR<M,X,Y> >
+    {
+      typedef DefaultConstructionArgs<M> Arguments;
+      
+      static inline SeqSOR<M,X,Y>* construct(Arguments& args)
+      {
+	return new SeqSOR<M,X,Y>(args.getMatrix(), args.getArgs().iterations,
+				    args.getArgs().relaxationFactor);
+      }
+      
+      static inline void deconstruct(SeqSOR<M,X,Y>* sor)
+      {
+	delete sor;
+      }
+      
+    };
     /**
      * @brief Policy for the construction of the SeqJac smoother
      */
@@ -144,6 +170,11 @@ namespace Dune
       {
 	return new SeqJac<M,X,Y>(args.getMatrix(), args.getArgs().iterations,
 				 args.getArgs().relaxationFactor);
+      }
+      
+      static void deconstruct(SeqJac<M,X,Y>* jac)
+      {
+	delete jac;
       }
       
     };
@@ -162,6 +193,10 @@ namespace Dune
 				    args.getArgs().relaxationFactor,
 				    args.getComm());
       }      
+      static inline void deconstruct(ParSSOR<M,X,Y,C>* ssor)
+      {
+	delete ssor;
+      }
     };
 
     template<class X, class Y, class C, class T>
@@ -175,6 +210,13 @@ namespace Dune
 							args.getArgs().relaxationFactor)),
 						args.getComm());
       }
+
+      static inline void deconstruct(BlockPreconditioner<X,Y,C,T>* bp)
+      {
+	delete &bp->preconditioner;
+	delete bp;
+      }
+      
     };
   } // namespace Amg
 } // namespace Dune
