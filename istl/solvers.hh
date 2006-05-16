@@ -12,8 +12,8 @@
 #include "operators.hh"
 #include "preconditioners.hh"
 #include "scalarproducts.hh"
-#include "dune/common/timer.hh"
-#include "dune/common/helpertemplates.hh"
+#include <dune/common/timer.hh>
+#include <dune/common/helpertemplates.hh>
 
 namespace Dune {
    
