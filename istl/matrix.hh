@@ -6,7 +6,6 @@
 */
 
 #include <vector>
-#include <dune/common/simplevector.hh>
 
 namespace Dune {
 
@@ -108,12 +107,13 @@ public:
     }
 
     //! Multiplication of the transposed matrix times a vector
-    SimpleVector<T> transposedMult(const SimpleVector<T>& vec) {
+    template <class X, class Y>
+    Y transposedMult(const Y& vec) {
 #ifdef DUNE_ISTL_WITH_CHECKING
         if (N()!=vec.size())
             DUNE_THROW(ISTLError, "Vector size doesn't match the number of matrix rows!");
 #endif
-        SimpleVector<T> out(M());
+        Y out(M());
         out = 0;
 
         for (int i=0; i<out.size(); i++ ) {
@@ -139,12 +139,13 @@ public:
     }
 
     /// Generic matrix-vector multiplication.
-    friend SimpleVector<T> operator*(const Matrix<T>& m, const SimpleVector<T>& vec) {
+    template <class X, class Y>
+    friend Y operator*(const Matrix<T>& m, const X& vec) {
 #ifdef DUNE_ISTL_WITH_CHECKING
         if (M()!=vec.size())
             DUNE_THROW(ISTLError, "Vector size doesn't match the number of matrix columns!");
 #endif
-        SimpleVector<T> out(m.N());
+        Y out(m.N());
         out = 0;
 
         for (int i=0; i<out.size(); i++ ) {
