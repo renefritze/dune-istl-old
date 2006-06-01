@@ -10,6 +10,7 @@
 #include<cassert>
 #include<cmath>
 #include<limits>
+#include<algorithm>
 
 #ifdef HAVE_MPI
 namespace Dune
@@ -946,9 +947,8 @@ namespace Dune
 	if(process==rank_){
 	  // Now we know the local attribute of the global index
 	  // Do we know that global index already?
-	  while(index != iEnd && index->global() < global)
-	    ++index;
-	  
+	  std::lower_bound(index, iEnd, global);
+	  	  
 	  if(index == iEnd || index->global() != global){
 	    // No, we do not. Add it!
 	    indexSet_.add(global,ParallelLocalIndex<Attribute>(numberer(global),

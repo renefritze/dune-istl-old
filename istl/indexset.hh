@@ -52,6 +52,24 @@ namespace Dune
 
   template<class TG, class TL>
   bool operator >=(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
+
+  template<class TG, class TL>
+  bool operator==(const IndexPair<TG,TL>&, const TG&);
+
+  template<class TG, class TL>
+  bool operator!=(const IndexPair<TG,TL>&, const TG&);
+    
+  template<class TG, class TL>
+  bool operator<(const IndexPair<TG,TL>&, const TG&);
+
+  template<class TG, class TL>
+  bool operator>(const IndexPair<TG,TL>&, const TG&);
+
+  template<class TG, class TL>
+  bool operator<=(const IndexPair<TG,TL>&, const TG&);
+
+  template<class TG, class TL>
+  bool operator >=(const IndexPair<TG,TL>&, const TG&);
   
   template<typename T>
   class MPITraits;
@@ -69,6 +87,12 @@ namespace Dune
     friend bool operator><>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
     friend bool operator<=<>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
     friend bool operator>=<>(const IndexPair<TG,TL>&, const IndexPair<TG,TL>&);
+    friend bool operator==<>(const IndexPair<TG,TL>&, const TG&);
+    friend bool operator!=<>(const IndexPair<TG,TL>&, const TG&);
+    friend bool operator< <>(const IndexPair<TG,TL>&, const TG&);
+    friend bool operator> <>(const IndexPair<TG,TL>&, const TG&);
+    friend bool operator<=<>(const IndexPair<TG,TL>&, const TG&);
+    friend bool operator>=<>(const IndexPair<TG,TL>&, const TG&);
     friend class MPITraits<IndexPair<TG,TL> >;
     
   public:
@@ -597,6 +621,42 @@ namespace Dune
   inline bool operator >=(const IndexPair<TG,TL>& a, const IndexPair<TG,TL>& b)
   {
     return a.global_>=b.global_;
+  }
+  
+  template<class TG, class TL>
+  inline bool operator==(const IndexPair<TG,TL>& a, const TG& b)
+  {
+    return a.global_==b;
+  }
+
+  template<class TG, class TL>
+  inline bool operator!=(const IndexPair<TG,TL>& a, const TG& b)
+  {
+    return a.global_!=b;
+  }
+    
+  template<class TG, class TL>
+  inline bool operator<(const IndexPair<TG,TL>& a, const TG& b)
+  {
+    return a.global_<b;
+  }
+
+  template<class TG, class TL>
+  inline bool operator>(const IndexPair<TG,TL>& a, const TG& b)
+  {
+    return a.global_>b;
+  }
+
+  template<class TG, class TL>
+  inline bool operator<=(const IndexPair<TG,TL>& a, const TG& b)
+  {
+    return a.global_<=b;
+  }
+
+  template<class TG, class TL>
+  inline bool operator >=(const IndexPair<TG,TL>& a, const TG& b)
+  {
+    return a.global_>=b;
   }
 
   template<class TG, class TL>
