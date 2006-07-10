@@ -107,13 +107,13 @@ public:
     /** \brief Get const iterator to last row */
     ConstRowIterator rbegin() const
     {
-        return data_.begin();
+        return data_.rbegin();
     }
 
     /** \brief Get const iterator to one before first row */
     ConstRowIterator rend() const
     {
-        return data_.end();
+        return data_.rend();
     }
 
     /** \brief Assignment from scalar */
