@@ -126,7 +126,8 @@ void testCoarsenIndices(int N)
   
   assert(mat.N()==mg.maxVertex());
   
-  bool visitedIterator[N*N];
+  bool* visitedIterator = new bool[N*N];
+
   for(Vertex i=0; i < mg.maxVertex(); ++i)
     visitedIterator[i]=false;
   
@@ -136,6 +137,7 @@ void testCoarsenIndices(int N)
 					    aggregatesMap, coarseIndices.size(),
 					    Dune::EnumItem<GridFlag,GridAttributes::copy>());
 
+  delete[] visitedIterator;
   pinfo.freeGlobalLookup();
   productBuilder.calculate(mat, aggregatesMap, *coarseMat, coarseInfo, Dune::EnumItem<GridFlag,GridAttributes::copy>());
 
