@@ -59,7 +59,7 @@ namespace Dune
     /**
      * @brief Constructor.
      *
-     * @param localIndex The local index.
+     * The local index will be initialized to 0.     
      * @param attribute The attribute of the index.
      * @param isPublic True if the index might also be 
      * known to other processes.
@@ -69,7 +69,7 @@ namespace Dune
     /**
      * @brief Constructor.
      *
-     * The local index will be initialized to 0.
+     * @param localIndex The local index.
      * @param attribute The attribute of the index.
      * @param isPublic True if the index might also be 
      * known to other processes.
