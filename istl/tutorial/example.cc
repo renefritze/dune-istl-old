@@ -1,4 +1,6 @@
 // start with including some headers
+#include "config.h"
+
 #include<iostream>               // for input/output to shell
 #include<fstream>                // for input/output to files
 #include<vector>                 // STL vector class
