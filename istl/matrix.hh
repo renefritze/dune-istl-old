@@ -121,6 +121,7 @@ public:
     {
         for (unsigned int i=0; i<data_.size(); i++)
             data_[i] = t;
+        return *this;
     }
 
     /** \brief The index operator */
