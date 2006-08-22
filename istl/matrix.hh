@@ -129,7 +129,7 @@ public:
 #ifdef DUNE_ISTL_WITH_CHECKING
         if (row<0)
             DUNE_THROW(ISTLError, "Can't access negative rows!");
-        if (row>=rows_)
+        if (row>=N())
             DUNE_THROW(ISTLError, "Row index out of range!");
 #endif
         return data_[row];
@@ -140,7 +140,7 @@ public:
 #ifdef DUNE_ISTL_WITH_CHECKING
         if (row<0)
             DUNE_THROW(ISTLError, "Can't access negative rows!");
-        if (row>=rows_)
+        if (row>=N())
             DUNE_THROW(ISTLError, "Row index out of range!");
 #endif
         return data_[row];
