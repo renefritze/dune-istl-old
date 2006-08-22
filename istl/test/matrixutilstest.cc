@@ -1,3 +1,4 @@
+#include"config.h"
 #include<dune/istl/matrixutils.hh>
 #include<dune/istl/bcrsmatrix.hh>
 #include<dune/common/fmatrix.hh>

@@ -1,3 +1,4 @@
+#include"config.h"
 #include<dune/istl/bvector.hh>
 #include<dune/common/fvector.hh>
 

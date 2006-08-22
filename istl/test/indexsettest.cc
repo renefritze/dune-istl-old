@@ -1,5 +1,4 @@
-#include <config.h>
-
+#include"config.h"
 #include<iostream>
 #include<cassert>
 #include<dune/istl/indexset.hh>
