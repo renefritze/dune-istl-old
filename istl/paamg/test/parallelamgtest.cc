@@ -89,7 +89,7 @@ void testAmg(int N, int coarsenTarget)
 
   const BCRSMat& cmat = mat;
   
-  comm.remoteIndices().rebuild<false>();
+  comm.remoteIndices().template rebuild<false>();
   
   Vector b(cmat.N()), x(cmat.M());
   
