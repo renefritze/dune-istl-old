@@ -224,7 +224,7 @@ namespace Dune {
 	return i==other.i;
       }
 
-    protected:
+    private:
       //! prefix increment
       void increment()
       {
@@ -253,7 +253,6 @@ namespace Dune {
 	return p[i];
       }
       
-    private:
       row_type* p;
       size_type i;
     };

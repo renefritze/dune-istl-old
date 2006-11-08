@@ -122,7 +122,7 @@ namespace Dune {
 	return i==other.i;
       }
 
-    protected:
+    private:
       //! prefix increment
       void increment()
       {
@@ -141,7 +141,6 @@ namespace Dune {
 	return *i;
       }
 
-    private:
       const B* p;
       B* i;
     };
@@ -624,7 +623,7 @@ namespace Dune {
 	    return i;
 	  }
 	  
-	protected:
+	private:
 	  //! prefix increment
 	  void increment()
 	  {
@@ -643,7 +642,6 @@ namespace Dune {
 	    return p[i];
 	  }
 
-	private:
 	  B* p;
 	  size_type* j;
 	  size_type i;
