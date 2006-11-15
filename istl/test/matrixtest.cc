@@ -75,8 +75,8 @@ void testMatrix(MatrixType& matrix)
 
     for (; constRowIt!=constRowEndIt; ++constRowIt) {
 
-        typename MatrixType::ConstColIterator constColIt    = rowIt->begin();
-        typename MatrixType::ConstColIterator constColEndIt = rowIt->end();
+        typename MatrixType::ConstColIterator constColIt    = constRowIt->begin();
+        typename MatrixType::ConstColIterator constColEndIt = constRowIt->end();
 
         for (; constColIt!=constColEndIt; ++constColIt)
             numEntries++;
@@ -84,6 +84,8 @@ void testMatrix(MatrixType& matrix)
         numRows++;
 
     }
+
+    assert (numRows == matrix.N());
 
     // ////////////////////////////////////////////////////////
     //   Count number of rows, columns, and nonzero entries
@@ -96,12 +98,12 @@ void testMatrix(MatrixType& matrix)
     numRows    = 0;
     numEntries = 0;
 
-    for (; rowIt!=rowEndIt; ++rowIt) {
+    for (; rowIt!=rowEndIt; --rowIt) {
 
         typename MatrixType::ColIterator colIt    = rowIt->rbegin();
         typename MatrixType::ColIterator colEndIt = rowIt->rend();
 
-        for (; colIt!=colEndIt; ++colIt){
+        for (; colIt!=colEndIt; --colIt){
             assert(matrix.exists(rowIt.index(), colIt.index()));
             numEntries++;
         }
@@ -109,6 +111,8 @@ void testMatrix(MatrixType& matrix)
         numRows++;
 
     }
+
+    assert (numRows == matrix.N());
 
     // ///////////////////////////////////////////////////////////////
     //   Count number of rows, columns, and nonzero entries again.
@@ -121,17 +125,19 @@ void testMatrix(MatrixType& matrix)
     numRows    = 0;
     numEntries = 0;
 
-    for (; constRowIt!=constRowEndIt; ++constRowIt) {
+    for (; constRowIt!=constRowEndIt; --constRowIt) {
 
-        typename MatrixType::ConstColIterator constColIt    = rowIt->rbegin();
-        typename MatrixType::ConstColIterator constColEndIt = rowIt->rend();
+        typename MatrixType::ConstColIterator constColIt    = constRowIt->rbegin();
+        typename MatrixType::ConstColIterator constColEndIt = constRowIt->rend();
 
-        for (; constColIt!=constColEndIt; ++constColIt)
+        for (; constColIt!=constColEndIt; --constColIt)
             numEntries++;
 
         numRows++;
 
     }
+
+    assert (numRows == matrix.N());
 
     // ///////////////////////////////////////////////////////
     //   More dimension stuff
