@@ -235,6 +235,10 @@ namespace Dune
      */
     typedef TL LocalIndex;
 
+    /**
+     * @brief The type of the pair stored.
+     */
+    typedef IndexPair<GlobalIndex,LocalIndex> IndexPair;
     
     enum{
       /**
@@ -248,9 +252,9 @@ namespace Dune
 
     /** @brief The iterator over the pairs. */
     class iterator : 
-      public ArrayList<IndexPair<GlobalIndex,LocalIndex>,N>::iterator
+      public ArrayList<IndexPair,N>::iterator
     {
-      typedef typename ArrayList<IndexPair<GlobalIndex,LocalIndex>,N>::iterator
+      typedef typename ArrayList<IndexPair,N>::iterator
       Father;
       friend class ParallelIndexSet<GlobalIndex,LocalIndex,N>;
     public:
@@ -295,7 +299,7 @@ namespace Dune
 
     /** @brief The constant iterator over the pairs. */
     typedef typename 
-    ArrayList<IndexPair<GlobalIndex,LocalIndex>,N>::const_iterator 
+    ArrayList<IndexPair,N>::const_iterator 
     const_iterator;
 
     /**
@@ -369,7 +373,7 @@ namespace Dune
      * @return The pair of indices for the id.
      * @exception NoSuchEntry Thrown if the global id is not known.
      */
-    inline IndexPair<GlobalIndex,LocalIndex>& 
+    inline IndexPair& 
     operator[](const GlobalIndex& global);
 
     
@@ -382,7 +386,7 @@ namespace Dune
      * @return The pair of indices for the id.
      * @exception NoSuchEntry Thrown if the global id is not known.
      */
-    inline const IndexPair<GlobalIndex,LocalIndex>& 
+    inline const IndexPair& 
     operator[](const GlobalIndex& global) const;
 
     /**
@@ -436,9 +440,9 @@ namespace Dune
 
   private:
     /** @brief The index pairs. */
-    ArrayList<IndexPair<GlobalIndex,LocalIndex>,N> localIndices_;
+    ArrayList<IndexPair,N> localIndices_;
     /** @brief The new indices for the RESIZE state. */
-    ArrayList<IndexPair<GlobalIndex,LocalIndex>,N> newIndices_;
+    ArrayList<IndexPair,N> newIndices_;
     /** @brief The state of the index set. */
     ParallelIndexSetState state_;
     /** @brief Number to keep track of the number of resizes. */
@@ -735,7 +739,7 @@ namespace Dune
       DUNE_THROW(InvalidIndexSetState, "Indices can only be added "
 		 <<"while in RESIZE state!");
 #endif
-    newIndices_.push_back(IndexPair<TG,TL>(global,local));
+    newIndices_.push_back(IndexPair(global,local));
   }
 
   template<class TG, class TL, int N>
@@ -777,9 +781,9 @@ namespace Dune
       }
     else if(newIndices_.size()>0 || deletedEntries_)
       {
-	ArrayList<IndexPair<TG,TL>,N> tempPairs;
-	typedef typename ArrayList<IndexPair<TG,TL>,N>::iterator iterator;
-	typedef typename ArrayList<IndexPair<TG,TL>,N>::const_iterator const_iterator;
+	ArrayList<IndexPair,N> tempPairs;
+	typedef typename ArrayList<IndexPair,N>::iterator iterator;
+	typedef typename ArrayList<IndexPair,N>::const_iterator const_iterator;
 	
 	iterator old=localIndices_.begin();
 	iterator added=newIndices_.begin();
@@ -918,7 +922,7 @@ namespace Dune
 		 <<"GROUND state for renumberLocal()");
 #endif
 
-    typedef typename ArrayList<IndexPair<TG,TL>,N>::iterator iterator;
+    typedef typename ArrayList<IndexPair,N>::iterator iterator;
     const const_iterator end_ = end();
     uint32_t index=0;
 

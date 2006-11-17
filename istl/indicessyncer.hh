@@ -11,6 +11,7 @@
 #include<cmath>
 #include<limits>
 #include<algorithm>
+#include<functional>
 
 #ifdef HAVE_MPI
 namespace Dune
@@ -39,6 +40,9 @@ namespace Dune
     /** @brief The type of the index set. */
     typedef T ParallelIndexSet;
 
+    /** @brief The type of the index pair */
+    typedef typename ParallelIndexSet::IndexPair IndexPair;
+    
     /** @brief Type of the global index used in the index set. */
     typedef typename ParallelIndexSet::GlobalIndex GlobalIndex;
     
@@ -947,7 +951,7 @@ namespace Dune
 	if(process==rank_){
 	  // Now we know the local attribute of the global index
 	  // Do we know that global index already?
-	  std::lower_bound(index, iEnd, global);
+	  index = std::lower_bound(index, iEnd, IndexPair(global));
 	  	  
 	  if(index == iEnd || index->global() != global){
 	    // No, we do not. Add it!
