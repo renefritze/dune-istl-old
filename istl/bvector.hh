@@ -1138,8 +1138,19 @@ namespace Dune {
 	  return this->j;
 	}
 
+	//! get pointer
+	const B* getptr () const
+	{
+	  return this->p;
+	}
+
+	//! get pointer
+	const size_type* getindexptr () const
+	{
+	  return this->j;
+	}
 	//! get size
-	size_type getsize ()
+	size_type getsize () const
 	{
 	  return this->n;
 	}
