@@ -9,6 +9,7 @@
 
 #include"solvercategory.hh"
 #include "istlexception.hh"
+#include "matrixutils.hh"
 #include "io.hh"
 #include "gsetc.hh"
 #include "ilu.hh"
@@ -131,7 +132,9 @@ namespace Dune {
     */
     SeqSSOR (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
-    {	}
+    {
+      CheckIfDiagonalPresent<l>::check(_A_);
+    }
 
     /*! 
       \brief Prepare the preconditioner.
@@ -204,7 +207,9 @@ namespace Dune {
     */
     SeqSOR (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
-    {	}
+    {
+      CheckIfDiagonalPresent<l>::check(_A_);
+    }
 
     /*!
       \brief Prepare the preconditioner.
@@ -274,7 +279,9 @@ namespace Dune {
     */
     SeqGS (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
-    {	}
+    {
+      CheckIfDiagonalPresent<l>::check(_A_);
+    }
 
     /*!
       \brief Prepare the preconditioner.
@@ -344,7 +351,9 @@ namespace Dune {
     */
     SeqJac (const M& A, int n, field_type w)
       : _A_(A), _n(n), _w(w)
-    {	}
+    {
+      CheckIfDiagonalPresent<l>::check(_A_);
+    }
 
     /*!
       \brief Prepare the preconditioner.
