@@ -350,7 +350,7 @@ namespace Dune {
 
 	//! copy constructor
 	BCRSMatrix (const BCRSMatrix& Mat)
-	  : n(0), nnz(0)
+	  : n(Mat.n), nnz(0)
 	{
 	  // deep copy in global array
 	  int _nnz = Mat.nnz;
