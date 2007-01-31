@@ -3,7 +3,7 @@
 
 #include<math.h>
 #include<complex>
-#include<iostream>
+#include<ios>
 #include<iomanip>
 #include<fstream>
 #include<string>
@@ -69,6 +69,9 @@ namespace Dune {
 	// count the numbers printed to make columns
 	int counter=0;
 
+	// remember old flags
+	std::ios_base::fmtflags oldflags = s.flags();
+	
 	// set the output format
 	s.setf(std::ios_base::scientific, std::ios_base::floatfield);
 	int oldprec = s.precision();
@@ -85,8 +88,7 @@ namespace Dune {
 	  s << std::endl;
 
 	// reset the output format
-	s.precision(oldprec);
-	s.setf(std::ios_base::fixed, std::ios_base::floatfield);
+	s.flags(oldflags);
   }
 
 
@@ -174,6 +176,10 @@ namespace Dune {
   void printmatrix (std::ostream& s, const M& A, std::string title, std::string rowtext, 
 					int width=10, int precision=2)
   {
+    
+	// remember old flags
+	std::ios_base::fmtflags oldflags = s.flags();
+
 	// set the output format
 	s.setf(std::ios_base::scientific, std::ios_base::floatfield);
 	int oldprec = s.precision();
@@ -199,8 +205,7 @@ namespace Dune {
 	  }
 
 	// reset the output format
-	s.precision(oldprec);
-	s.setf(std::ios_base::fixed, std::ios_base::floatfield);
+	s.flags(oldflags);
   }
 
   /**
@@ -226,6 +231,8 @@ namespace Dune {
 			 std::string title, std::string rowtext, 
 			 int width=3, int precision=2)
   {
+    // remember old flags
+    std::ios_base::fmtflags oldflags = s.flags();
     // set the output format
     s.setf(std::ios_base::scientific, std::ios_base::floatfield);
     int oldprec = s.precision();
@@ -290,8 +297,7 @@ namespace Dune {
     }
     
     // reset the output format
-    s.precision(oldprec);
-    s.setf(std::ios_base::fixed, std::ios_base::floatfield);
+    s.flags(oldflags);
   }
   
     /** \brief Helper method for the writeMatrixToMatlab routine.
