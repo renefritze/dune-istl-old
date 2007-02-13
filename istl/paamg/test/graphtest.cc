@@ -347,11 +347,15 @@ void setupAnisotropic(Dune::BCRSMatrix<B>& A, double eps)
 template<class N, class G>
 void printWeightedGraph(G& graph, std::ostream& os, const N& norm=N())
 {
-  using Dune::RemoveConst;
+#ifdef HAVE_TR1_TYPE_TRAITS
+    using std::tr1::remove_const;
+#else
+    using Dune::remove_const;
+#endif
   using Dune::SelectType;
   using Dune::SameType;
     
-  typedef typename RemoveConst<G>::Type Mutable;
+  typedef typename remove_const<G>::type Mutable;
   typedef typename SelectType<SameType<G,Mutable>::value,
     typename G::VertexIterator,
     typename G::ConstVertexIterator>::Type VertexIterator;
@@ -373,11 +377,15 @@ void printWeightedGraph(G& graph, std::ostream& os, const N& norm=N())
 template<class G>
 void printPropertiesGraph(G& graph, std::ostream& os)
 {
-  using Dune::RemoveConst;
+#ifdef HAVE_TR1_TYPE_TRAITS
+    using std::tr1::remove_const;
+#else
+    using Dune::remove_const;
+#endif
   using Dune::SelectType;
   using Dune::SameType;
   
-  typedef typename RemoveConst<G>::Type Mutable;
+  typedef typename remove_const<G>::type Mutable;
   typedef typename SelectType<SameType<G,Mutable>::value,
     typename G::VertexIterator,
     typename G::ConstVertexIterator>::Type VertexIterator;
@@ -399,11 +407,15 @@ void printPropertiesGraph(G& graph, std::ostream& os)
 template<class G>
 void printGraph(G& graph, std::ostream& os)
 {
-  using Dune::RemoveConst;
+#ifdef HAVE_TR1_TYPE_TRAITS
+    using std::tr1::remove_const;
+#else
+  using Dune::remove_const;
+#endif
   using Dune::SelectType;
   using Dune::SameType;
   
-  typedef typename RemoveConst<G>::Type Mutable;
+  typedef typename remove_const<G>::type Mutable;
   typedef typename SelectType<SameType<G,Mutable>::value,
     typename G::VertexIterator,
     typename G::ConstVertexIterator>::Type VertexIterator;

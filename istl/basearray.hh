@@ -80,7 +80,7 @@ namespace Dune {
     {
     public:
       //! \brief The unqualified value type
-      typedef typename Dune::RemoveConst<T>::Type ValueType;
+      typedef typename remove_const<T>::type ValueType;
       
       friend class BidirectionalIteratorFacade<RealIterator<const ValueType>, const ValueType>;
       friend class BidirectionalIteratorFacade<RealIterator<ValueType>, ValueType>;
@@ -558,7 +558,7 @@ namespace Dune {
 	{
 	public:
 	  //! \brief The unqualified value type
-	  typedef typename Dune::RemoveConst<T>::Type ValueType;
+	  typedef typename remove_const<T>::type ValueType;
 
 	  friend class BidirectionalIteratorFacade<RealIterator<const ValueType>, const ValueType>;
 	  friend class BidirectionalIteratorFacade<RealIterator<ValueType>, ValueType>;
