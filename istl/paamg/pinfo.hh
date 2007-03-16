@@ -4,7 +4,7 @@
 
 #include<dune/common/collectivecommunication.hh>
 
-#ifdef HAVE_MPI
+#if HAVE_MPI
 
 #include<dune/common/mpicollectivecommunication.hh>
 #include<dune/istl/mpitraits.hh>
@@ -20,7 +20,7 @@ namespace Dune
   namespace Amg
   {
 
-#ifdef HAVE_MPI
+#if HAVE_MPI
 
     template<class T>
     class ParallelInformation
@@ -147,7 +147,7 @@ namespace Dune
       GlobalLookupIndexSet gli;
     };
 
-#ifdef HAVE_MPI    
+#if HAVE_MPI    
     template<class T>
     ParallelInformation<T>::ParallelInformation(const MPI_Comm& comm)
       : indexSet_(new ParallelIndexSet()), 

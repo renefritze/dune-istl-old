@@ -114,7 +114,7 @@ namespace Dune
     {
     };
 
-#ifdef HAVE_MPI    
+#if HAVE_MPI    
     template<typename T, typename O, typename T1>
     struct AggregatesPublisher<T,O,ParallelInformation<T1> >
     {
@@ -141,7 +141,7 @@ namespace Dune
 
   } // namespace Amg
 
-#ifdef HAVE_MPI  
+#if HAVE_MPI  
     // forward declaration
     template<class T1, class T2>
     class OwnerOverlapCopyCommunication;
@@ -150,7 +150,7 @@ namespace Dune
   namespace Amg
   {
 
-#ifdef HAVE_MPI    
+#if HAVE_MPI    
     template<typename T, typename O, typename T1, typename T2>
     struct AggregatesPublisher<T,O,OwnerOverlapCopyCommunication<T1,T2> >
     {
@@ -188,7 +188,7 @@ namespace Dune
   } // end Amg namespace
 
 
-#ifdef HAVE_MPI 
+#if HAVE_MPI 
   template<typename T, typename TI>
   struct CommPolicy<Amg::GlobalAggregatesMap<T,TI> >
   {

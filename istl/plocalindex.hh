@@ -41,7 +41,7 @@ namespace Dune
   template<typename T>
   class ParallelLocalIndex
   {
-#ifdef HAVE_MPI
+#if HAVE_MPI
     // friend declaration needed for MPITraits
     friend class MPITraits<ParallelLocalIndex<T> >;
 #endif
@@ -161,7 +161,7 @@ namespace Dune
        
   };
 
-#ifdef HAVE_MPI
+#if HAVE_MPI
 
   //! \todo Please doc me!
   template<typename T>
@@ -246,7 +246,7 @@ namespace Dune
     state_=static_cast<char>(state);
   }
 
-#ifdef HAVE_MPI
+#if HAVE_MPI
 
   template<typename T>
   MPI_Datatype MPITraits<ParallelLocalIndex<T> >::getType()

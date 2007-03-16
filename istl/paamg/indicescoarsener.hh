@@ -6,7 +6,7 @@
 #include<vector>
 #include"renumberer.hh"
 
-#ifdef HAVE_MPI
+#if HAVE_MPI
 #include<dune/istl/owneroverlapcopy.hh>
 #include"pinfo.hh"
 #endif
@@ -33,7 +33,7 @@ namespace Dune
     };
 
     
-#ifdef HAVE_MPI
+#if HAVE_MPI
 
     template<typename T, typename E>
     class ParallelIndicesCoarsener
@@ -217,7 +217,7 @@ namespace Dune
 	      SequentialInformation& coarseInfo);
     };
 
-#ifdef HAVE_MPI
+#if HAVE_MPI
     template<typename T, typename E>
     template<typename Graph, typename VM>
     inline typename Graph::VertexDescriptor 
