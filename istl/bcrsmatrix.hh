@@ -183,10 +183,6 @@ namespace Dune {
 	: p(0), i(0)
       {}
       
-      RealRowIterator(const RealRowIterator<const ValueType>& it)
-	: p(it.p), i(it.i)
-      {}
-      
       RealRowIterator(const RealRowIterator<ValueType>& it)
 	: p(it.p), i(it.i)
       {}
@@ -198,13 +194,13 @@ namespace Dune {
 	return i;
       }
       
-      std::ptrdiff_t distanceTo(RealRowIterator<ValueType> other)
+      std::ptrdiff_t distanceTo(const RealRowIterator<ValueType>& other) const
       {
 	assert(other.p==p);
 	return (other.i-i);
       }
       
-      std::ptrdiff_t distanceTo(const RealRowIterator<const ValueType> other)
+      std::ptrdiff_t distanceTo(const RealRowIterator<const ValueType>& other) const
       {
 	assert(other.p==p);
 	return (other.i-i);
@@ -242,7 +238,7 @@ namespace Dune {
 	i+=diff;
       }
       
-      T& elementAt(std::ptrdiff_t diff)
+      T& elementAt(std::ptrdiff_t diff) const
       {
 	return p[i+diff];
       }
@@ -258,6 +254,7 @@ namespace Dune {
     };
 
     //! The iterator over the (mutable matrix rows
+    typedef RealRowIterator<row_type> iterator;
     typedef RealRowIterator<row_type> Iterator;
     
 
@@ -292,6 +289,7 @@ namespace Dune {
 	typedef typename row_type::Iterator ColIterator;
 
     //! The const iterator over the matrix rows
+    typedef RealRowIterator<const row_type> const_iterator;
     typedef RealRowIterator<const row_type> ConstIterator;
 
 
