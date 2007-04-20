@@ -28,7 +28,7 @@
 namespace Dune {
    
   /**
-     @addtogroup ISTL
+     @addtogroup ISTL_Operators
      @{
   */
   
@@ -94,8 +94,12 @@ namespace Dune {
 	const communication_type& communication;
   };
 
+  /** @} */
 
-
+  /** 
+   * @addtogroup ISTL_SP 
+   * @{
+   */
   /**
    * \brief Scalar product for overlapping schwarz methods.
    *
@@ -165,7 +169,12 @@ namespace Dune {
     }
   };
 
-
+  /** 
+   * @} 
+   *
+   * @addtogroup ISTL_Prec
+   * @{
+   */
   //! \brief A parallel SSOR preconditioner.
   template<class M, class X, class Y, class C>
   class ParSSOR : public Preconditioner<X,Y> {
@@ -212,7 +221,7 @@ namespace Dune {
     /*! 
       \brief Apply the precondtioner
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {
@@ -295,9 +304,9 @@ namespace Dune {
 	}
 
     /*! 
-      \brief Apply the precondtioner
+      \brief Apply the preconditioner
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {

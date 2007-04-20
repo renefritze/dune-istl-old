@@ -16,8 +16,10 @@
 
 
 namespace Dune {
-   
-  /** @addtogroup ISTL
+  /** @defgroup ISTL_Prec Preconditioners
+      @ingroup ISTL_Solvers
+  */
+  /** @addtogroup ISTL_Prec
 	  @{
   */
   /** \file
@@ -146,7 +148,7 @@ namespace Dune {
     /*! 
       \brief Apply the precondtioner
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {
@@ -221,7 +223,7 @@ namespace Dune {
     /*!
       \brief Apply the preconditioner.
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {
@@ -293,7 +295,7 @@ namespace Dune {
     /*!
       \brief Apply the preconditioner.
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {
@@ -365,7 +367,7 @@ namespace Dune {
     /*!
       \brief Apply the preconditioner.
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {
@@ -439,7 +441,7 @@ namespace Dune {
     /*!
       \brief Apply the preconditoner.
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {
@@ -511,7 +513,7 @@ namespace Dune {
     /*!
       \brief Apply the precondioner.
       
-      \copydoc Preconditioner::apply(X&,Y&)
+      \copydoc Preconditioner::apply(X&,const Y&)
     */
     virtual void apply (X& v, const Y& d)
     {

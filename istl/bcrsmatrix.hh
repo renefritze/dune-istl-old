@@ -22,9 +22,13 @@
 */
 
 namespace Dune {
-   
+  
+  /** 
+   * @defgroup ISTL_SPMV Sparse Matrix and Vector classes
+   * @ingroup ISTL
+   */
     /** 
-		@addtogroup ISTL
+		@addtogroup ISTL_SPMV
 		@{
      */
 
@@ -50,7 +54,7 @@ namespace Dune {
 
 	   For general finite element implementations the number of rows n
        is known, the number of non-zeroes might also be known (e.g. 
-       #edges + #nodes for P1) but the size of a row and the indices of a row
+       \#edges + \#nodes for P1) but the size of a row and the indices of a row
        can not be defined in sequential order.
 
 	   Error checking: no error checking is provided normally.
@@ -121,7 +125,7 @@ namespace Dune {
 	   *
 	   * For general finite element implementations the number of rows n
 	   * is known, the number of non-zeroes might also be known (e.g. 
-	   * #edges + #nodes for P1) but the size of a row and the indices of a row
+	   * \#edges + \#nodes for P1) but the size of a row and the indices of a row
 	   * can not be defined in sequential order.
 	   */
 	  random,

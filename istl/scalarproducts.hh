@@ -9,6 +9,17 @@
 
 #include"solvercategory.hh"
 
+
+namespace Dune {
+  /**
+   * @defgroup ISTL_SP Scalar products
+   * @ingroup ISTL_Solvers
+   * @brief Scalar products for the use in iterative solvers
+   */
+  /** @addtogroup ISTL_SP
+	  @{
+  */
+
 /** \file
 
 \brief Define base class for scalar product and norm.
@@ -18,12 +29,6 @@ data partitioning strategies. Default implementations for the
 sequential case are provided.
 
 */
-
-namespace Dune {
-   
-  /** @addtogroup ISTL
-	  @{
-  */
 
   /*! \brief Base class for scalar product and norm computation
 

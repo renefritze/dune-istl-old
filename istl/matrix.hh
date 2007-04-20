@@ -10,8 +10,10 @@
 
 namespace Dune {
 
+  /** \addtogroup ISTL_SPMV
+      \{
+  */
     /** \brief A generic dynamic matrix 
-        \addtogroup ISTL
 
         This matrix is currently implemented as a BlockVector of BlockVectors.
         That makes the code fairly simple, as we get all iterators for free.
@@ -540,7 +542,7 @@ protected:
 
     int cols_;
 };
-
+  /** \} */
 } // end namespace Dune
 
 #endif

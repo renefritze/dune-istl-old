@@ -20,11 +20,6 @@
 */
 
 namespace Dune {
-   
-    /** 
-		@addtogroup ISTL
-		@{
-     */
 
  
  /** 
@@ -210,7 +205,11 @@ namespace Dune {
 	block_vector_unmanaged () : base_array_unmanaged<B,A>()
 	{	}
   };
-
+   
+    /** 
+		@addtogroup ISTL_SPMV
+		@{
+     */
 
  /** 
      \brief A vector of blocks with memory management.
@@ -632,6 +631,7 @@ namespace Dune {
     size_type capacity_;
   };
 
+  /** @} */
   //! Send BlockVector to an output stream
     template<class K, class A>
     std::ostream& operator<< (std::ostream& s, const BlockVector<K, A>& v)
@@ -1168,8 +1168,6 @@ namespace Dune {
     typedef B type;
   };
 #endif
-
-  /** @} end documentation */
 
 } // end namespace
 

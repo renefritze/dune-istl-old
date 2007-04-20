@@ -15,11 +15,6 @@ namespace Dune
 {
   namespace Amg
   {
-    /**
-     * @defgroup ISTL_PAAMG Parallel Algebraic Multigrid
-     * @ingroup ISTL
-     * @brief A Parallel Algebraic Multigrid based on Agglomeration.
-     */
     /** 
      * @addtogroup ISTL_PAAMG
      *
@@ -233,7 +228,6 @@ namespace Dune
 	 *
 	 * only operator== or operator!= may be called safely on an
 	 * iterator constructed this way.
-	 * @param graph The graph we are a vertex iterator for.
 	 * @param current The current vertex to position on.
 	 */
 	explicit VertexIteratorT(const VertexDescriptor& current);
@@ -504,7 +498,7 @@ namespace Dune
 	/**
 	 * @brief Constructor.
 	 * @param source The source vertex of the edge.
-	 * @param firstEdge Pointer to the beginning of the graph's edge array.
+	 * @param edge Pointer to the edge the iterator should point to.
 	 */
 	explicit EdgeIterator(const VertexDescriptor& source, const EdgeDescriptor& edge);
 		
@@ -513,7 +507,7 @@ namespace Dune
 	 *
 	 * Only operator== or operator!= can be called safely on an iterator constructed
 	 * this way!
-	 * @param firstEdge Pointer to the beginning of the graph's edge array.
+	 * @param edge Pointer to the end of the graph's edge array.
 	 */
 	explicit EdgeIterator(const EdgeDescriptor& edge);
 	
@@ -557,7 +551,8 @@ namespace Dune
       {
       public:
 	/**
-	 * @param Constructor.
+	 * @brief Constructor.
+	 * @param graph The graph over whose vertices to iterate.
 	 * @param current The position of the iterator.
 	 * @param end The last vertex of the graph.
 	 */
@@ -566,7 +561,7 @@ namespace Dune
 	
 	
 	/**
-	 * @param Constructor for end iterator.
+	 * @brief Constructor for end iterator.
 	 *
 	 * Use with care! All operations except operator== or operator!= will fail!
 	 * @param current The position of the iterator.
@@ -1041,20 +1036,19 @@ namespace Dune
 	Father;
 	
 	/**
-	 * @param Constructor.
+	 * @brief Constructor.
 	 * @param iter The iterator of the underlying graph.
-	 * @param graph The graph over whose edges we iterate.
+	 * @param graph The graph over whose edges we iterate on.
 	 */
 	explicit EdgeIteratorT(const Father& iter,
 			C* graph);
 	
 	/**
-	 * @param Constructor for the end iterator.
+	 * @brief Constructor for the end iterator.
 	 *
 	 * Only operator== or operator!= should be called on
 	 * an iterator constructed this way.
 	 * @param iter The iterator of the underlying graph.
-	 * @param graph The graph over whose edges we iterate.
 	 */
 	explicit EdgeIteratorT(const Father& iter);
 
@@ -1303,7 +1297,8 @@ namespace Dune
       /**
        * @brief Constructor.
        * @param graph The graph we attach properties to.
-       * @param 
+       * @param vmap The map of the vertices onto indices.
+       * @param emap The map of the edges onto indices.
        */
       PropertiesGraph(Graph& graph, const VertexMap& vmap=VertexMap(),
 		      const EdgeMap& emap=EdgeMap());
@@ -1425,6 +1420,7 @@ namespace Dune
     /**
      * @brief Visit all neighbour vertices of a vertex in a graph.
      *
+     * @param graph The graph whose vertices to visit.
      * @param vertex The vertex whose neighbours we want to
      * visit.
      * @param visitor The visitor evaluated for each EdgeIterator

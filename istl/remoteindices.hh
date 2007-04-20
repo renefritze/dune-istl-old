@@ -123,7 +123,6 @@ namespace Dune{
      * @brief Constructor.
      * Private as it should only be called from within Indexset.
      * @param attribute The attribute of the index on the remote processor.
-     * @param local The corresponding local index.
      */
     RemoteIndex(const T2& attribute);
 
@@ -210,7 +209,8 @@ namespace Dune{
      * @param comm The communicator to use.
      * @param source The indexset which represents the global to 
      * local mapping at the source of the communication 
-     * @param to The indexset to which the communication which represents the global to 
+     * @param destination The indexset to which the communication 
+     * which represents the global to 
      * local mapping at the destination of the communication.
      * May be the same as the source indexset.
      */
@@ -227,7 +227,8 @@ namespace Dune{
      * @param comm The communicator to use.
      * @param source The indexset which represents the global to 
      * local mapping at the source of the communication 
-     * @param to The indexset to which the communication which represents the global to 
+     * @param destination The indexset to which the communication 
+     * which represents the global to 
      * local mapping at the destination of the communication.
      * May be the same as the source indexset.
      */
