@@ -1031,7 +1031,9 @@ namespace Dune {
 	  return m;
 	}
 
-	//! row dimension of block r
+      /** \brief row dimension of block r
+          \bug Does not count empty rows (FlySpray #7)
+      */
 	size_type rowdim (size_type i) const
 	{
 	  const B* row = r[i].getptr();
@@ -1041,7 +1043,9 @@ namespace Dune {
 	    return 0;
 	}
 
-	//! col dimension of block c
+      /** \brief Column dimension of block c
+          \bug Does not count empty columns (FlySpray #7)
+      */
 	size_type coldim (size_type c) const
 	{
 	  // find an entry in column j
