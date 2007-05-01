@@ -410,6 +410,8 @@ namespace Dune{
 			      MPI_Datatype type, int* position, int bufferSize);
 
   };
+  
+  /** @} */
 
   /**
    * @brief Modifier for adding and/or deleting remote indices from
@@ -569,7 +571,6 @@ namespace Dune{
     bool first_;
     GlobalIndex last_;
   };
-  
   
   /**
    * @brief A collective iterator for moving over the remote indices for
