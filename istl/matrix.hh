@@ -130,9 +130,12 @@ public:
     /** \brief Assignment from scalar */
     Matrix& operator= (const field_type& t)
     {
-        for (unsigned int i=0; i<data_.size(); i++)
-            data_[i] = t;
-        return *this;
+      typedef typename BlockVector<row_type,allocator_type>::size_type 
+	size_type;
+      
+      for (size_type i=0; i<data_.size(); i++)
+	data_[i] = t;
+      return *this;
     }
 
     /** \brief The index operator */
@@ -538,7 +541,7 @@ public:
 
 protected:
 
-    BlockVector<row_type> data_;
+    BlockVector<row_type, allocator_type> data_;
 
     int cols_;
 };
