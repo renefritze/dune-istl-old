@@ -79,9 +79,10 @@ namespace Dune{
     /**
      * @brief The type of the attributes.
      * Normally this will be an enumeration like
-     * <pre>
+     * \code
      * enum Attributes{owner, border, overlap}
-     * </pre>
+     * \endcode
+     * e.g. OwnerOverlapCopyAttributes.
      */
     typedef T2 Attribute;
 
@@ -163,7 +164,7 @@ namespace Dune{
   public:
    
     /**
-     * @brief Type of the index set we use.
+     * @brief Type of the index set we use, e.g. ParallelLocalIndexSet.
      */
     typedef T ParallelIndexSet;
  

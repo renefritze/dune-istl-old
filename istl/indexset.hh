@@ -107,12 +107,12 @@ namespace Dune
      * @brief the type of the local index.
      * 
      * This class to provide the following functions:
-     * <pre>
+     * \code
      * LocalIndex operator=(int);
      * operator int() const;
      * LocalIndexState state() const;
      * void setState(LocalIndexState);
-     * </pre>
+     * \code
      */
     typedef TL LocalIndex;
 
@@ -223,15 +223,15 @@ namespace Dune
     typedef TG GlobalIndex;
 	
     /**
-     * @brief The type of the local index.
+     * @brief The type of the local index, e.g. ParallelLocalIndex.
      * 
      * This class to provide the following functions:
-     * <pre>
+     * \code
      * LocalIndex operator=(int);
      * operator int() const;
      * LocalIndexState state() const;
      * void setState(LocalIndexState);
-     * </pre>
+     * \code
      */
     typedef TL LocalIndex;
 
