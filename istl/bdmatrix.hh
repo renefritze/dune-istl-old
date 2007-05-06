@@ -9,7 +9,10 @@
 */
 
 namespace Dune {
-
+  /** 
+   * @addtogroup ISTL_SPMV 
+   * @{
+   */
     /** \brief A block-diagonal matrix 
 
     \todo It would be safer and more efficient to have a real implementation of
@@ -91,7 +94,7 @@ private:
     void addindex (size_type row, size_type col) {}
     void endindices () {}
 };
-
+  /** @}*/
 
 }  // end namespace Dune
 
