@@ -333,7 +333,7 @@ namespace Dune {
     /*! 
       \brief Apply inverse operator.
 
-      \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
+      \copydoc InverseOperator::apply(X&,Y&,InverseOperatorResult&)
     */
     virtual void apply (X& x, X& b, InverseOperatorResult& r)
     {
@@ -599,7 +599,7 @@ namespace Dune {
 
       \copydoc InverseOperator::apply(X&,Y&,InverseOperatorResult&)
     */
-    virtual void apply (X& x, X& b, InverseOperatorResult& res)
+    virtual void apply (X& x, X& b, InverseOperatorResult& r)
     {
 	  const double EPSILON=1e-80;
     
@@ -622,7 +622,7 @@ namespace Dune {
 	  //
     
 	  // r = r - Ax; rt = r
-   	  res.clear();                  // clear solver statistics
+   	  r.clear();                  // clear solver statistics
 	  Timer watch;                // start a timer
 	  _op.applyscaleadd(-1,x,r);  // overwrite b with defect
 	  _prec.pre(x,r);             // prepare preconditioner
@@ -647,12 +647,12 @@ namespace Dune {
 
           if ( norm < (_reduction * norm_0)  || norm<1E-30)
 		{
-	          res.converged = 1;
+	          r.converged = 1;
 	          _prec.post(x);                  // postprocess preconditioner
-	          res.iterations = 0;             // fill statistics
-	          res.reduction = 0;
-	          res.conv_rate  = 0;
-	          res.elapsed = watch.elapsed();
+	          r.iterations = 0;             // fill statistics
+	          r.reduction = 0;
+	          r.conv_rate  = 0;
+	          r.elapsed = watch.elapsed();
 	          return;
 		}
 
@@ -726,7 +726,7 @@ namespace Dune {
         
 		  if ( norm < (_reduction * norm_0) )
 			{
-			  res.converged = 1;
+			  r.converged = 1;
 			  break;
 			}
 
@@ -767,7 +767,7 @@ namespace Dune {
         
 		  if ( norm < (_reduction * norm_0)  || norm<1E-30)
 			{
-			  res.converged = 1;
+			  r.converged = 1;
 			  break;
 			}
 
@@ -780,12 +780,12 @@ namespace Dune {
 	  if (_verbose==1)                // printing for non verbose
 		printf("%5d %12.4E\n",it,norm);
 	  _prec.post(x);                  // postprocess preconditioner
-	  res.iterations = it;              // fill statistics
-	  res.reduction = norm/norm_0;
-	  res.conv_rate  = pow(res.reduction,1.0/it);
-	  res.elapsed = watch.elapsed();
+	  r.iterations = it;              // fill statistics
+	  r.reduction = norm/norm_0;
+	  r.conv_rate  = pow(r.reduction,1.0/it);
+	  r.elapsed = watch.elapsed();
 	  if (_verbose>0)                 // final print 
-		printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",res.conv_rate,res.elapsed,res.elapsed/it,it);
+		printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",r.conv_rate,r.elapsed,r.elapsed/it,it);
     }
 
     /*! 
