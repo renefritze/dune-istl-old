@@ -7,8 +7,8 @@
 
 namespace Dune
 {
-  /** @addtogroup ISTL
-   *
+  /**
+   * @addtogroup ISTL_SPMV
    * @{
    */
    /**
@@ -18,7 +18,7 @@ namespace Dune
    */
   namespace
   {
-    
+
     template<int i>
     struct NonZeroCounter
     {

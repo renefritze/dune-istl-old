@@ -21,7 +21,7 @@ namespace Dune {
    *
    * All of our \ref ISTL_Solvers "Krylow solvers" are preconditioned versions. 
    * There are sequential precondiotioner (e,g. SeqJacobi, SeqSOR, SeqSSOR) as well as parallel preconditioners
-   * (e.g. Amg, BlockPreconditioner) available for plugging them into the solvers
+   * (e.g. AMG, BlockPreconditioner) available for plugging them into the solvers
    * together with matching ScalarProducts.
    *
    * Some of the available perconditioners (e.g. SeqJacobi, SeqSOR, SeqSSOR)) 
@@ -40,7 +40,6 @@ namespace Dune {
    * depending on the algorithm. 
    */
 
-  */
   /** @addtogroup ISTL_Prec
 	  @{
   */
