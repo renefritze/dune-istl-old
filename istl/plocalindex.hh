@@ -78,7 +78,7 @@ namespace Dune
     /**
      * @brief Parameterless constructor.
      *
-     * Needed for use in FixedArray.
+     * Needed for use in container classes.
      */
     ParallelLocalIndex();
     
