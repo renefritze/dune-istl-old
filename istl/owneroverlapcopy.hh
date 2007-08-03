@@ -9,7 +9,7 @@
 #include<map>
 #include<set>
 
-#include"math.h"
+#include"cmath"
 
 // MPI header
 #if HAVE_MPI

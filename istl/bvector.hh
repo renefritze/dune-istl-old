@@ -1,7 +1,7 @@
 #ifndef DUNE_BVECTOR_HH
 #define DUNE_BVECTOR_HH
 
-#include<math.h>
+#include<cmath>
 #include<complex>
 
 #include "istlexception.hh"

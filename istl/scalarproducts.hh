@@ -1,7 +1,7 @@
 #ifndef DUNE_SCALARPRODUCTS_HH
 #define DUNE_SCALARPRODUCTS_HH
 
-#include<math.h>
+#include<cmath>
 #include<complex>
 #include<iostream>
 #include<iomanip>
@@ -34,7 +34,7 @@ sequential case are provided.
 
       Krylov space methods need to compute scalar products and norms 
       (for convergence test only). These methods have to know about the
-	  underlying data decomposition. For the sequantial case adefault implementation
+	  underlying data decomposition. For the sequential case a default implementation
 	  is provided.
   */
   template<class X>
