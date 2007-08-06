@@ -42,7 +42,7 @@ struct Builder<Dune::BCRSMatrix<B,A> >
       
       Dune::printmatrix(std::cout, matrix, "random", "row");
     }
-  {
+    /*{
       
       Dune::BCRSMatrix<B,A> matrix( rows, cols, rows*maxNZCols, Dune::BCRSMatrix<B,A>::random );
       for(int i=0; i<rows; ++i){
@@ -73,7 +73,7 @@ struct Builder<Dune::BCRSMatrix<B,A> >
       matrix.endrowsizes();
       
       Dune::printmatrix(std::cout, matrix, "random", "row");
-    }
+      }*/
   }
 };
 
