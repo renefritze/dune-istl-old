@@ -397,7 +397,7 @@ namespace Dune {
 	  }
 
 	  //! dereferencing
-	  int index ()
+	  int index () const
 	  {
         return i;
 	  }
