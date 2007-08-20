@@ -1,4 +1,7 @@
 #ifndef DUNE_SUPERLUMATRIX_HH
+#define DUNE_SUPERLUMATRIX_HH
+
+#ifdef HAVE_SUPERLU
 #include "dsp_defs.h"
 #include"bcrsmatrix.hh"
 #include"bvector.hh"
@@ -52,16 +55,29 @@ namespace Dune
   
   };
 
+  template<class M>
+  struct SuperMatrixInitializer
+  {};
+
+  template<class M, class X, class T1>
+  class SeqOverlappingSchwarz;
+
   /**
    * @brief Coverte for BCRSMatrix to SuperLU Matrix.
    */
   template<class B, class TA, int n, int m>
   class SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >
   {
+    template<class M, class X, class T1>
+    friend class SeqOverlappingSchwarz;
+    friend class SuperMatrixInitializer<BCRSMatrix<FieldMatrix<B,n,m>,TA> >;
+    
   public:
     /** @brief The type of the matrix to convert. */
     typedef BCRSMatrix<FieldMatrix<B,n,m>,TA> Matrix;
   
+    typedef typename Matrix::size_type size_type;
+    
     /**
      * @brief Constructor that initializes the data.
      * @param mat The matrix to convert.
@@ -85,7 +101,7 @@ namespace Dune
      * @brief Get the number of rows.
      * @return  The number of rows.
      */
-    std::size_t N() const
+    size_type N() const
     {
       return N_;
     }
@@ -94,18 +110,15 @@ namespace Dune
      * @brief Get the number of columns.
      * @return  The number of columns.
      */
-    std::size_t M() const
+    size_type M() const
     {
       return M_;
     }
     
-    std::size_t Nnz() const
-    {
-      return Nnz_;
-    }
-
     SuperLUMatrix& operator=(const Matrix& mat);
     
+    SuperLUMatrix& operator=(const SuperLUMatrix& mat);
+
   private: 
     /** @brief Initialize data from given matrix. */
     void setMatrix(const Matrix& mat);
@@ -118,32 +131,179 @@ namespace Dune
     int* colstart;
     SuperMatrix A;
   };
-
-  /*
-  template<class B, class TA, int n>
-  class SuperLUMatrix<BlockVector<FieldVector<B,n>,TA> >
-  {
-  public:
-    typedef BlockVector<FieldVector<B,n>,TA> Vector;
-
-    SuperLUMatrix(const Vector& v)
-    {
-      // allocate storage
-      a=new double[v.size()*n];
-      dCreate_Dense_Matrix(&b, v.size()*n, 1, v.size()*n, SLU_DN, GetSuperLUType<B>::type, SLU_GE);
-    }
-    ~SuperLUMatrix()
-    {
-      Destroy_SuperMatrix_Store(&b);
-      delete[] a;
-    }
   
-  private:
-    double* a;
-    SuperMatrix b;
-  };
+  template<class T, class A, int n, int m>
+  class SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >
+  {
+    template<class I, class S>
+    friend class OverlappingSchwarzInitializer;
+  public:
+    typedef BCRSMatrix<FieldMatrix<T,n,m>,A> Matrix;
+    typedef SuperLUMatrix<Matrix> SuperLUMatrix;
+    typedef typename Matrix::const_iterator Iter;
+    typedef typename Matrix::row_type::const_iterator CIter;
+    typedef typename Matrix::size_type size_type;
+    
+    SuperMatrixInitializer(SuperLUMatrix& m);
+    
+    SuperMatrixInitializer();
+    
+    ~SuperMatrixInitializer();
+    
+    void addRowNnz(const Iter& row)const;
+    
+    void allocate();
+        
+    void countEntries(const Iter& row, const CIter& col) const;
+    
+    void countEntries(size_type colidx)const;
 
-    */
+    void calcColstart()const;
+
+    void copyValue(const Iter& row, const CIter& col) const;
+
+    void copyValue(const CIter& col, size_type rowindex, size_type colidx)const;
+
+    void createMatrix() const;
+    
+  private:
+    
+    void allocateMatrixStorage()const;
+
+    void allocateMarker();
+
+    SuperLUMatrix* mat;
+    int cols;
+    typename Matrix::size_type *marker;
+  };
+  
+  template<class T, class A, int n, int m>
+  SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::SuperMatrixInitializer(SuperLUMatrix& mat_)
+    : mat(&mat_), cols(mat_.M()), marker(0)
+  {
+    mat->Nnz_=0;
+  }
+
+  template<class T, class A, int n, int m>
+  SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::SuperMatrixInitializer()
+    : mat(0), marker(0)
+  {}
+  
+  template<class T, class A, int n, int m>
+  SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::~SuperMatrixInitializer()
+  {
+    if(marker)
+      delete[] marker;
+  }
+  
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::addRowNnz(const Iter& row)const
+  {
+    mat->Nnz_+=row->getsize();
+  }
+  
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::allocate()
+  {
+    allocateMatrixStorage();
+    allocateMarker();
+  }
+  
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::allocateMatrixStorage()const
+  {
+    mat->Nnz_*=n*m;
+    // initialize data
+    mat->values=new T[mat->Nnz_];
+    mat->rowindex=new int[mat->Nnz_];
+    mat->colstart=new int[cols+1];
+  }
+
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::allocateMarker()
+  {          
+    marker = new typename Matrix::size_type[cols];
+
+    for(int i=0; i < cols; ++i)
+      marker[i]=0;
+  }
+  
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::countEntries(const Iter& row, const CIter& col)const
+  {
+    countEntries(col.index());
+    
+  }
+  
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::countEntries(size_type colindex)const
+  {
+    for(int i=0; i < m; ++i)
+      marker[colindex*m+i]+=n;
+  }
+
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::calcColstart()const
+  {
+    mat->colstart[0]=0;
+    for(int i=0; i < cols; ++i){
+	mat->colstart[i+1]=mat->colstart[i]+marker[i];
+	marker[i]=mat->colstart[i];
+    }
+  }
+  
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::copyValue(const Iter& row, const CIter& col)const
+  {
+    copyValue(col, row.index(), col.index());
+  }
+
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::copyValue(const CIter& col, size_type rowindex, size_type colindex)const
+  {
+    for(int i=0; i<n;i++){
+      for(int j=0; j<m; j++){
+	mat->rowindex[marker[colindex*m+j]]=rowindex*n+i;
+	mat->values[marker[colindex*m+j]]=(*col)[i][j];
+	++marker[colindex*m+j];
+      }
+    }
+  }
+  
+  template<class T, class A, int n, int m>
+  void SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::createMatrix() const
+  {
+    dCreate_CompCol_Matrix(&mat->A, mat->N_, mat->M_, mat->Nnz_, 
+			   mat->values, mat->rowindex, mat->colstart, SLU_NC, static_cast<Dtype_t>(GetSuperLUType<T>::type), SLU_GE);
+  }
+  
+  template<class F, class Matrix>
+  void copyToSuperMatrix(F& initializer, const Matrix& mat)
+  {
+    typename Matrix::size_type M = mat.M();
+    typedef typename Matrix::const_iterator Iter;
+
+    for(Iter row=mat.begin(); row!= mat.end(); ++row)
+      initializer.addRowNnz(row);
+    
+    initializer.allocate();
+    
+    for(Iter row=mat.begin(); row!= mat.end(); ++row){
+      typedef typename  Matrix::row_type::const_iterator CIter;
+      for(CIter col=row->begin(); col != row->end(); ++col)
+	initializer.countEntries(row, col);
+    }
+    
+    initializer.calcColstart();
+    
+    for(Iter row=mat.begin(); row!= mat.end(); ++row){
+      typedef typename  Matrix::row_type::const_iterator CIter;
+      for(CIter col=row->begin(); col != row->end(); ++col)
+	initializer.copyValue(row, col);
+    }
+    initializer.createMatrix();
+  }
+  
 
   template<class B, class TA, int n, int m>
   bool  SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >::operator==(const BCRSMatrix<FieldMatrix<B,n,m>,TA>& mat) const
@@ -194,72 +354,46 @@ namespace Dune
   }
 
   template<class B, class TA, int n, int m>
+  SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >&
+  SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >::operator=(const SuperLUMatrix& mat)
+  {
+    if(N_+M_+Nnz_!=0)
+      free();
+    N_=mat.N_;
+    M_=mat.M_;
+    Nnz_= mat.Nnz_;
+    if(M_>0){
+      colstart=new int[M_+1];
+      for(int i=0; i<=M_; ++i)
+	colstart[i]=mat.colstart[i];
+    }
+    
+    if(Nnz_>0){
+      values = new B[Nnz_];
+      rowindex = new int[Nnz_];
+      
+      for(int i=0; i<Nnz_; ++i)
+	values[i]=mat.values[i];
+      
+      for(int i=0; i<Nnz_; ++i)
+	rowindex[i]=mat.rowindex[i];
+    }
+    if(M_+Nnz_>0)
+      dCreate_CompCol_Matrix(&A, N_, M_, Nnz_, 
+			   values, rowindex, colstart, SLU_NC, static_cast<Dtype_t>(GetSuperLUType<B>::type), SLU_GE);
+    return *this;
+  }
+
+  template<class B, class TA, int n, int m>
   void SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >
   ::setMatrix(const Matrix& mat)
   {
     N_=n*mat.N();
     M_=m*mat.M();
-    // Calculate no of nonzeros
-    Nnz_=0;
-    typedef typename Matrix::ConstRowIterator Iter;
-
-    for(Iter row=mat.begin(); row!= mat.end(); ++row)
-      Nnz_+=row->getsize();
-    Nnz_*=n*m;
-	
-    // initialize data
-    values=new B[Nnz_];
-    rowindex=new int[Nnz_];
-    colstart=new int[mat.M()*m+1];
+    SuperMatrixInitializer<Matrix> initializer(*this);
     
-    // calculate pattern for the transposed matrix
-    typedef typename Matrix::row_type row_type;
-      
-    std::size_t* marker = new std::size_t[mat.M()*m];
-
-    for(int i=0; i < m*mat.M(); ++i)
-      marker[i]=0;
-      
-    for(Iter row=mat.begin(); row!= mat.end(); ++row){
-      typedef typename row_type::const_iterator CIter;
-      for(CIter col=row->begin(); col != row->end(); ++col){
-	for(int i=0; i < m; ++i)
-	  marker[col.index()*m+i]+=n;
-      }
-    }
+    copyToSuperMatrix(initializer,mat);
     
-    // convert no rownnz to colstart
-    colstart[0]=0;
-    for(int i=0; i < m*mat.M(); ++i){
-	colstart[i+1]=colstart[i]+marker[i];
-	marker[i]=colstart[i];
-    }
-      
-    // copy data
-    for(Iter row=mat.begin(); row!= mat.end(); ++row){
-      typedef typename row_type::const_iterator CIter;
-      for(int i=0; i<n;i++){
-	for(CIter col=row->begin(); col != row->end(); ++col){
-	  for(int j=0; j<m; j++){
-	    //std::cout<<col.index()<<"*"<<m<<"+"<<j<<"="<<col.index()*m+j<<" ";
-	    //std::cout<<"marker="<<marker[col.index()*m+j]<<std::endl;
-	    //std::cout<<"rowindex="<<rowindex[0]<<std::endl;
-	    //std::cout<<rowindex[marker[col.index()*m+j]]<<std::endl;
-	    //std::cout<<row.index()<<std::endl;
-	    //std::cout<<col.index()<<std::endl;
-	    //std::cout<<col.index()*m+j<<std::endl;
-	    //std::cout<<marker[col.index()*m+j]<<std::endl;
-	    rowindex[marker[col.index()*m+j]]=row.index()*n+i;
-	    values[marker[col.index()*m+j]]=(*col)[i][j];
-	    ++marker[col.index()*m+j];
-	  }
-	}
-      }
-    }
-    delete[] marker;
-      
-    dCreate_CompCol_Matrix(&A, N_, M_, Nnz_, 
-			   values, rowindex, colstart, SLU_NC, static_cast<Dtype_t>(GetSuperLUType<B>::type), SLU_GE);
 #ifdef DUNE_ISTL_WITH_CHECKING
     if(N_<30)
       dPrint_CompCol_Matrix("A",&A);
@@ -270,7 +404,8 @@ namespace Dune
   template<class B, class TA, int n, int m>
   SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >::~SuperLUMatrix()
   {
-    free();
+    if(N_+M_+Nnz_!=0)
+      free();
   }
 
   template<class B, class TA, int n, int m>
@@ -283,5 +418,5 @@ namespace Dune
   }
 
 };
-  
+#endif  
 #endif
