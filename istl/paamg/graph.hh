@@ -1425,9 +1425,10 @@ namespace Dune
      * visit.
      * @param visitor The visitor evaluated for each EdgeIterator
      * (by its method operator()(const ConstEdgeIterator& edge)
+     * @return The number of neighbours of the vertex.
      */
     template<class G, class V>
-    void visitNeighbours(const G& graph, const typename G::VertexDescriptor& vertex, 
+    int visitNeighbours(const G& graph, const typename G::VertexDescriptor& vertex, 
 			 V& visitor);
     
     template<class M>
@@ -2329,13 +2330,15 @@ namespace Dune
     {}
 
     template<class G, class V>
-    inline void visitNeighbours(const G& graph, const typename G::VertexDescriptor& vertex, 
+    inline int visitNeighbours(const G& graph, const typename G::VertexDescriptor& vertex, 
 			 V& visitor)
     {      
       typedef typename G::ConstEdgeIterator iterator;
       const iterator end = graph.endEdges(vertex);
-      for(iterator edge = graph.beginEdges(vertex); edge != end; ++edge)
+      int noNeighbours=0;
+      for(iterator edge = graph.beginEdges(vertex); edge != end; ++edge, ++noNeighbours)
 	visitor(edge);
+      return noNeighbours;
     }
     
       
