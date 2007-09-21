@@ -59,7 +59,7 @@ namespace Dune
   struct SuperMatrixInitializer
   {};
 
-  template<class M, class X, class T1>
+  template<class M, class X, class TM, class T1>
   class SeqOverlappingSchwarz;
 
   /**
@@ -68,7 +68,7 @@ namespace Dune
   template<class B, class TA, int n, int m>
   class SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >
   {
-    template<class M, class X, class T1>
+    template<class M, class X, class TM, class T1>
     friend class SeqOverlappingSchwarz;
     friend class SuperMatrixInitializer<BCRSMatrix<FieldMatrix<B,n,m>,TA> >;
     
@@ -95,6 +95,11 @@ namespace Dune
       return A;
     }
     
+    /** @brief Cast to a SuperLU Matrix */
+    operator const SuperMatrix&()const
+    {
+      return A;
+    }
     bool operator==(const Matrix& mat) const;
     
     /** 
@@ -131,6 +136,46 @@ namespace Dune
     int* colstart;
     SuperMatrix A;
   };
+
+  template<class T, class A, int n, int m>
+  void writeCompColMatrixToMatlab(const SuperLUMatrix<BCRSMatrix<FieldMatrix<T,n,m>,A> >& mat,
+			   std::ostream& os)
+  {
+    const SuperMatrix a=static_cast<const SuperMatrix&>(mat);
+    NCformat *astore = (NCformat *) a.Store;
+    double* dp = (double*)astore->nzval;
+
+    // remember old flags
+    std::ios_base::fmtflags oldflags = os.flags();
+    // set the output format
+    //os.setf(std::ios_base::scientific, std::ios_base::floatfield);
+    int oldprec = os.precision();
+    //os.precision(10);
+    //dPrint_CompCol_Matrix("A", const_cast<SuperMatrix*>(&a));
+    
+    os <<"[";
+    for(int row=0; row<a.nrow; ++row){
+      for(int col= 0; col < a.ncol; ++col){
+	// linear search for col
+	int i;
+	for(i=astore->colptr[col]; i < astore->colptr[col+1]; ++i)
+	  if(astore->rowind[i]==row){
+	    os<<dp[i]<<" ";
+	    break;
+	  }
+	if(i==astore->colptr[col+1])
+	  // entry not present
+	  os<<0<<" ";
+      }
+      if(row==a.nrow-1)
+	os<<"]";
+      os<<std::endl;
+    }
+    // reset the output format
+    os.flags(oldflags);
+    os.precision(oldprec);
+  }
+  
   
   template<class T, class A, int n, int m>
   class SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >
@@ -145,7 +190,7 @@ namespace Dune
     typedef typename Matrix::size_type size_type;
     
     SuperMatrixInitializer(SuperLUMatrix& m);
-    
+
     SuperMatrixInitializer();
     
     ~SuperMatrixInitializer();
@@ -186,7 +231,7 @@ namespace Dune
 
   template<class T, class A, int n, int m>
   SuperMatrixInitializer<BCRSMatrix<FieldMatrix<T,n,m>,A> >::SuperMatrixInitializer()
-    : mat(0), marker(0)
+    : mat(0), cols(0), marker(0)
   {}
   
   template<class T, class A, int n, int m>
@@ -395,7 +440,7 @@ namespace Dune
     copyToSuperMatrix(initializer,mat);
     
 #ifdef DUNE_ISTL_WITH_CHECKING
-    if(N_<30)
+    if(N_<0)
       dPrint_CompCol_Matrix("A",&A);
     assert(*this==mat);
 #endif
