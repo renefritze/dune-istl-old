@@ -273,7 +273,7 @@ namespace Dune {
   namespace Amg
   {
     template<class T> class ConstructionTraits;
-  };
+  }
 
   /**
    * @brief Block parallel preconditioner.
