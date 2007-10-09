@@ -485,13 +485,15 @@ namespace Dune
 	{}
 	template<class T>
 	void operator()(const T& edge)
-	{if(aggregates[edge.target()]!=AggregatesMap::ISOLATED)
-	  subdomains[subdomain].insert(edge.target());
+	{
+	  if(aggregates[edge.target()]!=AggregatesMap::ISOLATED)
+	    subdomains[subdomain].insert(edge.target());
 	}
 	int setAggregate(const AggregateDescriptor& aggregate_)
 	{
 	  subdomain=aggregate_;
 	  max = std::max(subdomain, aggregate_);
+	  return subdomain;
 	}
 	int noSubdomains() const
 	{
@@ -600,13 +602,13 @@ namespace Dune
 	      // isolated vertex gets its own aggregate
  	      subdomains.push_back(Subdomain());
  	      aggregate=subdomains.size()-1;
- 	    }
+	    }
 	    overlapVisitor.setAggregate(aggregate);
 	    aggregateVisitor.setAggregate(aggregate);
 	    subdomains[aggregate].insert(i);
 	    typename AggregatesMap::VertexList vlist;	    
 	    amap.template breadthFirstSearch<false,false>(i, aggregate, graph, vlist, aggregateVisitor, 
-				    overlapVisitor, visitedMap);
+	    		    overlapVisitor, visitedMap);
 	  }
 	subdomains.resize(aggregateVisitor.noSubdomains());
 	
