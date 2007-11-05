@@ -6,7 +6,6 @@
 #include<iostream>
 #include<iomanip>
 #include<string>
-#include<stdio.h> // there is nothing better than printf
 
 #include "istlexception.hh"
 #include "operators.hh"
@@ -228,9 +227,11 @@ namespace Dune {
 	  // printing
 	  if (_verbose>0)
 		{
-		  printf("=== LoopSolver\n");
-		  if (_verbose>1) printf(" Iter       Defect         Rate\n");
-		  if (_verbose>1) printf("%5d %12.4E\n",0,def0);
+                    std::cout << "=== LoopSolver" << std::endl;
+                    if (_verbose>1) 
+                        std::cout << " Iter       Defect         Rate" << std::endl;
+                    if (_verbose>1) 
+                        std::cout << "0 " << def0 << std::endl;
 		}
 
 	  // allocate correction vector
@@ -246,7 +247,7 @@ namespace Dune {
 		  _op.applyscaleadd(-1,v,b);  // update defect
 		  double defnew=_sp.norm(b);// comp defect norm
 		  if (_verbose>1)             // print
-			printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
+                      std::cout << i << " " << defnew << " " << defnew/def << std::endl;
 		  def = defnew;               // update norm
 		  if (def<def0*_reduction || def<1E-30)    // convergence check	
 			{
@@ -257,7 +258,7 @@ namespace Dune {
 
 	  // print
 	  if (_verbose==1)
-		printf("%5d %12.4E\n",i,def);
+              std::cout << i << " " << def << std::endl;
 	
 	  // postprocess preconditioner
 	  _prec.post(x);
@@ -269,8 +270,11 @@ namespace Dune {
 	  res.elapsed = watch.elapsed();
 
 	  // final print
-	  if (_verbose>0) 
-		printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",res.conv_rate,res.elapsed,res.elapsed/i,i);
+	  if (_verbose>0)
+              std::cout << "=== rate=" << res.conv_rate
+                        << ", T=" << res.elapsed
+                        << ", TIT=" << res.elapsed/i
+                        << ", IT=" << i << std::endl;
 	}
 
 	//! \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
@@ -349,9 +353,11 @@ namespace Dune {
       
       if (_verbose>0)             // printing
 	{
-	  printf("=== GradientSolver\n");
-	  if (_verbose>1) printf(" Iter       Defect         Rate\n");
-	  if (_verbose>1) printf("%5d %12.4E\n",0,def0);
+            std::cout << "=== GradientSolver" << std::endl;
+            if (_verbose>1) {
+                std::cout << " Iter       Defect         Rate" << std::endl;
+                std::cout << "0 " << def0 << std::endl;
+            }
 	}
       
       int i=1; double def=def0;   // loop variables
@@ -367,7 +373,7 @@ namespace Dune {
 	  
 	  double defnew=_sp.norm(b);// comp defect norm
 	  if (_verbose>1)             // print
-	    printf("%5d %12.4E %12.4g\n",i,defnew,defnew/def);
+              std::cout << i << " " << defnew << " " << defnew/def << std::endl;
 	  def = defnew;               // update norm
 	  if (def<def0*_reduction || def<1E-30)    // convergence check	
 	    {
@@ -377,14 +383,18 @@ namespace Dune {
 	}
       
       if (_verbose==1)                // printing for non verbose
-	printf("%5d %12.4E\n",i,def);
+          std::cout << i << " " << def << std::endl;
+
       _prec.post(x);                  // postprocess preconditioner
       res.iterations = i;               // fill statistics
       res.reduction = def/def0;
       res.conv_rate  = pow(res.reduction,1.0/i);
       res.elapsed = watch.elapsed();
       if (_verbose>0)                 // final print 
-	printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",res.conv_rate,res.elapsed,res.elapsed/i,i);
+          std::cout << "=== rate=" << res.conv_rate
+                    << ", T=" << res.elapsed
+                    << ", TIT=" << res.elapsed/i
+                    << ", IT=" << i << std::endl;
     }
 
     /*! 
@@ -470,15 +480,19 @@ namespace Dune {
 		  res.conv_rate  = 0;
 		  res.elapsed=0;
 		  if (_verbose>0)                 // final print 
-			printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",res.conv_rate,res.elapsed,res.elapsed,0);
+                      std::cout << "=== rate=" << res.conv_rate
+                                << ", T=" << res.elapsed << ", TIT=" << res.elapsed
+                                << ", IT=0" << std::endl;
 		  return;
 		}
 
 	  if (_verbose>0)             // printing
 		{
-		  printf("=== CGSolver\n");
-		  if (_verbose>1) printf(" Iter       Defect         Rate\n");
-		  if (_verbose>1) printf("%5d %12.4E\n",0,def0);
+                    std::cout << "=== CGSolver" << std::endl;
+                    if (_verbose>1) {
+                        std::cout << " Iter       Defect         Rate" << std::endl;
+                        std::cout << "0 " << def0 << std::endl;
+                    }
 		}
 
 	  // some local variables
@@ -504,7 +518,7 @@ namespace Dune {
 		  // convergence test
 		  double defnew=_sp.norm(b);// comp defect norm
 		  if (_verbose>1)             // print
-			printf("%5d %12.4E %12.4E\n",i,defnew,defnew/def);
+                      std::cout << i << " " << defnew << " " << defnew/def << std::endl;
 		  def = defnew;               // update norm
 		  if (def<def0*_reduction || def<1E-30 || i==_maxit)    // convergence check	
 			{
@@ -523,14 +537,17 @@ namespace Dune {
 		}
 
 	  if (_verbose==1)                // printing for non verbose
-		printf("%5d %12.4E\n",i,def);
+              std::cout << i << " " << def << std::endl;
 	  _prec.post(x);                  // postprocess preconditioner
 	  res.iterations = i;               // fill statistics
 	  res.reduction = def/def0;
 	  res.conv_rate  = pow(res.reduction,1.0/i);
 	  res.elapsed = watch.elapsed();
 	  if (_verbose>0)                 // final print 
-		printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",res.conv_rate,res.elapsed,res.elapsed/i,i);
+              std::cout << "=== rate=" << res.conv_rate
+                        << ", T=" << res.elapsed
+                        << ", TIT=" << res.elapsed/i
+                        << ", IT=" << i << std::endl;
     }
 
     /*! 
@@ -640,9 +657,11 @@ namespace Dune {
 
 	  if (_verbose>0)             // printing
 		{
-		  printf("=== BiCGSTABSolver\n");
-		  if (_verbose>1) printf(" Iter       Defect         Rate\n");
-		  if (_verbose>1) printf("%5d %12.4E\n",0,norm_0);
+                    std::cout << "=== BiCGSTABSolver" << std::endl;
+                    if (_verbose>1) {
+                        std::cout << " Iter       Defect         Rate" << std::endl;
+                        std::cout << "0 " << norm_0 << std::endl;
+                    }
 		}
 
           if ( norm < (_reduction * norm_0)  || norm<1E-30)
@@ -722,7 +741,7 @@ namespace Dune {
    		  norm = _sp.norm(r);
 
 		  if (_verbose>1)             // print
-			printf("%5d %12.4E %12.4g\n",it,norm,norm/norm_old);
+                      std::cout << it << " " << norm << " " << norm/norm_old << std::endl;
         
 		  if ( norm < (_reduction * norm_0) )
 			{
@@ -763,7 +782,7 @@ namespace Dune {
 		  norm = _sp.norm(r);
 
 		  if (_verbose>1)             // print
-			printf("%5d %12.4E %12.4g\n",it,norm,norm/norm_old);
+                      std::cout << it << " " << norm << " " << norm/norm_old << std::endl;
         
 		  if ( norm < (_reduction * norm_0)  || norm<1E-30)
 			{
@@ -778,14 +797,17 @@ namespace Dune {
 		}// while
 
 	  if (_verbose==1)                // printing for non verbose
-		printf("%5d %12.4E\n",it,norm);
+              std::cout << it << " " << norm << std::endl;
 	  _prec.post(x);                  // postprocess preconditioner
 	  res.iterations = it;              // fill statistics
 	  res.reduction = norm/norm_0;
 	  res.conv_rate  = pow(res.reduction,1.0/it);
 	  res.elapsed = watch.elapsed();
 	  if (_verbose>0)                 // final print 
-		printf("=== rate=%g, T=%g, TIT=%g, IT=%d\n",res.conv_rate,res.elapsed,res.elapsed/it,it);
+              std::cout << "=== rate=" << res.conv_rate
+                        << ", T=" << res.elapsed
+                        << ", TIT=" << res.elapsed/it
+                        << ", IT=" << it << std::endl;
     }
 
     /*! 
