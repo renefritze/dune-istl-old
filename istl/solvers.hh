@@ -19,7 +19,7 @@ namespace Dune {
       @ingroup ISTL
   */
   /** @addtogroup ISTL_Solvers
-	  @{
+    @{
   */
 
 
@@ -42,35 +42,35 @@ namespace Dune {
   struct InverseOperatorResult
   {
       /** \brief Default constructor */
-	InverseOperatorResult ()
-	{
-	  clear();
-	}
+  InverseOperatorResult ()
+  {
+    clear();
+  }
 
       /** \brief Resets all data */
-	void clear ()
-	{
-	  iterations = 0;
-	  reduction = 0;
-	  converged = false;
-	  conv_rate = 1;
-	  elapsed = 0;
-	}
+  void clear ()
+  {
+    iterations = 0;
+    reduction = 0;
+    converged = false;
+    conv_rate = 1;
+    elapsed = 0;
+  }
 
       /** \brief Number of iterations */
-	int iterations;	
+  int iterations; 
 
       /** \brief Reduction achieved: \f$ \|b-A(x^n)\|/\|b-A(x^0)\|\f$ */
-	double reduction;
+  double reduction;
 
       /** \brief True if convergence criterion has been met */
-	bool converged;	
+  bool converged; 
 
       /** \brief Convergence rate (average reduction per step) */
-	double conv_rate;
+  double conv_rate;
 
       /** \brief Elapsed time in seconds */
-	double elapsed;
+  double elapsed;
   };
 
 
@@ -99,13 +99,13 @@ namespace Dune {
     typedef typename X::field_type field_type;
 
     /** 
-	\brief Apply inverse operator, 
-	
-	\warning Note: right hand side b may be overwritten!
+  \brief Apply inverse operator, 
+  
+  \warning Note: right hand side b may be overwritten!
 
-	\param x The left hand side to store the result in.
-	\param b The right hand side
-	\param res Object to store the statistics about applying the operator.
+  \param x The left hand side to store the result in.
+  \param b The right hand side
+  \param res Object to store the statistics about applying the operator.
     */
     virtual void apply (X& x, Y& b, InverseOperatorResult& res) = 0;
 
@@ -123,6 +123,41 @@ namespace Dune {
 
     //! \brief Destructor
     virtual ~InverseOperator () {}
+
+  protected: 
+    // spacing values 
+    enum { iterationSpacing = 5 , normSpacing = 16 }; 
+
+    //! helper function for printing header of solver output 
+    void printHeader(std::ostream& s) const 
+    {
+      s << std::setw(iterationSpacing)  << " Iter";
+      s << std::setw(normSpacing) << "Defect";
+      s << std::setw(normSpacing) << "Rate" << std::endl;
+    }
+
+    //! helper function for printing solver output 
+    template <class DataType> 
+    void printOutput(std::ostream& s, 
+                     const int iter,
+                     const DataType& norm,
+                     const DataType& norm_old) const 
+    {
+      const DataType rate = norm/norm_old;
+      s << std::setw(iterationSpacing)  << iter << " ";
+      s << std::setw(normSpacing) << norm << " ";
+      s << std::setw(normSpacing) << rate << std::endl;
+    }
+
+    //! helper function for printing solver output 
+    template <class DataType> 
+    void printOutput(std::ostream& s, 
+                     const int iter,
+                     const DataType& norm) const 
+    {
+      s << std::setw(iterationSpacing)  << iter << " ";
+      s << std::setw(normSpacing) << norm << std::endl;
+    }
   };
 
 
@@ -169,7 +204,7 @@ namespace Dune {
     */
     template<class L, class P>
     LoopSolver (L& op, P& prec,
-		double reduction, int maxit, int verbose) : 
+    double reduction, int maxit, int verbose) : 
       ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
@@ -177,28 +212,28 @@ namespace Dune {
     }
 
     /** 
-	\brief Set up loop solver
-	
-	\param op The operator we solve.
-	\param sp The scalar product to use, e. g. SeqScalarproduct.
-	\param prec The preconditioner to apply in each iteration of the loop.
-	Has to inherit from Preconditioner.
-	\param reduction The relative defect reduction to achieve when applying
-	the operator.
-	\param maxit The maximum number of iteration steps allowed when applying
-	the operator.
-	\param verbose The verbosity level.
-	
-	Verbose levels are:
-	<ul>
-	<li> 0 : print nothing </li>
-	<li> 1 : print initial and final defect and statistics </li>
-	<li> 2 : print line for each iteration </li>
-	</ul>
+  \brief Set up loop solver
+  
+  \param op The operator we solve.
+  \param sp The scalar product to use, e. g. SeqScalarproduct.
+  \param prec The preconditioner to apply in each iteration of the loop.
+  Has to inherit from Preconditioner.
+  \param reduction The relative defect reduction to achieve when applying
+  the operator.
+  \param maxit The maximum number of iteration steps allowed when applying
+  the operator.
+  \param verbose The verbosity level.
+  
+  Verbose levels are:
+  <ul>
+  <li> 0 : print nothing </li>
+  <li> 1 : print initial and final defect and statistics </li>
+  <li> 2 : print line for each iteration </li>
+  </ul>
     */
     template<class L, class S, class P>
     LoopSolver (L& op, S& sp, P& prec,
-				double reduction, int maxit, int verbose) : 
+        double reduction, int maxit, int verbose) : 
       _op(op), _prec(prec), _sp(sp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
@@ -206,92 +241,96 @@ namespace Dune {
     }
 
 
-	//! \copydoc InverseOperator::apply(X&,Y&,InverseOperatorResult&)
-	virtual void apply (X& x, X& b, InverseOperatorResult& res)
-	{
-	  // clear solver statistics
-	  res.clear();
+  //! \copydoc InverseOperator::apply(X&,Y&,InverseOperatorResult&)
+  virtual void apply (X& x, X& b, InverseOperatorResult& res)
+  {
+    // clear solver statistics
+    res.clear();
 
-	  // start a timer
-	  Timer watch;
+    // start a timer
+    Timer watch;
 
-	  // prepare preconditioner
-	  _prec.pre(x,b);
+    // prepare preconditioner
+    _prec.pre(x,b);
 
-	  // overwrite b with defect
-	  _op.applyscaleadd(-1,x,b);
+    // overwrite b with defect
+    _op.applyscaleadd(-1,x,b);
 
-	  // compute norm, \todo parallelization
-	  double def0 = _sp.norm(b);
+    // compute norm, \todo parallelization
+    double def0 = _sp.norm(b);
 
-	  // printing
-	  if (_verbose>0)
-		{
-                    std::cout << "=== LoopSolver" << std::endl;
-                    if (_verbose>1) 
-                        std::cout << " Iter       Defect         Rate" << std::endl;
-                    if (_verbose>1) 
-                        std::cout << "0 " << def0 << std::endl;
-		}
+    // printing
+    if (_verbose>0)
+    {
+      std::cout << "=== LoopSolver" << std::endl;
+      if (_verbose>1) 
+      {
+        this->printHeader(std::cout);
+        this->printOutput(std::cout,0,def0);
+      }
+    }
 
-	  // allocate correction vector
-	  X v(x);
+    // allocate correction vector
+    X v(x);
 
-	  // iteration loop
-	  int i=1; double def=def0;
-	  for ( ; i<=_maxit; i++ )	
-		{		  
-		  v = 0;                      // clear correction
-		  _prec.apply(v,b);           // apply preconditioner
-		  x += v;                     // update solution
-		  _op.applyscaleadd(-1,v,b);  // update defect
-		  double defnew=_sp.norm(b);// comp defect norm
-		  if (_verbose>1)             // print
-                      std::cout << i << " " << defnew << " " << defnew/def << std::endl;
-		  def = defnew;               // update norm
-		  if (def<def0*_reduction || def<1E-30)    // convergence check	
-			{
-			  res.converged  = true;
-			  break;
-			}
-		}
+    // iteration loop
+    int i=1; double def=def0;
+    for ( ; i<=_maxit; i++ )  
+    {     
+      v = 0;                      // clear correction
+      _prec.apply(v,b);           // apply preconditioner
+      x += v;                     // update solution
+      _op.applyscaleadd(-1,v,b);  // update defect
+      double defnew=_sp.norm(b);// comp defect norm
+      if (_verbose>1)             // print
+        this->printOutput(std::cout,i,defnew,def);
+                      //std::cout << i << " " << defnew << " " << defnew/def << std::endl;
+      def = defnew;               // update norm
+      if (def<def0*_reduction || def<1E-30)    // convergence check 
+      {
+        res.converged  = true;
+        break;
+      }
+    }
 
-	  // print
-	  if (_verbose==1)
-              std::cout << i << " " << def << std::endl;
-	
-	  // postprocess preconditioner
-	  _prec.post(x);
+    // print
+    if (_verbose==1)
+       this->printOutput(std::cout,i,def);
+  
+    // postprocess preconditioner
+    _prec.post(x);
 
-	  // fill statistics
-	  res.iterations = i;
-	  res.reduction = def/def0;
-	  res.conv_rate  = pow(res.reduction,1.0/i);
-	  res.elapsed = watch.elapsed();
+    // fill statistics
+    res.iterations = i;
+    res.reduction = def/def0;
+    res.conv_rate  = pow(res.reduction,1.0/i);
+    res.elapsed = watch.elapsed();
 
-	  // final print
-	  if (_verbose>0)
-              std::cout << "=== rate=" << res.conv_rate
-                        << ", T=" << res.elapsed
-                        << ", TIT=" << res.elapsed/i
-                        << ", IT=" << i << std::endl;
-	}
+    // final print
+    if (_verbose>0)
+    {
+      std::cout << "=== rate=" << res.conv_rate
+                << ", T=" << res.elapsed
+                << ", TIT=" << res.elapsed/i
+                << ", IT=" << i << std::endl;
+    }
+  }
 
-	//! \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
-	virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& res)
-	{
-	  _reduction = reduction;
-	  (*this).apply(x,b,res);
-	}
+  //! \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
+  virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& res)
+  {
+    _reduction = reduction;
+    (*this).apply(x,b,res);
+  }
 
   private:
-	SeqScalarProduct<X> ssp;
-	LinearOperator<X,X>& _op;
-	Preconditioner<X,X>& _prec;
-	ScalarProduct<X>& _sp;
-	double _reduction;
-	int _maxit;
-	int _verbose; 	
+  SeqScalarProduct<X> ssp;
+  LinearOperator<X,X>& _op;
+  Preconditioner<X,X>& _prec;
+  ScalarProduct<X>& _sp;
+  double _reduction;
+  int _maxit;
+  int _verbose;   
   };
 
 
@@ -314,7 +353,7 @@ namespace Dune {
     */
     template<class L, class P>
     GradientSolver (L& op, P& prec,
-		    double reduction, int maxit, int verbose) : 
+        double reduction, int maxit, int verbose) : 
       ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
@@ -327,7 +366,7 @@ namespace Dune {
     */
     template<class L, class S, class P>
     GradientSolver (L& op, S& sp, P& prec,
-		    double reduction, int maxit, int verbose) : 
+        double reduction, int maxit, int verbose) : 
       _op(op), _prec(prec), _sp(sp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
@@ -348,42 +387,44 @@ namespace Dune {
       
       X p(x);                     // create local vectors
       X q(b);
-	
+  
       double def0 = _sp.norm(b);// compute norm
       
       if (_verbose>0)             // printing
-	{
-            std::cout << "=== GradientSolver" << std::endl;
-            if (_verbose>1) {
-                std::cout << " Iter       Defect         Rate" << std::endl;
-                std::cout << "0 " << def0 << std::endl;
-            }
-	}
+      {
+        std::cout << "=== GradientSolver" << std::endl;
+        if (_verbose>1) 
+        {
+          this->printHeader(std::cout);
+          this->printOutput(std::cout,0,def0);
+        }
+      }
       
       int i=1; double def=def0;   // loop variables
       field_type lambda;
-      for ( ; i<=_maxit; i++ )	
-	{
-	  p = 0;                      // clear correction
-	  _prec.apply(p,b);           // apply preconditioner
-	  _op.apply(p,q);             // q=Ap
-	  lambda = _sp.dot(p,b)/_sp.dot(q,p);// minimization
-	  x.axpy(lambda,p);           // update solution
-	  b.axpy(-lambda,q);          // update defect
-	  
-	  double defnew=_sp.norm(b);// comp defect norm
-	  if (_verbose>1)             // print
-              std::cout << i << " " << defnew << " " << defnew/def << std::endl;
-	  def = defnew;               // update norm
-	  if (def<def0*_reduction || def<1E-30)    // convergence check	
-	    {
-	      res.converged  = true;
-	      break;
-	    }
-	}
-      
+      for ( ; i<=_maxit; i++ )  
+      {
+        p = 0;                      // clear correction
+        _prec.apply(p,b);           // apply preconditioner
+        _op.apply(p,q);             // q=Ap
+        lambda = _sp.dot(p,b)/_sp.dot(q,p);// minimization
+        x.axpy(lambda,p);           // update solution
+        b.axpy(-lambda,q);          // update defect
+        
+        double defnew=_sp.norm(b);// comp defect norm
+        if (_verbose>1)             // print
+          this->printOutput(std::cout,i,defnew,def);
+
+        def = defnew;               // update norm
+        if (def<def0*_reduction || def<1E-30)    // convergence check 
+        {
+          res.converged  = true;
+          break;
+        }
+      }
+          
       if (_verbose==1)                // printing for non verbose
-          std::cout << i << " " << def << std::endl;
+        this->printOutput(std::cout,i,def);
 
       _prec.post(x);                  // postprocess preconditioner
       res.iterations = i;               // fill statistics
@@ -409,13 +450,13 @@ namespace Dune {
     }
 
   private:
-	SeqScalarProduct<X> ssp;
-	LinearOperator<X,X>& _op;
-	Preconditioner<X,X>& _prec;
-	ScalarProduct<X>& _sp;
-	double _reduction;
-	int _maxit;
-	int _verbose; 	
+  SeqScalarProduct<X> ssp;
+  LinearOperator<X,X>& _op;
+  Preconditioner<X,X>& _prec;
+  ScalarProduct<X>& _sp;
+  double _reduction;
+  int _maxit;
+  int _verbose;   
   };
 
 
@@ -463,112 +504,118 @@ namespace Dune {
     */
     virtual void apply (X& x, X& b, InverseOperatorResult& res)
     {
-   	  res.clear();                  // clear solver statistics
-	  Timer watch;                // start a timer
-	  _prec.pre(x,b);             // prepare preconditioner
-	  _op.applyscaleadd(-1,x,b);  // overwrite b with defect
-  
-	  X p(x);              // the search direction
-	  X q(x);              // a temporary vector
-	
-   	  double def0 = _sp.norm(b);// compute norm
-	  if (def0<1E-30)    // convergence check	
-		{
-		  res.converged  = true;
-		  res.iterations = 0;               // fill statistics
-		  res.reduction = 0;
-		  res.conv_rate  = 0;
-		  res.elapsed=0;
-		  if (_verbose>0)                 // final print 
-                      std::cout << "=== rate=" << res.conv_rate
-                                << ", T=" << res.elapsed << ", TIT=" << res.elapsed
-                                << ", IT=0" << std::endl;
-		  return;
-		}
+      res.clear();                  // clear solver statistics
+      Timer watch;                // start a timer
+      _prec.pre(x,b);             // prepare preconditioner
+      _op.applyscaleadd(-1,x,b);  // overwrite b with defect
+    
+      X p(x);              // the search direction
+      X q(x);              // a temporary vector
+    
+      double def0 = _sp.norm(b);// compute norm
+      if (def0<1E-30)    // convergence check 
+      {
+        res.converged  = true;
+        res.iterations = 0;               // fill statistics
+        res.reduction = 0;
+        res.conv_rate  = 0;
+        res.elapsed=0;
+        if (_verbose>0)                 // final print 
+                        std::cout << "=== rate=" << res.conv_rate
+                                  << ", T=" << res.elapsed << ", TIT=" << res.elapsed
+                                  << ", IT=0" << std::endl;
+        return;
+      }
 
-	  if (_verbose>0)             // printing
-		{
-                    std::cout << "=== CGSolver" << std::endl;
-                    if (_verbose>1) {
-                        std::cout << " Iter       Defect         Rate" << std::endl;
-                        std::cout << "0 " << def0 << std::endl;
-                    }
-		}
+      if (_verbose>0)             // printing
+      {
+        std::cout << "=== CGSolver" << std::endl;
+        if (_verbose>1) {
+          this->printHeader(std::cout);
+          this->printOutput(std::cout,0,def0);
+        }
+      }
 
-	  // some local variables
-	  double def=def0;   // loop variables
-	  field_type rho,rholast,lambda,alpha,beta;
+      // some local variables
+      double def=def0;   // loop variables
+      field_type rho,rholast,lambda,alpha,beta;
 
-	  // determine initial search direction
-	  p = 0;                          // clear correction
-	  _prec.apply(p,b);               // apply preconditioner
-	  rholast = _sp.dot(p,b);         // orthogonalization
+      // determine initial search direction
+      p = 0;                          // clear correction
+      _prec.apply(p,b);               // apply preconditioner
+      rholast = _sp.dot(p,b);         // orthogonalization
 
-	  // the loop
-	  int i=1; 
-	  for ( ; i<=_maxit; i++ )	
-		{
-		  // minimize in given search direction p
-		  _op.apply(p,q);             // q=Ap
-		  alpha = _sp.dot(p,q);       // scalar product
-		  lambda = rholast/alpha;     // minimization
-		  x.axpy(lambda,p);           // update solution
-		  b.axpy(-lambda,q);          // update defect
+      // the loop
+      int i=1; 
+      for ( ; i<=_maxit; i++ )  
+      {
+        // minimize in given search direction p
+        _op.apply(p,q);             // q=Ap
+        alpha = _sp.dot(p,q);       // scalar product
+        lambda = rholast/alpha;     // minimization
+        x.axpy(lambda,p);           // update solution
+        b.axpy(-lambda,q);          // update defect
 
-		  // convergence test
-		  double defnew=_sp.norm(b);// comp defect norm
-		  if (_verbose>1)             // print
-                      std::cout << i << " " << defnew << " " << defnew/def << std::endl;
-		  def = defnew;               // update norm
-		  if (def<def0*_reduction || def<1E-30 || i==_maxit)    // convergence check	
-			{
-			  res.converged  = true;
-			  break;
-			}
+        // convergence test
+        double defnew=_sp.norm(b);// comp defect norm
 
-		  // determine new search direction
-		  q = 0;                      // clear correction
-		  _prec.apply(q,b);           // apply preconditioner
-		  rho = _sp.dot(q,b);         // orthogonalization
-		  beta = rho/rholast;         // scaling factor
-		  p *= beta;                  // scale old search direction
-		  p += q;                     // orthogonalization with correction
-		  rholast = rho;              // remember rho for recurrence
-		}
+        if (_verbose>1)             // print
+          this->printOutput(std::cout,i,defnew,def);
 
-	  if (_verbose==1)                // printing for non verbose
-              std::cout << i << " " << def << std::endl;
-	  _prec.post(x);                  // postprocess preconditioner
-	  res.iterations = i;               // fill statistics
-	  res.reduction = def/def0;
-	  res.conv_rate  = pow(res.reduction,1.0/i);
-	  res.elapsed = watch.elapsed();
-	  if (_verbose>0)                 // final print 
-              std::cout << "=== rate=" << res.conv_rate
-                        << ", T=" << res.elapsed
-                        << ", TIT=" << res.elapsed/i
-                        << ", IT=" << i << std::endl;
-    }
+        def = defnew;               // update norm
+        if (def<def0*_reduction || def<1E-30 || i==_maxit)    // convergence check  
+        {
+          res.converged  = true;
+          break;
+        }
+
+        // determine new search direction
+        q = 0;                      // clear correction
+        _prec.apply(q,b);           // apply preconditioner
+        rho = _sp.dot(q,b);         // orthogonalization
+        beta = rho/rholast;         // scaling factor
+        p *= beta;                  // scale old search direction
+        p += q;                     // orthogonalization with correction
+        rholast = rho;              // remember rho for recurrence
+      }
+
+      if (_verbose==1)                // printing for non verbose
+        this->printOutput(std::cout,i,def);
+
+      _prec.post(x);                  // postprocess preconditioner
+      res.iterations = i;               // fill statistics
+      res.reduction = def/def0;
+      res.conv_rate  = pow(res.reduction,1.0/i);
+      res.elapsed = watch.elapsed();
+
+      if (_verbose>0)                 // final print 
+      {
+        std::cout << "=== rate=" << res.conv_rate
+                  << ", T=" << res.elapsed
+                  << ", TIT=" << res.elapsed/i
+                  << ", IT=" << i << std::endl;
+      }
+  }
 
     /*! 
       \brief Apply inverse operator with given reduction factor.
 
       \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
     */
-	virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& res)
-	{
-	  _reduction = reduction;
-	  (*this).apply(x,b,res);
-	}
+  virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& res)
+  {
+    _reduction = reduction;
+    (*this).apply(x,b,res);
+  }
 
   private:
-	SeqScalarProduct<X> ssp;
-	LinearOperator<X,X>& _op;
-	Preconditioner<X,X>& _prec;
-	ScalarProduct<X>& _sp;
-	double _reduction;
-	int _maxit;
-	int _verbose; 	
+  SeqScalarProduct<X> ssp;
+  LinearOperator<X,X>& _op;
+  Preconditioner<X,X>& _prec;
+  ScalarProduct<X>& _sp;
+  double _reduction;
+  int _maxit;
+  int _verbose;   
   };
 
 
@@ -591,7 +638,7 @@ namespace Dune {
     */
     template<class L, class P>
     BiCGSTABSolver (L& op, P& prec,
-		    double reduction, int maxit, int verbose) : 
+        double reduction, int maxit, int verbose) : 
       ssp(), _op(op), _prec(prec), _sp(ssp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
@@ -604,7 +651,7 @@ namespace Dune {
     */
     template<class L, class S, class P>
     BiCGSTABSolver (L& op, S& sp, P& prec,
-		    double reduction, int maxit, int verbose) : 
+        double reduction, int maxit, int verbose) : 
       _op(op), _prec(prec), _sp(sp), _reduction(reduction), _maxit(maxit), _verbose(verbose)
     {
       IsTrue< static_cast<int>(L::category) == static_cast<int>(P::category) >::yes();
@@ -618,80 +665,83 @@ namespace Dune {
     */
     virtual void apply (X& x, X& b, InverseOperatorResult& res)
     {
-	  const double EPSILON=1e-80;
+    const double EPSILON=1e-80;
     
-	  int                  it;
-	  field_type           rho, rho_new, alpha, beta, h, omega;
-	  field_type           norm, norm_old, norm_0;
+    int                  it;
+    field_type           rho, rho_new, alpha, beta, h, omega;
+    field_type           norm, norm_old, norm_0;
     
-	  //
-	  // get vectors and matrix
-	  //
-	  X& r=b;
-	  X p(x);
-	  X v(x);
-	  X t(x);
-	  X y(x);
-	  X rt(x);
+    //
+    // get vectors and matrix
+    //
+    X& r=b;
+    X p(x);
+    X v(x);
+    X t(x);
+    X y(x);
+    X rt(x);
 
-	  //
-	  // begin iteration
-	  //
+    //
+    // begin iteration
+    //
     
-	  // r = r - Ax; rt = r
-   	  res.clear();                  // clear solver statistics
-	  Timer watch;                // start a timer
-	  _op.applyscaleadd(-1,x,r);  // overwrite b with defect
-	  _prec.pre(x,r);             // prepare preconditioner
+    // r = r - Ax; rt = r
+      res.clear();                  // clear solver statistics
+    Timer watch;                // start a timer
+    _op.applyscaleadd(-1,x,r);  // overwrite b with defect
+    _prec.pre(x,r);             // prepare preconditioner
 
-	  rt=r;
+    rt=r;
 
-	  norm = norm_old = norm_0 = _sp.norm(r);
+    norm = norm_old = norm_0 = _sp.norm(r);
     
-	  p=0;
-	  v=0;
+    p=0;
+    v=0;
 
-	  rho   = 1;
-	  alpha = 1;
-	  omega = 1;
+    rho   = 1;
+    alpha = 1;
+    omega = 1;
 
-	  if (_verbose>0)             // printing
-		{
-                    std::cout << "=== BiCGSTABSolver" << std::endl;
-                    if (_verbose>1) {
-                        std::cout << " Iter       Defect         Rate" << std::endl;
-                        std::cout << "0 " << norm_0 << std::endl;
-                    }
-		}
+    if (_verbose>0)             // printing
+    {
+      std::cout << "=== BiCGSTABSolver" << std::endl;
+      if (_verbose>1) 
+      {
+        this->printHeader(std::cout);
+        this->printOutput(std::cout,0,norm_0);
+        //std::cout << " Iter       Defect         Rate" << std::endl;
+        //std::cout << "    0" << std::setw(14) << norm_0 << std::endl;
+      }
+    }
 
-          if ( norm < (_reduction * norm_0)  || norm<1E-30)
-		{
-	          res.converged = 1;
-	          _prec.post(x);                  // postprocess preconditioner
-	          res.iterations = 0;             // fill statistics
-	          res.reduction = 0;
-	          res.conv_rate  = 0;
-	          res.elapsed = watch.elapsed();
-	          return;
-		}
+    if ( norm < (_reduction * norm_0)  || norm<1E-30)
+    {
+      res.converged = 1;
+      _prec.post(x);                  // postprocess preconditioner
+      res.iterations = 0;             // fill statistics
+      res.reduction = 0;
+      res.conv_rate  = 0;
+      res.elapsed = watch.elapsed();
+      return;
+    }
 
-	  //
-	  // iteration
-	  //
+    //
+    // iteration
+    //
     
-	  it = 0;
+    it = 0;
 
-	  while ( true )
-		{
-		  //
-		  // preprocess, set vecsizes etc.
-		  //
+    while ( true )
+    {
+      //
+      // preprocess, set vecsizes etc.
+      //
         
-		  // rho_new = < rt , r >
-		  rho_new = _sp.dot(rt,r);
+      // rho_new = < rt , r >
+      rho_new = _sp.dot(rt,r);
 
-		  // look if breakdown occured
-		  if (std::abs(rho) <= EPSILON)
+      // look if breakdown occured
+      if (std::abs(rho) <= EPSILON)
             DUNE_THROW(ISTLError,"breakdown in BiCGSTAB - rho "
                        << rho << " <= EPSILON " << EPSILON
                        << " after " << it << " iterations");
@@ -701,109 +751,114 @@ namespace Dune {
                        << " after " << it << " iterations");
 
         
-		  if (it==0)
-			p = r;
-		  else
-			{
-			  beta = ( rho_new / rho ) * ( alpha / omega );       
-			  p.axpy(-omega,v); // p = r + beta (p - omega*v)
-			  p *= beta;
-			  p += r;
-			}
+      if (it==0)
+      p = r;
+      else
+      {
+        beta = ( rho_new / rho ) * ( alpha / omega );       
+        p.axpy(-omega,v); // p = r + beta (p - omega*v)
+        p *= beta;
+        p += r;
+      }
 
-		  // y = W^-1 * p
-		  y = 0;
-		  _prec.apply(y,p);           // apply preconditioner
+      // y = W^-1 * p
+      y = 0;
+      _prec.apply(y,p);           // apply preconditioner
 
-		  // v = A * y
-		  _op.apply(y,v);
+      // v = A * y
+      _op.apply(y,v);
 
-		  // alpha = rho_new / < rt, v >
-		  h = _sp.dot(rt,v);
+      // alpha = rho_new / < rt, v >
+      h = _sp.dot(rt,v);
 
-		  if ( std::abs(h) < EPSILON )
-			DUNE_THROW(ISTLError,"h=0 in BiCGSTAB");
-		  
-		  alpha = rho_new / h;
+      if ( std::abs(h) < EPSILON )
+      DUNE_THROW(ISTLError,"h=0 in BiCGSTAB");
+      
+      alpha = rho_new / h;
         
-		  // apply first correction to x
-		  // x <- x + alpha y
-		  x.axpy(alpha,y);
+      // apply first correction to x
+      // x <- x + alpha y
+      x.axpy(alpha,y);
 
-		  // r = r - alpha*v
-		  r.axpy(-alpha,v);
+      // r = r - alpha*v
+      r.axpy(-alpha,v);
         
-		  //
-		  // test stop criteria
-		  //
+      //
+      // test stop criteria
+      //
 
-		  it++;
-   		  norm = _sp.norm(r);
+      it++;
+      norm = _sp.norm(r);
 
-		  if (_verbose>1)             // print
-                      std::cout << it << " " << norm << " " << norm/norm_old << std::endl;
+      if (_verbose>1) // print
+      {
+        this->printOutput(std::cout,it,norm,norm_old);
+      }
         
-		  if ( norm < (_reduction * norm_0) )
-			{
-			  res.converged = 1;
-			  break;
-			}
+      if ( norm < (_reduction * norm_0) )
+      {
+        res.converged = 1;
+        break;
+      }
 
-		  if (it >= _maxit)
+      if (it >= _maxit)
             break;
         
-		  norm_old = norm;
+      norm_old = norm;
 
-		  // y = W^-1 * r
-		  y = 0;
-		  _prec.apply(y,r);
+      // y = W^-1 * r
+      y = 0;
+      _prec.apply(y,r);
 
-		  // t = A * y
-		  _op.apply(y,t);
-		  
-		  // omega = < t, r > / < t, t >
-		  omega = _sp.dot(t,r)/_sp.dot(t,t);
+      // t = A * y
+      _op.apply(y,t);
+      
+      // omega = < t, r > / < t, t >
+      omega = _sp.dot(t,r)/_sp.dot(t,t);
         
-		  // apply second correction to x
-		  // x <- x + omega y
-		  x.axpy(omega,y);
+      // apply second correction to x
+      // x <- x + omega y
+      x.axpy(omega,y);
         
-		  // r = s - omega*t (remember : r = s)
-		  r.axpy(-omega,t);
+      // r = s - omega*t (remember : r = s)
+      r.axpy(-omega,t);
         
-		  rho = rho_new;
+      rho = rho_new;
 
-		  //
-		  // test stop criteria
-		  //
+      //
+      // test stop criteria
+      //
 
-		  it++;
+      it++;
         
-		  norm = _sp.norm(r);
+      norm = _sp.norm(r);
 
-		  if (_verbose>1)             // print
-                      std::cout << it << " " << norm << " " << norm/norm_old << std::endl;
+      if (_verbose > 1)             // print
+      {
+        this->printOutput(std::cout,it,norm,norm_old);
+      }
         
-		  if ( norm < (_reduction * norm_0)  || norm<1E-30)
-			{
-			  res.converged = 1;
-			  break;
-			}
+      if ( norm < (_reduction * norm_0)  || norm<1E-30)
+      {
+        res.converged = 1;
+        break;
+      }
 
-		  if (it >= _maxit)
+      if (it >= _maxit)
             break;
         
-		  norm_old = norm;
-		}// while
+      norm_old = norm;
+    }// while
 
-	  if (_verbose==1)                // printing for non verbose
-              std::cout << it << " " << norm << std::endl;
-	  _prec.post(x);                  // postprocess preconditioner
-	  res.iterations = it;              // fill statistics
-	  res.reduction = norm/norm_0;
-	  res.conv_rate  = pow(res.reduction,1.0/it);
-	  res.elapsed = watch.elapsed();
-	  if (_verbose>0)                 // final print 
+    if (_verbose==1)                // printing for non verbose
+      this->printOutput(std::cout,it,norm);
+
+    _prec.post(x);                  // postprocess preconditioner
+    res.iterations = it;              // fill statistics
+    res.reduction = norm/norm_0;
+    res.conv_rate  = pow(res.reduction,1.0/it);
+    res.elapsed = watch.elapsed();
+    if (_verbose>0)                 // final print 
               std::cout << "=== rate=" << res.conv_rate
                         << ", T=" << res.elapsed
                         << ", TIT=" << res.elapsed/it
@@ -822,13 +877,13 @@ namespace Dune {
     }
 
   private:
-	SeqScalarProduct<X> ssp;
-	LinearOperator<X,X>& _op;
-	Preconditioner<X,X>& _prec;
-	ScalarProduct<X>& _sp;
-	double _reduction;
-	int _maxit;
-	int _verbose; 	
+    SeqScalarProduct<X> ssp;
+    LinearOperator<X,X>& _op;
+    Preconditioner<X,X>& _prec;
+    ScalarProduct<X>& _sp;
+    double _reduction;
+    int _maxit;
+    int _verbose;   
   };
 
 
