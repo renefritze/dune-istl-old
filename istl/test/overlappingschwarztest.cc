@@ -8,6 +8,7 @@
 #include<dune/common/timer.hh>
 #include<dune/common/sllist.hh>
 #include<dune/istl/overlappingschwarz.hh>
+
 int main(int argc, char** argv)
 {
     
@@ -22,12 +23,12 @@ int main(int argc, char** argv)
   typedef Dune::FieldMatrix<double,BS,BS> MatrixBlock;
   typedef Dune::BCRSMatrix<MatrixBlock> BCRSMat;
   typedef Dune::FieldVector<double,BS> VectorBlock;
-  typedef Dune::BlockVector<VectorBlock> Vector;
-  typedef Dune::MatrixAdapter<BCRSMat,Vector,Vector> Operator;
+  typedef Dune::BlockVector<VectorBlock> BVector;
+  typedef Dune::MatrixAdapter<BCRSMat,BVector,BVector> Operator;
   
   BCRSMat mat;
   Operator fop(mat);
-  Vector b(N*N), x(N*N);
+  BVector b(N*N), x(N*N);
   
   setupLaplacian(mat,N);
   b=0;
@@ -46,39 +47,56 @@ int main(int argc, char** argv)
   int domainsPerDim=(N+domainSize-1)/domainSize;
   
   // set up the overlapping domains
-  typedef Dune::SeqOverlappingSchwarz<BCRSMat,Vector> Schwarz;
+  typedef Dune::SeqOverlappingSchwarz<BCRSMat,BVector> Schwarz;
   typedef Schwarz::subdomain_vector subdomain_vector;
   
   subdomain_vector domains(domainsPerDim*domainsPerDim);
-  
+
+  // set up the rowToDomain vector
+  typedef Schwarz::rowtodomain_vector rowtodomain_vector;
+  rowtodomain_vector rowToDomain(N*N);
   
   for(int j=0; j < N; ++j)
     for(int i=0; i < N; ++i)
       {
-	int xdomain = i/domainSize;
-	int ydomain = j/domainSize;
-	int mainDomain=ydomain*domainsPerDim+xdomain;
-	domains[mainDomain].insert(j*N+i);
-	
-	// check left domain
-	int domain = (i-overlap)/domainSize;
-	if(domain>=0 && domain<domainsPerDim)
-	  domains[ydomain*domainsPerDim+domain].insert(j*N+i);
+        int xdomain = i/domainSize;
+        int ydomain = j/domainSize;
+        int mainDomain=ydomain*domainsPerDim+xdomain;
+        int id=j*N+i;
+        domains[mainDomain].insert(id);
+        rowToDomain[id].push_back(mainDomain);
+        
+        // check left domain
+        int domain = (i-overlap)/domainSize;
+        if(domain>=0 && domain<domainsPerDim)
+        {
+          domains[ydomain*domainsPerDim+domain].insert(id);
+          rowToDomain[id].push_back(ydomain*domainsPerDim+domain);
+        }
 
-	//check right domain
-	domain = (i+overlap)/domainSize;
-	if(domain>=0 && domain<domainsPerDim)
-	  domains[ydomain*domainsPerDim+domain].insert(j*N+i);
+        //check right domain
+        domain = (i+overlap)/domainSize;
+        if(domain>=0 && domain<domainsPerDim)
+        {
+          domains[ydomain*domainsPerDim+domain].insert(id);
+          rowToDomain[id].push_back(ydomain*domainsPerDim+domain);
+        }
 
-	// check lower domain
-	domain = (j-overlap)/domainSize;
-	if(domain>=0 && domain<domainsPerDim)
-	  domains[domain*domainsPerDim+xdomain].insert(j*N+i);
+        // check lower domain
+        domain = (j-overlap)/domainSize;
+        if(domain>=0 && domain<domainsPerDim)
+        {
+          domains[domain*domainsPerDim+xdomain].insert(id);
+          rowToDomain[id].push_back(domain*domainsPerDim+xdomain);
+        }
 
-	//check right domain
-	domain = (j+overlap)/domainSize;
-	if(domain>=0 && domain<domainsPerDim)
-	  domains[domain*domainsPerDim+xdomain].insert(j*N+i);
+        //check right domain
+        domain = (j+overlap)/domainSize;
+        if(domain>=0 && domain<domainsPerDim)
+        {
+          domains[domain*domainsPerDim+xdomain].insert(id);
+          rowToDomain[id].push_back(domain*domainsPerDim+xdomain);
+        }
       }
 
   typedef subdomain_vector::const_iterator iterator;
@@ -89,7 +107,7 @@ int main(int argc, char** argv)
       typedef iterator::value_type::const_iterator entry_iterator;
       std::cout<<"domain "<<i++<<":";
       for(entry_iterator entry = iter->begin(); entry != iter->end(); ++entry){
-	std::cout<<" "<<*entry;
+        std::cout<<" "<<*entry;
       }
       std::cout<<std::endl;
     }
@@ -98,38 +116,55 @@ int main(int argc, char** argv)
     Dune::printvector(std::cout, x, std::string("X"), std::string("X"));
   }
   
-  Dune::SeqOverlappingSchwarz<BCRSMat,Vector> prec(mat, domains, 1);
-  
-      
   Dune::Timer watch;
 
   watch.reset();
 
-  Dune::LoopSolver<Vector> solver(fop, prec, 1e-2,100,2);
   Dune::InverseOperatorResult res;
-    
-  
+
+  std::cout<<"Additive Schwarz (domains vector)"<<std::endl;
+
   //  b=0;
   //  x=100;
   //  setBoundary(x,b,N);
-  std::cout<<"Additive Schwarz"<<std::endl;
-  solver.apply(x,b, res);
+  Dune::SeqOverlappingSchwarz<BCRSMat,BVector> prec0(mat, domains, 1);
+  Dune::LoopSolver<BVector> solver0(fop, prec0, 1e-2,100,2);
+  solver0.apply(x,b, res);
   
-  Dune::SeqOverlappingSchwarz<BCRSMat,Vector,Dune::MultiplicativeSchwarzMode> prec1(mat,domains, 1);
-  Dune::LoopSolver<Vector> solver1(fop, prec1, 1e-2,100,2);
-  
+
+  std::cout << "Multiplicative Schwarz (domains vector)"<<std::endl;
+
   b=0;
   x=100;
   //setBoundary(x,b,N);
-  std::cout << "Multiplicative Schwarz"<<std::endl;
-  
+  Dune::SeqOverlappingSchwarz<BCRSMat,BVector,Dune::MultiplicativeSchwarzMode> prec1(mat, domains, 1);
+  Dune::LoopSolver<BVector> solver1(fop, prec1, 1e-2,100,2);
   solver1.apply(x,b, res);  
 
-  Dune::SeqSOR<BCRSMat,Vector,Vector> sor(mat, 1,1);
-  Dune::LoopSolver<Vector> solver2(fop, sor, 1e-2,100,2);
+  std::cout<<"Additive Schwarz (rowToDomain vector)"<<std::endl;
+
+  b=0;
+  x=100;
+  //  setBoundary(x,b,N);
+  Dune::SeqOverlappingSchwarz<BCRSMat,BVector> prec2(mat, rowToDomain, 1);
+  Dune::LoopSolver<BVector> solver2(fop, prec2, 1e-2,100,2);
+  solver2.apply(x,b, res);
+  
+  std::cout << "Multiplicative Schwarz (rowToDomain vector)"<<std::endl;
+
   b=0;
   x=100;
   //setBoundary(x,b,N);
+  Dune::SeqOverlappingSchwarz<BCRSMat,BVector,Dune::MultiplicativeSchwarzMode> prec3(mat, rowToDomain, 1);
+  Dune::LoopSolver<BVector> solver3(fop, prec3, 1e-2,100,2);
+  solver3.apply(x,b, res);  
+
   std::cout << "SOR"<<std::endl;
-  solver2.apply(x,b, res);
+
+  b=0;
+  x=100;
+  //setBoundary(x,b,N);
+  Dune::SeqSOR<BCRSMat,BVector,BVector> sor(mat, 1,1);
+  Dune::LoopSolver<BVector> solver4(fop, sor, 1e-2,100,2);
+  solver4.apply(x,b, res);
 }
