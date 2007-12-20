@@ -42,7 +42,7 @@ namespace Dune
     typedef S IndexSet;
     
     OverlappingSchwarzInitializer(InitializerList& il,
-				  const IndexSet& indices);
+                                  const IndexSet& indices);
     
     
     void addRowNnz(const Iter& row);
@@ -180,21 +180,21 @@ namespace Dune
     
       static solver_iterator begin(solver_vector& sv)
       {
-	return sv.begin();
+        return sv.begin();
       }
       
       static solver_iterator end(solver_vector& sv)
       {
-	return sv.end();
+        return sv.end();
       }
       static domain_iterator begin(const subdomain_vector& sv)
       {
-	return sv.begin();
+        return sv.begin();
       }
       
       static domain_iterator end(const subdomain_vector& sv)
       {
-	return sv.end();
+        return sv.end();
       }
     };
 
@@ -208,21 +208,21 @@ namespace Dune
     
       static solver_iterator begin(solver_vector& sv)
       {
-	return sv.rbegin();
+        return sv.rbegin();
       }
       
       static solver_iterator end(solver_vector& sv)
       {
-	return sv.rend();
+        return sv.rend();
       }
       static domain_iterator begin(const subdomain_vector& sv)
       {
-	return sv.rbegin();
+        return sv.rbegin();
       }
       
       static domain_iterator end(const subdomain_vector& sv)
       {
-	return sv.rend();
+        return sv.rend();
       }
     };
     
@@ -234,7 +234,7 @@ namespace Dune
       
       static void apply(smoother& sm, range_type& v, const range_type& b)
       {
-	sm.template apply<true>(v, b);
+        sm.template apply<true>(v, b);
       }
     };
     
@@ -246,8 +246,8 @@ namespace Dune
       
       static void apply(smoother& sm, range_type& v, const range_type& b)
       {
-	sm.template apply<true>(v, b);
-	sm.template apply<false>(v, b);
+        sm.template apply<true>(v, b);
+        sm.template apply<false>(v, b);
       }
     };
   }
@@ -293,21 +293,29 @@ namespace Dune
 
     /** @brief The allocator to use. */
     typedef TA allocator;
-
         
     /** @brief The type for the subdomain to row index mapping. */
-    typedef std::set<size_type,std::less<size_type>,allocator> subdomain_type;
+    typedef std::set<size_type, std::less<size_type>, typename TA::template rebind< std::less<size_type> >::other> subdomain_type;
 
     /** @brief The vector type containing the subdomain to row index mapping. */
-    typedef std::vector<subdomain_type,allocator> subdomain_vector;
+    typedef std::vector<subdomain_type, typename TA::template rebind<subdomain_type>::other> subdomain_vector;
 
+    /** @brief The type for the row to subdomain mapping. */
+    typedef SLList<size_type, typename TA::template rebind<size_type>::other> subdomain_list;
+      
     /** @brief The vector type containing the row index to subdomain mapping. */
-    typedef std::vector<SLList<size_type,TA>,TA> rowtodomain_vector;
+    typedef std::vector<subdomain_list, typename TA::template rebind<subdomain_list>::other > rowtodomain_vector;
+
+    /** @brief The type for the SuperLU solver in use. */
+    typedef SuperLU<matrix_type> slu;
+    
+    /** @brief The vector type containing SuperLU solvers. */
+    typedef std::vector<slu, typename TA::template rebind<slu>::other> slu_vector;
 
     enum{
       //! \brief The category the precondtioner is part of.
       category = SolverCategory::sequential
-	};
+        };
     
     /**
      * @brief Construct the overlapping Schwarz method.
@@ -317,7 +325,7 @@ namespace Dune
      * @warning Each rowindex should be part of at least one subdomain!
      */
     SeqOverlappingSchwarz(const matrix_type& mat, const subdomain_vector& subDomains,
-			  field_type relaxationFactor=1);
+                          field_type relaxationFactor=1);
 
     /**
      * Construct the overlapping Schwarz method
@@ -325,8 +333,8 @@ namespace Dune
      * @param rowToDomain The mapping of the rows onto the domains.
      */
     SeqOverlappingSchwarz(const matrix_type& mat, const rowtodomain_vector& rowToDomain,
-			  field_type relaxationFactor=1);
-			  
+                          field_type relaxationFactor=1);
+                          
     /*! 
       \brief Prepare the preconditioner.
       
@@ -353,7 +361,7 @@ namespace Dune
   
   private:
     const M& mat;
-    std::vector<SuperLU<matrix_type>,TA> solvers;
+    slu_vector solvers;
     subdomain_vector subDomains;
     field_type relax;
     
@@ -384,7 +392,7 @@ namespace Dune
   
   template<class I, class S>
   OverlappingSchwarzInitializer<I,S>::OverlappingSchwarzInitializer(InitializerList& il,
-								    const IndexSet& idx)
+                                                                    const IndexSet& idx)
     : initializers(&il), indices(&idx), indexMaps(il.size())
   {
   }
@@ -404,9 +412,9 @@ namespace Dune
   void OverlappingSchwarzInitializer<I,S>::allocate()
   {
     std::for_each(initializers->begin(), initializers->end(),
-		  std::mem_fun_ref(&AtomInitializer::allocateMatrixStorage));
+                  std::mem_fun_ref(&AtomInitializer::allocateMatrixStorage));
     std::for_each(initializers->begin(), initializers->end(), 
-		  std::mem_fun_ref(&AtomInitializer::allocateMarker));
+                  std::mem_fun_ref(&AtomInitializer::allocateMarker));
   }
   
   template<class I, class S>
@@ -416,7 +424,7 @@ namespace Dune
     for(iterator domain=(*indices)[row.index()].begin(); domain != (*indices)[row.index()].end(); ++domain){
       typename std::map<std::size_t,std::size_t>::const_iterator v = indexMaps[*domain].find(col.index());
       if(v!= indexMaps[*domain].end()){
-	(*initializers)[*domain].countEntries(indexMaps[*domain].find(col.index())->second);
+        (*initializers)[*domain].countEntries(indexMaps[*domain].find(col.index())->second);
       }
     }
   }
@@ -425,7 +433,7 @@ namespace Dune
   void OverlappingSchwarzInitializer<I,S>::calcColstart() const
   {
     std::for_each(initializers->begin(), initializers->end(),
-		  std::mem_fun_ref(&AtomInitializer::calcColstart));
+                  std::mem_fun_ref(&AtomInitializer::calcColstart));
   }
 
   template<class I, class S>
@@ -435,8 +443,8 @@ namespace Dune
     for(iterator domain=(*indices)[row.index()].begin(); domain!= (*indices)[row.index()].end(); ++domain){
       typename std::map<std::size_t,std::size_t>::const_iterator v = indexMaps[*domain].find(col.index());
       if(v!= indexMaps[*domain].end()){
-	(*initializers)[*domain].copyValue(col, indexMaps[*domain].find(row.index())->second, 
-					   indexMaps[*domain].find(col.index())->second);
+        (*initializers)[*domain].copyValue(col, indexMaps[*domain].find(row.index())->second, 
+                                           indexMaps[*domain].find(col.index())->second);
       }
     }
   }
@@ -445,7 +453,7 @@ namespace Dune
   void OverlappingSchwarzInitializer<I,S>::createMatrix() const
   {
     std::for_each(initializers->begin(), initializers->end(),
-		  std::mem_fun_ref(&AtomInitializer::createMatrix));
+                  std::mem_fun_ref(&AtomInitializer::createMatrix));
   }
 
   template<class I, class S>
@@ -490,11 +498,11 @@ namespace Dune
 
   template<class M, class X, class TM, class TA>
   SeqOverlappingSchwarz<M,X,TM,TA>::SeqOverlappingSchwarz(const matrix_type& mat_, const rowtodomain_vector& rowToDomain,
-			field_type relaxationFactor)
+                        field_type relaxationFactor)
     : mat(mat_), relax(relaxationFactor)
   {
     typedef typename rowtodomain_vector::const_iterator RowDomainIterator;
-    typedef typename SLList<size_type,TA>::const_iterator DomainIterator;
+    typedef typename subdomain_list::const_iterator DomainIterator;
 #ifdef DUNE_ISTL_WITH_CHECKING
     assert(rowToDomain.size()==mat.N());
     assert(rowToDomain.size()==mat.M());
@@ -507,7 +515,7 @@ namespace Dune
     int domains=0;
     for(RowDomainIterator iter=rowToDomain.begin(); iter != rowToDomain.end(); ++iter)
       for(DomainIterator d=iter->begin(); d != iter->end(); ++d)
-	domains=std::max(domains, *d);
+        domains=std::max(domains, *d);
     ++domains;
     
     solvers.resize(domains);
@@ -517,16 +525,16 @@ namespace Dune
     int row=0;
     for(RowDomainIterator iter=rowToDomain.begin(); iter != rowToDomain.end(); ++iter, ++row)
       for(DomainIterator d=iter->begin(); d != iter->end(); ++d)
-	subDomains[*d].insert(row);
+        subDomains[*d].insert(row);
 
 #ifdef DUNE_ISTL_WITH_CHECKING
     int i=0;
-    typedef typename std::vector<std::set<size_type> >::const_iterator iterator;
+    typedef typename subdomain_vector::const_iterator iterator;
     for(iterator iter=subDomains.begin(); iter != subDomains.end(); ++iter){
-      typedef typename std::set<size_type>::const_iterator entry_iterator;
+      typedef typename subdomain_type::const_iterator entry_iterator;
       std::cout<<"domain "<<i++<<":";
       for(entry_iterator entry = iter->begin(); entry != iter->end(); ++entry){
-	std::cout<<" "<<*entry;
+        std::cout<<" "<<*entry;
       }
       std::cout<<std::endl;
     }
@@ -536,8 +544,8 @@ namespace Dune
   
   template<class M, class X, class TM, class TA>
   SeqOverlappingSchwarz<M,X,TM,TA>::SeqOverlappingSchwarz(const matrix_type& mat_,
-						       const subdomain_vector& sd,
-						       field_type relaxationFactor)
+                                                       const subdomain_vector& sd,
+                                                       field_type relaxationFactor)
     :  mat(mat_), solvers(sd.size()), subDomains(sd), relax(relaxationFactor)
   {
     typedef typename subdomain_vector::const_iterator DomainIterator;
@@ -551,7 +559,7 @@ namespace Dune
       typedef typename DomainIterator::value_type::const_iterator entry_iterator;
       std::cout<<"domain "<<i<<":";
       for(entry_iterator entry = d->begin(); entry != d->end(); ++entry){
-	std::cout<<" "<<*entry;
+        std::cout<<" "<<*entry;
       }
       std::cout<<std::endl;
     }
@@ -564,9 +572,9 @@ namespace Dune
     int domainId=0;
     
     for(DomainIterator domain=sd.begin(); domain != sd.end(); ++domain, ++domainId){
-      typedef typename std::set<size_type>::const_iterator iterator;
+      typedef typename subdomain_type::const_iterator iterator;
       for(iterator row=domain->begin(); row != domain->end(); ++row)
-	rowToDomain[*row].push_back(domainId);
+        rowToDomain[*row].push_back(domainId);
     }
 
     initialize(rowToDomain, mat);
@@ -597,7 +605,7 @@ namespace Dune
   {
     typedef typename std::vector<SuperMatrixInitializer<matrix_type> >::iterator InitializerIterator;
     typedef typename subdomain_vector::const_iterator DomainIterator;
-    typedef typename std::vector<SuperLU<matrix_type>,TA>::iterator SolverIterator;
+    typedef typename slu_vector::iterator SolverIterator;
     // initialize the initializers
     DomainIterator domain=subDomains.begin();
     
@@ -606,7 +614,7 @@ namespace Dune
 
     SolverIterator solver=solvers.begin();
     for(InitializerIterator initializer=initializers.begin(); initializer!=initializers.end();
-	++initializer, ++solver, ++domain){
+        ++initializer, ++solver, ++domain){
       solver->mat.N_=SeqOverlappingSchwarzDomainSize<M>::size(*domain);
       solver->mat.M_=SeqOverlappingSchwarzDomainSize<M>::size(*domain);
       //solver->setVerbosity(true);
@@ -623,10 +631,10 @@ namespace Dune
       assert(solvers[0].mat==mat);
     
     /*    for(SolverIterator solver=solvers.begin(); solver!=solvers.end(); ++solver)
-	  dPrint_CompCol_Matrix("superlu", &static_cast<SuperMatrix&>(solver->mat)); */
+          dPrint_CompCol_Matrix("superlu", &static_cast<SuperMatrix&>(solver->mat)); */
     
     // Calculate the LU decompositions
-    std::for_each(solvers.begin(), solvers.end(), std::mem_fun_ref(&SuperLU<matrix_type>::decompose));
+    std::for_each(solvers.begin(), solvers.end(), std::mem_fun_ref(&slu::decompose));
     maxlength=0;
     for(SolverIterator solver=solvers.begin(); solver!=solvers.end(); ++solver){
       assert(solver->mat.N()==solver->mat.M());
@@ -647,7 +655,7 @@ namespace Dune
   void SeqOverlappingSchwarz<M,X,TM,TA>::apply(X& x, const X& b)
   {
     typedef typename X::block_type block;
-    typedef std::vector<SuperLU<matrix_type>,TA> solver_vector;
+    typedef slu_vector solver_vector;
     typedef typename ApplyHelper<solver_vector,subdomain_vector,forward>::solver_iterator iterator;
     typedef typename ApplyHelper<solver_vector,subdomain_vector,forward>::domain_iterator
       domain_iterator;
@@ -665,7 +673,7 @@ namespace Dune
     
     typedef typename AdderSelector<TM,X>::Adder Adder;
     for(iterator solver=ApplyHelper<solver_vector,subdomain_vector,forward>::begin(solvers); 
-	solver != ApplyHelper<solver_vector,subdomain_vector,forward>::end(solvers); ++solver, ++domain){
+        solver != ApplyHelper<solver_vector,subdomain_vector,forward>::end(solvers); ++solver, ++domain){
       //Copy rhs to C-array for SuperLU
       std::for_each(domain->begin(), domain->end(), Assigner<X>(mat, rhs, b, x));
       
@@ -684,7 +692,7 @@ namespace Dune
   template<class M, class X, class TM, class TA>
   template<typename T, typename A, int n>
   SeqOverlappingSchwarz<M,X,TM,TA>::Assigner<BlockVector<FieldVector<T,n>,A> >::Assigner(const M& mat_, T* rhs_, const BlockVector<FieldVector<T,n>,A>& b_,
-										      const BlockVector<FieldVector<T,n>,A>& x_)
+                                                                                      const BlockVector<FieldVector<T,n>,A>& x_)
     : mat(&mat_), rhs(rhs_), b(&b_), x(&x_), i(0)
   {}
 
@@ -703,11 +711,11 @@ namespace Dune
     typedef typename subdomain_type::const_iterator domain_iterator;
 
     for(col_iterator col=(*mat)[domainIndex].begin(); col!=(*mat)[domainIndex].end(); ++col){
-	typename X::block_type tmp;
-	(*col).mv((*x)[col.index()], tmp);
-	i-=n;
-	for(int j=0; j<n; ++j, ++i)
-	  rhs[i]-=tmp[j];
+        typename X::block_type tmp;
+        (*col).mv((*x)[col.index()], tmp);
+        i-=n;
+        for(int j=0; j<n; ++j, ++i)
+          rhs[i]-=tmp[j];
     }
     assert(starti+n==i);
   }
@@ -716,7 +724,7 @@ namespace Dune
     
   template<typename T, typename A, int n>
   AdditiveAdder<BlockVector<FieldVector<T,n>,A> >::AdditiveAdder(BlockVector<FieldVector<T,n>,A>& v_, 
-		 BlockVector<FieldVector<T,n>,A>& x_, const T* t_, const T& relax_)
+                 BlockVector<FieldVector<T,n>,A>& x_, const T* t_, const T& relax_)
     : t(t_), v(&v_), x(&x_), relax(relax_), i(0)
   {}
 
@@ -738,7 +746,7 @@ namespace Dune
   template<typename T, typename A, int n>
   MultiplicativeAdder<BlockVector<FieldVector<T,n>,A> >
   ::MultiplicativeAdder(BlockVector<FieldVector<T,n>,A>& v_, 
-			BlockVector<FieldVector<T,n>,A>& x_, const T* t_, const T& relax_)
+                        BlockVector<FieldVector<T,n>,A>& x_, const T* t_, const T& relax_)
     : t(t_), v(&v_), x(&x_), relax(relax_), i(0)
   {}
 
