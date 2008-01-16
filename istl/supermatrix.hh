@@ -2,7 +2,11 @@
 #define DUNE_SUPERLUMATRIX_HH
 
 #ifdef HAVE_SUPERLU
+#ifdef SUPERLU_POST_2005_VERSION
+#include "slu_ddefs.h"
+#else
 #include "dsp_defs.h"
+#endif
 #include"bcrsmatrix.hh"
 #include"bvector.hh"
 #include<dune/common/fmatrix.hh>
