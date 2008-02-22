@@ -43,7 +43,9 @@ namespace Dune
       typedef V Vertex;
       typedef BlockVector<B> Vector;
       static void prolongate(const AggregatesMap<Vertex>& aggregates, Vector& coarse, Vector& fine, 
-			     typename Vector::field_type damp);
+			     typename Vector::field_type damp,
+			   const SequentialInformation& comm=SequentialInformation());
+
 
       static void restrict(const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector& fine,
 			   const SequentialInformation& comm);
@@ -71,7 +73,7 @@ namespace Dune
       typedef V Vertex;
       typedef BlockVector<B> Vector;
       static void prolongate(const AggregatesMap<Vertex>& aggregates, Vector& coarse, Vector& fine, 
-			     typename Vector::field_type damp);
+			     typename Vector::field_type damp, OwnerOverlapCopyCommunication<T1,T2>& comm);
 
       static void restrict(const AggregatesMap<Vertex>& aggregates, Vector& coarse, const Vector& fine,
 			   OwnerOverlapCopyCommunication<T1,T2>& comm);
@@ -82,7 +84,8 @@ namespace Dune
     template<class V, class B>
     inline void Transfer<V,BlockVector<B>,SequentialInformation>::prolongate(const AggregatesMap<Vertex>& aggregates,
 									     Vector& coarse, Vector& fine, 
-									     typename Vector::field_type damp)
+									     typename Vector::field_type damp,
+			   const SequentialInformation& comm)
     {
       typedef typename Vector::iterator Iterator;
 
@@ -135,7 +138,8 @@ namespace Dune
     template<class V, class B, class T1, class T2>
     inline void Transfer<V,BlockVector<B>,OwnerOverlapCopyCommunication<T1,T2> >::prolongate(const AggregatesMap<Vertex>& aggregates,
 									       Vector& coarse, Vector& fine, 
-									       typename Vector::field_type damp)
+									       typename Vector::field_type damp, 
+									     OwnerOverlapCopyCommunication<T1,T2>& comm)
     {
       Transfer<V,BlockVector<B>,SequentialInformation>::prolongate(aggregates, coarse, fine, damp);
     }
@@ -146,7 +150,8 @@ namespace Dune
 									     OwnerOverlapCopyCommunication<T1,T2>& comm)
     {
       Transfer<V,BlockVector<B>,SequentialInformation>::restrict(aggregates, coarse, fine, SequentialInformation());
-      //      comm.project(coarse);
+      comm.copyOwnerToAll(coarse,coarse);
+      //comm.project(coarse);
     }
 #endif
 	/** @} */
