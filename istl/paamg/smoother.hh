@@ -4,7 +4,6 @@
 #include<dune/istl/paamg/construction.hh>
 #include<dune/istl/paamg/aggregates.hh>
 #include<dune/istl/preconditioners.hh>
-#include<dune/istl/overlappingschwarz.hh>
 #include<dune/istl/schwarz.hh>
 #include<dune/common/propertymap.hh>
 
@@ -382,6 +381,12 @@ namespace Dune
       }
     };
 #ifdef HAVE_SUPERLU
+    
+    // forward dseclarations
+    template<class M, class X, class MO, class A>
+    class SeqOverlappingSchwarz;
+
+    class MultiplicativeSchwarzMode;
     
     template<class M, class X, class TA>
     struct SmootherApplier<SeqOverlappingSchwarz<M,X,MultiplicativeSchwarzMode,TA> >
