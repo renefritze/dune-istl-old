@@ -102,7 +102,7 @@ void fillValues(int N, M& mat, int overlapStart, int overlapEnd, int start, int 
     
     ColIterator endi = (*i).end();
 
-    if(x<start || x >= end || x==0 || x==N-1 || y==0 || y==N-1){
+    if(x<start || x >= end){// || x==0 || x==N-1 || y==0 || y==N-1){
       // overlap node is dirichlet border
       ColIterator j = (*i).begin();
       
@@ -137,7 +137,7 @@ void setBoundary(Dune::BlockVector<Dune::FieldVector<double,BS> >& lhs,
 
     if(x==0 || y ==0 || x==n-1 || y==n-1){
       double h = 1.0 / ((double) (n-1));
-      lhs[i->local()]=rhs[i->local()]=0;((double)x)*((double)y)*h*h;
+      lhs[i->local()]=rhs[i->local()]=0;//((double)x)*((double)y)*h*h;
     }
   }
 }  
@@ -161,7 +161,7 @@ void setBoundary(Dune::BlockVector<Dune::FieldVector<double,BS> >& lhs,
       else
 	y = ((double) j)*h;
       
-      lhs[j*N+i]=rhs[j*N+i]=x*y;
+      lhs[j*N+i]=rhs[j*N+i]=0;//x*y;
     }
 }
 
@@ -174,7 +174,7 @@ Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, Dun
   typedef Dune::FieldMatrix<double,BS,BS> Block;
   typedef Dune::BCRSMatrix<Block> BCRSMat;
   
-  // calculate size of lokal matrix in the distributed direction
+  // calculate size of local matrix in the distributed direction
   int start, end, overlapStart, overlapEnd;
   
   int n = N/procs; // number of unknowns per process
@@ -185,8 +185,8 @@ Dune::BCRSMatrix<Dune::FieldMatrix<double,BS,BS> > setupAnisotropic2d(int N, Dun
     start = rank*(n+1);
     end   = (rank+1)*(n+1);
   }else{
-    start = bigger + rank * n;
-    end   = bigger + (rank + 1) * n;
+    start = bigger*(n+1) + rank * n;
+    end   = bigger*(n+1) + (rank + 1) * n;
   }
   
   // Compute overlap region

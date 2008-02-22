@@ -1,4 +1,7 @@
 #include"config.h"
+#ifdef TEST_AGGLO
+#define UNKNOWNS 10
+#endif
 #include"anisotropic.hh"
 #include<dune/common/timer.hh>
 #include<dune/istl/paamg/amg.hh>
@@ -9,7 +12,7 @@
 #include<dune/common/mpicollectivecommunication.hh>
 #include<string>
 
-template<class T>
+template<class T, class C>
 class DoubleStepPreconditioner 
   : public Dune::Preconditioner<typename T::domain_type, typename T::range_type>
 {
@@ -19,8 +22,8 @@ public:
   
   enum {category = T::category};
   
-  DoubleStepPreconditioner(T& preconditioner_)
-    : preconditioner(&preconditioner_)
+  DoubleStepPreconditioner(T& preconditioner_, C& comm)
+    : preconditioner(&preconditioner_), comm_(comm)
   {}
   
   virtual void pre (X& x, Y& b) 
@@ -31,7 +34,7 @@ public:
   virtual void apply(X& v, const Y& d)
   {
     preconditioner->apply(v,d);
-    preconditioner->apply(v,d);
+    comm_.copyOwnerToAll(v,v);
   }
   
    virtual void post (X& x) 
@@ -40,6 +43,7 @@ public:
   } 
 private:
   T* preconditioner;
+  C& comm_;
 };
 
 
@@ -83,6 +87,8 @@ void testAmg(int N, int coarsenTarget)
   typedef Dune::OverlappingSchwarzOperator<BCRSMat,Vector,Vector,Communication> Operator;  
   int n;
 
+  N/=BS;
+  
   Communication comm(MPI_COMM_WORLD);
   
   BCRSMat mat = setupAnisotropic2d<BS>(N, comm.indexSet(), comm.communicator(), &n, 1);
@@ -119,7 +125,9 @@ void testAmg(int N, int coarsenTarget)
   typedef Dune::Amg::CoarsenCriterion<Dune::Amg::SymmetricCriterion<BCRSMat,Dune::Amg::FirstDiagonal> >
     Criterion;
   //typedef Dune::SeqSSOR<BCRSMat,Vector,Vector> Smoother;
-  typedef Dune::SeqJac<BCRSMat,Vector,Vector> Smoother;
+  //typedef Dune::SeqJac<BCRSMat,Vector,Vector> Smoother;
+  typedef Dune::SeqILU0<BCRSMat,Vector,Vector> Smoother;
+  //typedef Dune::SeqILUn<BCRSMat,Vector,Vector> Smoother;
   typedef Dune::BlockPreconditioner<Vector,Vector,Communication,Smoother> ParSmoother;
   //typedef Dune::ParSSOR<BCRSMat,Vector,Vector,Communication> ParSmoother;
   typedef typename Dune::Amg::SmootherTraits<ParSmoother>::Arguments SmootherArgs;
@@ -130,7 +138,7 @@ void testAmg(int N, int coarsenTarget)
   Dune::InverseOperatorResult r, r1;
 
   double buildtime;
-    
+      
   SmootherArgs smootherArgs;
     
   smootherArgs.iterations = 1;
@@ -141,7 +149,7 @@ void testAmg(int N, int coarsenTarget)
   //  criterion.setMaxLevel(1);
   
   typedef Dune::Amg::AMG<Operator,Vector,ParSmoother,Communication> AMG;
-    
+  /*    
   AMG amg(fop, criterion, smootherArgs, 1, 2, comm);
 
   buildtime = watch.elapsed();  
@@ -166,11 +174,11 @@ void testAmg(int N, int coarsenTarget)
     std::cout<<"AMG building took "<<(buildtime/r.elapsed*r.iterations)<<" iterations"<<std::endl;
     std::cout<<"AMG building together with slving took "<<buildtime+solvetime<<std::endl;
   }
-  /*
-  Smoother ssm(fop.getmat(),1,1);
+*/  
+  Smoother ssm(fop.getmat(),1);
   ParSmoother sm(ssm,comm);
-  //DoubleStepPreconditioner<ParSmoother> dsp(sm);
-  Dune::LoopSolver<Vector> cg(fop, sp, sm, 10e-08, 30, (rank==0)?2:0);
+  DoubleStepPreconditioner<Smoother,Communication> dsp(ssm,comm);
+  Dune::CGSolver<Vector> cg(fop, sp, sm, 10e-08, 10, (rank==0)?2:0);
     
   watch.reset();
   
@@ -178,7 +186,7 @@ void testAmg(int N, int coarsenTarget)
   
   if(!r1.converged && rank==0)
     std::cerr<<" Cg solver did not converge!"<<std::endl;
-  */
+  
   //std::cout<<"CG solving took "<<watch.elapsed()<<" seconds"<<std::endl;
 }
 
@@ -211,9 +219,9 @@ int main(int argc, char** argv)
   MPI_Errhandler_create(MPI_err_handler, &handler);
   MPI_Errhandler_set(MPI_COMM_WORLD, handler);
 
-  int N=500;
+  int N=100;
   
-  int coarsenTarget=1200;
+  int coarsenTarget=200;
   
   if(argc>1)
     N = atoi(argv[1]);
@@ -221,7 +229,10 @@ int main(int argc, char** argv)
   if(argc>2)
     coarsenTarget = atoi(argv[2]);
 
-  AMGTester<1,1>::test(N, coarsenTarget);
+#ifdef TEST_AGGLO
+  N=UNKNOWNS;
+#endif
+  AMGTester<1,6>::test(N, coarsenTarget);
   //AMGTester<1,5>::test(N, coarsenTarget);
   //  AMGTester<10,10>::test(N, coarsenTarget);
   
