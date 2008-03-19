@@ -7,7 +7,7 @@
 #endif
 #ifdef FALSE
 #undef FALSE
-#undef
+#endif
 #ifdef SUPERLU_POST_2005_VERSION
 #include "slu_ddefs.h"
 #else
