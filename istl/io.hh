@@ -313,6 +313,7 @@ namespace Dune {
       static std::ostream& write(const T& t,  std::ostream& s)
       {
 	s<<t;
+	return s;
       }
     };
     template<typename T>
@@ -321,6 +322,7 @@ namespace Dune {
       static std::ostream& write(const std::complex<T>& t,  std::ostream& s)
       {
 	s<<t.real()<<" "<<t.imag();
+	return s;
       }
     }; 
   }  
