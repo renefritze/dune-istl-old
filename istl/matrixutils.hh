@@ -2,7 +2,7 @@
 #define DUNE_MATRIX_UTILS_HH
 
 #include<dune/common/typetraits.hh>
-#include<dune/common/helpertemplates.hh>
+#include<dune/common/static_assert.hh>
 #include"istlexception.hh"
 
 namespace Dune
