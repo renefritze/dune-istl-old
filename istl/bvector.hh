@@ -267,7 +267,7 @@ namespace Dune {
 	}
 
 	//! make vector with _n components
-	BlockVector (size_type _n)
+	explicit BlockVector (size_type _n)
 	{
 	  this->n = _n;
 	  capacity_ = _n;
@@ -536,7 +536,7 @@ namespace Dune {
 
 #ifndef DUNE_EXPRESSIONTEMPLATES
 	//! copy constructor
-	BlockVector (const BlockVector& a) :
+      BlockVector (const BlockVector& a) :
       block_vector_unmanaged<B,A>(a)
 	{
 	  // allocate memory with same size as a
