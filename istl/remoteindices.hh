@@ -1208,6 +1208,7 @@ namespace Dune{
     typename RemoteIndexMap::iterator found = remoteIndices_.find(process);
     
     if(found == remoteIndices_.end())
+    {
       if(source_ != target_)
 	remoteIndices_.insert(std::make_pair(process,
 					     std::make_pair(new RemoteIndexList(), 
@@ -1219,6 +1220,7 @@ namespace Dune{
 	
 	found = remoteIndices_.find(process);
       }
+    }
     
     firstBuild = false;
     
