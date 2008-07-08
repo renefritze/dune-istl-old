@@ -22,9 +22,9 @@ namespace Dune
     {
       typedef typename M::matrix_type Matrix;
       
-      typedef MatrixGraph<const Matrix> MatrixGraph;
+      typedef Dune::Amg::MatrixGraph<const Matrix> MatrixGraph;
       
-      typedef PropertiesGraph<MatrixGraph,
+      typedef Dune::Amg::PropertiesGraph<MatrixGraph,
 			      VertexProperties,
 			      EdgeProperties,
 			      IdentityMap,
@@ -53,10 +53,10 @@ namespace Dune
     struct PropertiesGraphCreator<M,SolverCategory::overlapping>
     {
       typedef typename M::matrix_type Matrix;
-      typedef MatrixGraph<const Matrix> MatrixGraph;
-      typedef SubGraph<MatrixGraph,
+      typedef Dune::Amg::MatrixGraph<const Matrix> MatrixGraph;
+      typedef Dune::Amg::SubGraph<MatrixGraph,
 		       std::vector<bool> > SubGraph;
-      typedef PropertiesGraph<SubGraph,
+      typedef Dune::Amg::PropertiesGraph<SubGraph,
 			      VertexProperties,
 			      EdgeProperties,
 			      IdentityMap,
