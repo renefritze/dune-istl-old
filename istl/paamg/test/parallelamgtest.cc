@@ -149,8 +149,8 @@ void testAmg(int N, int coarsenTarget)
   //  criterion.setMaxLevel(1);
   
   typedef Dune::Amg::AMG<Operator,Vector,ParSmoother,Communication> AMG;
-  /*    
-  AMG amg(fop, criterion, smootherArgs, 1, 2, comm);
+      
+  AMG amg(fop, criterion, smootherArgs, 1, 2, 2, false, comm);
 
   buildtime = watch.elapsed();  
   
@@ -174,18 +174,18 @@ void testAmg(int N, int coarsenTarget)
     std::cout<<"AMG building took "<<(buildtime/r.elapsed*r.iterations)<<" iterations"<<std::endl;
     std::cout<<"AMG building together with slving took "<<buildtime+solvetime<<std::endl;
   }
-*/  
-  Smoother ssm(fop.getmat(),1);
-  ParSmoother sm(ssm,comm);
-  DoubleStepPreconditioner<Smoother,Communication> dsp(ssm,comm);
-  Dune::CGSolver<Vector> cg(fop, sp, sm, 10e-08, 10, (rank==0)?2:0);
-    
-  watch.reset();
   
-  cg.apply(x1,b1,r1);
-  
-  if(!r1.converged && rank==0)
-    std::cerr<<" Cg solver did not converge!"<<std::endl;
+//  Smoother ssm(fop.getmat(),1);
+//  ParSmoother sm(ssm,comm);
+//  DoubleStepPreconditioner<Smoother,Communication> dsp(ssm,comm);
+//  Dune::CGSolver<Vector> cg(fop, sp, sm, 10e-08, 10, (rank==0)?2:0);
+//    
+//  watch.reset();
+//  
+//  cg.apply(x1,b1,r1);
+//  
+//  if(!r1.converged && rank==0)
+//    std::cerr<<" Cg solver did not converge!"<<std::endl;
   
   //std::cout<<"CG solving took "<<watch.elapsed()<<" seconds"<<std::endl;
 }
@@ -232,7 +232,7 @@ int main(int argc, char** argv)
 #ifdef TEST_AGGLO
   N=UNKNOWNS;
 #endif
-  AMGTester<1,6>::test(N, coarsenTarget);
+  AMGTester<1,1>::test(N, coarsenTarget);
   //AMGTester<1,5>::test(N, coarsenTarget);
   //  AMGTester<10,10>::test(N, coarsenTarget);
   
