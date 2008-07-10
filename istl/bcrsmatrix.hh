@@ -734,9 +734,13 @@ namespace Dune {
 			DUNE_THROW(ISTLError,"rowsize must be nonnegative");	  
 		  total += r[i].getsize();
 		}
-
-	  // allocate/check memory
-	  allocate(n,m,total,false);
+	  
+	  if(nnz==0)
+	    // allocate/check memory
+	    allocate(n,m,total,false);
+	  else if(nnz<total)
+	    DUNE_THROW(ISTLError,"Specified number of nonzeros ("<<nnz<<") not "
+		       <<"sufficient for calculated nonzeros ("<<total<<"! ");
 	  
 	  // set the window pointers correctly
 	  setWindowPointers(begin());
