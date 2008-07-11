@@ -33,6 +33,10 @@ namespace Dune
 
     /**
      * @brief Parallel algebraic multigrid based on agglomeration.
+     *
+     * \tparam M The matrix type
+     * \tparam X The vector type
+     * \tparam A An allocator for X
      */
     template<class M, class X, class S, class PI=SequentialInformation,
 	     class A=std::allocator<X> >
@@ -44,8 +48,8 @@ namespace Dune
       /** 
        * @brief The type of the parallel information.
        * Either OwnerOverlapCommunication or another type
-       * discribing the parallel data distribution and
-       * prvoiding communication methods.
+       * describing the parallel data distribution and
+       * providing communication methods.
        */
       typedef PI ParallelInformation;
       /** @brief The operator hierarchy type. */
@@ -63,7 +67,7 @@ namespace Dune
        * @brief The type of the smoother. 
        *
        * One of the preconditioners implementing the Preconditioner interface.
-       * Not that the smoother has to fit the ParallelInformation.*/
+       * Note that the smoother has to fit the ParallelInformation.*/
       typedef S Smoother;
   
       /** @brief The argument type for the construction of the smoother. */
