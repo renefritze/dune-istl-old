@@ -27,14 +27,14 @@ namespace Dune
     {
     public:
       typedef T ParallelIndexSet;
-      typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
-      typedef Interface<ParallelIndexSet> Interface;
-      typedef BufferedCommunicator<ParallelIndexSet>Communicator;
-      typedef GlobalLookupIndexSet<ParallelIndexSet> GlobalLookupIndexSet;
-      typedef CollectiveCommunication<MPI_Comm> MPICommunicator;
+      typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
+      typedef Dune::Interface<ParallelIndexSet> Interface;
+      typedef Dune::BufferedCommunicator<ParallelIndexSet>Communicator;
+      typedef Dune::GlobalLookupIndexSet<ParallelIndexSet> GlobalLookupIndexSet;
+      typedef Dune::CollectiveCommunication<MPI_Comm> MPICommunicator;
       
       enum{
-	category = SolverCategory::overlapping
+        category = SolverCategory::overlapping
 	  };
       
       ParallelInformation(const MPI_Comm& comm);

@@ -32,7 +32,7 @@ namespace Dune
       */
       typedef M matrix_type;
       /** @brief The type of the index set. */
-      typedef ParallelInformation<IS> ParallelInformation;
+      typedef Dune::Amg::ParallelInformation<IS> ParallelInformation;
       
       enum{
 	category = SolverCategory::overlapping

@@ -30,7 +30,7 @@ namespace Dune
 			      IdentityMap,
 			      IdentityMap> PropertiesGraph;
       
-      typedef Tuple<MatrixGraph*,PropertiesGraph*> GraphTuple;
+      typedef Dune::Tuple<MatrixGraph*,PropertiesGraph*> GraphTuple;
       
       template<class OF, class T>
       static GraphTuple create(const M& matrix, T& excluded,
@@ -63,7 +63,7 @@ namespace Dune
 			      typename SubGraph::EdgeIndexMap>
       PropertiesGraph;
     
-      typedef Tuple<MatrixGraph*,PropertiesGraph*,SubGraph*> GraphTuple;
+      typedef Dune::Tuple<MatrixGraph*,PropertiesGraph*,SubGraph*> GraphTuple;
       
       template<class OF, class T, class PI>
       static GraphTuple create(const M& matrix, T& excluded, 
