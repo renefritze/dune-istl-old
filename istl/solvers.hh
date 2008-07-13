@@ -646,7 +646,7 @@ namespace Dune {
     /*! 
       \brief Set up solver.
 
-      \copydoc LoopSolver::LoopSolver(L&,P&,double,int,int);
+      \copydoc LoopSolver::LoopSolver(L&,P&,double,int,int)
     */
     template<class L, class P>
     BiCGSTABSolver (L& op, P& prec,
@@ -659,7 +659,7 @@ namespace Dune {
     /*! 
       \brief Set up solver.
 
-      \copydoc LoopSolver::LoopSolver(L&,S&,P&,double,int,int);
+      \copydoc LoopSolver::LoopSolver(L&,S&,P&,double,int,int)
     */
     template<class L, class S, class P>
     BiCGSTABSolver (L& op, S& sp, P& prec,
