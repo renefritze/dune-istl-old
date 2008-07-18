@@ -659,12 +659,14 @@ namespace Dune
 	    DUNE_THROW(NotImplemented, "Accumulation to fewer processes not yet implemented!");
 	  else{
 	    if(MINIMAL_DEBUG_LEVEL>=INFO_DEBUG_LEVEL && rank==0)
+        {
 	      if(noAggregates)
-		dinfo << "Stopped coarsening because of rate breakdown "<<unknowns/noAggregates<<"<"
-		      <<criterion.minCoarsenRate()<<std::endl;
+            dinfo << "Stopped coarsening because of rate breakdown "<<unknowns/noAggregates<<"<"
+                  <<criterion.minCoarsenRate()<<std::endl;
 	      else
-		dinfo << "Could not build any aggregates. Probably no connected nodes."<<std::endl;
-	    delete aggregatesMap;
+            dinfo << "Could not build any aggregates. Probably no connected nodes."<<std::endl;
+        }
+        delete aggregatesMap;
 	    break;
 	  }
 	 
