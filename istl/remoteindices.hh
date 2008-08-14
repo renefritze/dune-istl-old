@@ -431,6 +431,10 @@ namespace Dune{
   template<class T, bool mode>
   class RemoteIndexListModifier
   {
+
+    template<typename T1>
+    friend class RemoteIndices;
+  
   public:
     class InvalidPosition : public ISTLError
     {};
@@ -531,17 +535,6 @@ namespace Dune{
      * a remote index corresponding to a bigger global index before.
      */
     bool remove(const GlobalIndex& global) throw(InvalidPosition);
-    
-    /**
-     * @brief Create a modifier for a remote index list.
-     * @param indexSet The set of indices the process knows.
-     * @param rList The list of remote indices to modify.
-     */
-    RemoteIndexListModifier(const ParallelIndexSet& indexSet,
-			    RemoteIndexList& rList);
-
-    
-    RemoteIndexListModifier(const RemoteIndexListModifier<T,mode>&);
 
     /**
      * @brief Repair the pointers to the local index pairs.
@@ -557,8 +550,19 @@ namespace Dune{
      */
     void repairLocalIndexPointers() throw(InvalidIndexSetState);
 
+
+    RemoteIndexListModifier(const RemoteIndexListModifier<T,mode>&);
+
   private:
     
+    /**
+     * @brief Create a modifier for a remote index list.
+     * @param indexSet The set of indices the process knows.
+     * @param rList The list of remote indices to modify.
+     */
+    RemoteIndexListModifier(const ParallelIndexSet& indexSet,
+			    RemoteIndexList& rList);
+
     typedef SLList<GlobalIndex,Allocator> GlobalList;
     typedef typename GlobalList::ModifyIterator GlobalModifyIterator;
     RemoteIndices<ParallelIndexSet>* remoteIndices_;
@@ -1153,6 +1157,7 @@ namespace Dune{
       }
     }
     remoteIndices_.clear();
+    firstBuild=true;
   }
 
   template<typename T>
@@ -1192,6 +1197,13 @@ namespace Dune{
   template<bool mode, bool send>
   RemoteIndexListModifier<T,mode> RemoteIndices<T>::getModifier(int process)
   {
+
+    // The user are on their own now!
+    // We assume they know what they are doing and just set the
+    // remote indices to synced status.
+    sourceSeqNo_ = source_->seqNo();
+    destSeqNo_ = target_->seqNo();
+
     typename RemoteIndexMap::iterator found = remoteIndices_.find(process);
     
     if(found == remoteIndices_.end())
