@@ -31,6 +31,10 @@
 #include"istlexception.hh"
 #include<dune/common/collectivecommunication.hh>
 
+template<int dim, template<class,class> class Comm>
+void testRedistributed(int s);
+
+
 namespace Dune {
    
   /**
@@ -163,7 +167,7 @@ namespace Dune {
    */
   template <class GlobalIdType, class LocalIdType>
   class OwnerOverlapCopyCommunication
-  {
+  {    
 	// used types
 	typedef typename IndexInfoFromGrid<GlobalIdType,LocalIdType>::IndexTripel IndexTripel;
 	typedef typename IndexInfoFromGrid<GlobalIdType,LocalIdType>::RemoteIndexTripel RemoteIndexTripel;
@@ -171,12 +175,14 @@ namespace Dune {
 	typedef typename std::set<RemoteIndexTripel>::const_iterator remoteindex_iterator;
     typedef typename OwnerOverlapCopyAttributeSet::AttributeSet AttributeSet;
 	typedef Dune::ParallelLocalIndex<AttributeSet> LI;
+  public:
 	typedef Dune::ParallelIndexSet<GlobalIdType,LI,512> PIS;
 	typedef Dune::RemoteIndices<PIS> RI;
 	typedef Dune::RemoteIndexListModifier<PIS,false> RILM;
 	typedef typename RI::RemoteIndex RX;
 	typedef Dune::BufferedCommunicator<PIS> BC;
 	typedef Dune::Interface<PIS> IF;
+  protected:
 
     
     /** \brief gather/scatter callback for communcation */
@@ -482,6 +488,9 @@ namespace Dune {
 			  if (Element<2>::get(*i)==OwnerOverlapCopyAttributeSet::copy)
 				modifier.insert(RX(OwnerOverlapCopyAttributeSet::copy,&(*pi)));
 			}
+		}else{
+		  // Force remote indices to be synced!
+		  ri.template getModifier<false,true>(0);
 		}
 	}
 
