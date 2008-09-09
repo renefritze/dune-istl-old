@@ -4,7 +4,7 @@
 #include<cmath>
 #include<complex>
 
-#include "istlexection.hh"
+#include "istlexception.hh"
 #include "allocator.hh"
 
 /*! \file

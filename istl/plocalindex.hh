@@ -3,8 +3,9 @@
 #ifndef DUNE_PLOCALINDEX_HH
 #define DUNE_PLOCALINDEX_HH
 
-#include"localindex.hh"
-#include"mpitraits.hh"
+#include "localindex.hh"
+#include "mpitraits.hh"
+#include <iostream>
 
 namespace Dune
 {
