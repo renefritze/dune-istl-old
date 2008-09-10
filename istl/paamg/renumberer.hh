@@ -1,6 +1,8 @@
 #ifndef DUNE_AMG_RENUMBERER_HH
 #define DUNE_AMG_RENUMBERER_HH
 
+#include "aggregates.hh"
+
 namespace Dune
 {
   namespace Amg

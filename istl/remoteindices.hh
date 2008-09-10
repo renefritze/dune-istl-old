@@ -53,7 +53,7 @@ namespace Dune{
 
   template<typename T, bool mode>
   class RemoteIndexListModifier;
-  
+
   /**
    * @brief Information about an index residing on another processor.
    */
