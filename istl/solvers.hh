@@ -139,7 +139,7 @@ namespace Dune {
     //! helper function for printing solver output 
     template <class DataType> 
     void printOutput(std::ostream& s, 
-                     const int iter,
+                     const double iter,
                      const DataType& norm,
                      const DataType& norm_old) const 
     {
@@ -152,7 +152,7 @@ namespace Dune {
     //! helper function for printing solver output 
     template <class DataType> 
     void printOutput(std::ostream& s, 
-                     const int iter,
+                     const double iter,
                      const DataType& norm) const 
     {
       s << std::setw(iterationSpacing)  << iter << " ";
@@ -681,7 +681,7 @@ namespace Dune {
     {
     const double EPSILON=1e-80;
     
-    int                  it;
+    double                  it;
     field_type           rho, rho_new, alpha, beta, h, omega;
     field_type           norm, norm_old, norm_0;
     
@@ -743,9 +743,7 @@ namespace Dune {
     // iteration
     //
     
-    it = 0;
-
-    for (it = 0; it < _maxit; it++)
+    for (it = 0.5; it < _maxit; it+=.5)
     {
       //
       // preprocess, set vecsizes etc.
@@ -765,7 +763,7 @@ namespace Dune {
                        << " after " << it << " iterations");
 
         
-      if (it==0)
+      if (it<1)
       p = r;
       else
       {
@@ -813,7 +811,8 @@ namespace Dune {
         res.converged = 1;
         break;
       }
-
+      it+=.5;
+      
       norm_old = norm;
 
       // y = W^-1 * r
@@ -859,7 +858,7 @@ namespace Dune {
       this->printOutput(std::cout,it,norm);
 
     _prec.post(x);                  // postprocess preconditioner
-    res.iterations = it;              // fill statistics
+    res.iterations = std::ceil(it);              // fill statistics
     res.reduction = norm/norm_0;
     res.conv_rate  = pow(res.reduction,1.0/it);
     res.elapsed = watch.elapsed();
