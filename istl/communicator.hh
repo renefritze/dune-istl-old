@@ -1467,6 +1467,7 @@ namespace Dune
     //MPI_Waitall(messageInformation_.size(), recvRequests, status);
     
     for(i=0;i< messageInformation_.size();i++){
+      status.MPI_ERROR=MPI_SUCCESS;
       MPI_Waitany(messageInformation_.size(), recvRequests, &finished, &status);
       assert(finished != MPI_UNDEFINED);
       
