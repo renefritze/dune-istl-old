@@ -31,10 +31,10 @@ int testVector()
   
   assert(25==v.N());
   
-  for(int i=0; i < v.N(); ++i)
+  for(typename Vector::size_type i=0; i < v.N(); ++i)
     v[i] = i;
   
-  for(int i=0; i < v2.N(); ++i)
+  for(typename Vector::size_type  i=0; i < v2.N(); ++i)
     v2[i] = i*10;
   w = v;
   
@@ -42,12 +42,12 @@ int testVector()
   assert(w.N()==v.N());
   assert(w.capacity()==v.capacity());
 
-  for(int i=0; i < v.N(); ++i)
+  for(typename Vector::size_type  i=0; i < v.N(); ++i)
     assert(v[i] == w[i]);
 
   w = static_cast<const Dune::block_vector_unmanaged<VectorBlock>&>(v);
   
-  for(int i=0; i < w.N(); ++i)
+  for(typename Vector::size_type  i=0; i < w.N(); ++i)
     assert(v[i] == w[i]);
 
   Vector z(w);
@@ -55,7 +55,7 @@ int testVector()
   assert(w.N()==z.N());
   assert(w.capacity()==z.capacity());
 
-  for(int i=0; i < w.N(); ++i)
+  for(typename Vector::size_type  i=0; i < w.N(); ++i)
     assert(z[i] == w[i]);
 
   Vector z1(static_cast<const Dune::block_vector_unmanaged<VectorBlock>&>(v2));
@@ -63,7 +63,7 @@ int testVector()
   assert(v2.N()==z1.N());
   assert(v2.capacity()==z1.capacity());
 
-  for(int i=1; i < v2.N(); ++i){
+  for(typename Vector::size_type  i=1; i < v2.N(); ++i){
     assert(z1[i] == v2[i]);
   }
   
@@ -74,8 +74,8 @@ int testVector()
   VectorBlock b;
   
   // check the entries
-  for(int i=0; i < v.N(); ++i){
-    assign(b, i);
+  for(typename Vector::size_type  i=0; i < v.N(); ++i){
+    assign(b, (int)i);
     assert(v[i] == b);
   }
 
@@ -86,8 +86,8 @@ int testVector()
 
   // check the entries
 
-  for(int i=0; i < v.N(); ++i){
-    assign(b,i);
+  for(typename Vector::size_type  i=0; i < v.N(); ++i){
+    assign(b,(int)i);
     assert(v[i] == b);
   }
   

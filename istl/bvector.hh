@@ -103,7 +103,7 @@ namespace Dune {
 	//! vector space division by scalar
 	block_vector_unmanaged& operator/= (const field_type& k)
 	{
-	  for (int i=0; i<this->n; ++i) (*this)[i] /= k;
+	  for (size_type i=0; i<this->n; ++i) (*this)[i] /= k;
 	  return *this;
 	}
 #endif

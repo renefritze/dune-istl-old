@@ -62,9 +62,9 @@ public:
 
     /** \brief Create uninitialized matrix of size rows x cols
      */
-    Matrix(int rows, int cols) : data_(rows), cols_(cols)
+    Matrix(size_type rows, size_type cols) : data_(rows), cols_(cols)
     {
-        for (int i=0; i<rows; i++)
+        for (size_type i=0; i<rows; i++)
             data_[i].resize(cols);
     }
 
@@ -72,9 +72,9 @@ public:
      *
      * The way the data is handled is unpredictable.
      */
-    void setSize(int rows, int cols) {
+    void setSize(size_type rows, size_type cols) {
         data_.resize(rows);
-        for (int i=0; i<rows; i++)
+        for (size_type i=0; i<rows; i++)
             data_[i].resize(cols);
         cols_ = cols;
     }
@@ -139,7 +139,7 @@ public:
     }
 
     /** \brief The index operator */
-    row_type& operator[](int row) {
+    row_type& operator[](size_type row) {
 #ifdef DUNE_ISTL_WITH_CHECKING
         if (row<0)
             DUNE_THROW(ISTLError, "Can't access negative rows!");
@@ -150,7 +150,7 @@ public:
     }
 
     /** \brief The const index operator */
-    const row_type& operator[](int row) const {
+    const row_type& operator[](size_type row) const {
 #ifdef DUNE_ISTL_WITH_CHECKING
         if (row<0)
             DUNE_THROW(ISTLError, "Can't access negative rows!");
@@ -177,7 +177,7 @@ public:
             DUNE_THROW(ISTLError, "Can't compute rowdim() when there are no columns!");
 #endif
         size_type dim = 0;
-        for (int i=0; i<data_.size(); i++)
+        for (size_type i=0; i<data_.size(); i++)
             dim += data_[i][0].rowdim();
 
         return dim;
@@ -190,7 +190,7 @@ public:
             DUNE_THROW(ISTLError, "Can't compute coldim() when there are no rows!");
 #endif
         size_type dim = 0;
-        for (int i=0; i<data_[0].size(); i++)
+        for (size_type i=0; i<data_[0].size(); i++)
             dim += data_[0][i].coldim();
 
         return dim;
@@ -220,8 +220,8 @@ public:
 
     /** \brief Multiplication with a scalar */
     Matrix<T>& operator*=(const field_type& scalar) {
-        for (int row=0; row<data_.size(); row++) 
-            for (int col=0; col<cols_; col++)
+        for (size_type row=0; row<data_.size(); row++) 
+            for (size_type col=0; col<cols_; col++)
                 (*this)[row][col] *= scalar;
         
         return (*this);
@@ -229,8 +229,8 @@ public:
 
     /** \brief Multiplication with a scalar */
     Matrix<T>& operator/=(const field_type& scalar) {
-        for (int row=0; row<data_.size(); row++) 
-            for (int col=0; col<cols_; col++)
+        for (size_type  row=0; row<data_.size(); row++) 
+            for (size_type  col=0; col<cols_; col++)
                 (*this)[row][col] /= scalar;
         
         return (*this);
@@ -246,7 +246,7 @@ public:
         if(N()!=b.N() || M() != b.M())
 	    DUNE_THROW(RangeError, "Matrix sizes do not match!");
 #endif
-        for (int row=0; row<data_.size(); row++) 
+        for (size_type row=0; row<data_.size(); row++) 
             (*this)[row] += b[row];
         
         return (*this);
@@ -262,7 +262,7 @@ public:
         if(N()!=b.N() || M() != b.M())
 	    DUNE_THROW(RangeError, "Matrix sizes do not match!");
 #endif
-        for (int row=0; row<data_.size(); row++) 
+        for (size_type row=0; row<data_.size(); row++) 
             (*this)[row] -= b[row];
         
         return (*this);
@@ -271,8 +271,8 @@ public:
     /** \brief Return the transpose of the matrix */
     Matrix transpose() const {
         Matrix out(N(), M());
-        for (int i=0; i<M(); i++)
-            for (int j=0; j<N(); j++)
+        for (size_type i=0; i<M(); i++)
+            for (size_type j=0; j<N(); j++)
                 out[j][i] = (*this)[i][j];
 
         return out;
@@ -288,8 +288,8 @@ public:
         Y out(M());
         out = 0;
 
-        for (int i=0; i<out.size(); i++ ) {
-            for ( int j=0; j<vec.size(); j++ ) 
+        for (size_type i=0; i<out.size(); i++ ) {
+            for ( size_type j=0; j<vec.size(); j++ ) 
                 out[i] += (*this)[j][i]*vec[j];
         }
 
@@ -301,9 +301,9 @@ public:
         Matrix<T> out(m1.N(), m2.M());
         out.clear();
 
-        for (int i=0; i<out.N(); i++ ) {
-            for ( int j=0; j<out.M(); j++ ) 
-                for (int k=0; k<m1.M(); k++)
+        for (size_type i=0; i<out.N(); i++ ) {
+            for ( size_type j=0; j<out.M(); j++ ) 
+                for (size_type k=0; k<m1.M(); k++)
                     out[i][j] += m1[i][k]*m2[k][j];
         }
 
@@ -320,8 +320,8 @@ public:
         Y out(m.N());
         out = 0;
 
-        for (int i=0; i<out.size(); i++ ) {
-            for ( int j=0; j<vec.size(); j++ ) 
+        for (size_type i=0; i<out.size(); i++ ) {
+            for ( size_type j=0; j<vec.size(); j++ ) 
                 out[i] += m[i][j]*vec[j];
         }
 
@@ -337,9 +337,9 @@ public:
         if (y.N()!=N()) DUNE_THROW(ISTLError,"vector/matrix size mismatch!");
 #endif
 
-        for (int i=0; i<data_.size(); i++) {
+        for (size_type i=0; i<data_.size(); i++) {
 	  y[i]=0;
-            for (int j=0; j<cols_; j++)
+            for (size_type j=0; j<cols_; j++)
                 (*this)[i][j].umv(x[j], y[i]);
 
         }
@@ -354,9 +354,9 @@ public:
         if (y.N()!=N()) DUNE_THROW(ISTLError,"vector/matrix size mismatch!");
 #endif
 
-        for (int i=0; i<data_.size(); i++) {
+        for (size_type i=0; i<data_.size(); i++) {
 
-            for (int j=0; j<cols_; j++)
+            for (size_type j=0; j<cols_; j++)
                 (*this)[i][j].umv(x[j], y[i]);
 
         }
@@ -389,9 +389,9 @@ public:
         if (y.N()!=N()) DUNE_THROW(ISTLError,"vector/matrix size mismatch!");
 #endif
 
-        for (int i=0; i<data_.size(); i++) {
+        for (size_type i=0; i<data_.size(); i++) {
 
-            for (int j=0; j<cols_; j++)
+            for (size_type j=0; j<cols_; j++)
                 (*this)[i][j].usmv(alpha, x[j], y[i]);
             
         }
@@ -560,7 +560,7 @@ protected:
 
     BlockVector<row_type, allocator_type> data_;
 
-    int cols_;
+    size_type cols_;
 };
   /** \} */
 } // end namespace Dune
