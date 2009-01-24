@@ -381,13 +381,15 @@ namespace Dune
       }
     };
 #ifdef HAVE_SUPERLU
-    
+  }// end namespace Amg
     // forward dseclarations
     template<class M, class X, class MO, class A>
     class SeqOverlappingSchwarz;
 
     class MultiplicativeSchwarzMode;
-    
+
+  namespace Amg 
+  {
     template<class M, class X, class TA>
     struct SmootherApplier<SeqOverlappingSchwarz<M,X,MultiplicativeSchwarzMode,TA> >
     {
@@ -506,8 +508,8 @@ namespace Dune
 	}
       private:
 	Vector& subdomains;
-	int max;
-	int subdomain;
+	AggregateDescriptor max;
+	AggregateDescriptor subdomain;
 	const AggregatesMap& aggregates;
       };
       struct NoneAdder
