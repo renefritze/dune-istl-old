@@ -279,8 +279,7 @@ namespace Dune
       }
       
     };
-
-
+    
     /**
      * @brief Policy for the construction of the ParSSOR smoother
      */
@@ -382,7 +381,8 @@ namespace Dune
     };
 #ifdef HAVE_SUPERLU
   }// end namespace Amg
-    // forward dseclarations
+
+    // forward declarations
     template<class M, class X, class MO, class A>
     class SeqOverlappingSchwarz;
 
@@ -420,8 +420,8 @@ namespace Dune
       enum Overlap {vertex, aggregate, none};
       
       Overlap overlap;
-      SeqOverlappingSchwarzSmootherArgs()
-	: overlap(none)
+      SeqOverlappingSchwarzSmootherArgs(Overlap overlap_=vertex)
+	: overlap(overlap)
       {}
     };  
       
@@ -438,9 +438,9 @@ namespace Dune
       typedef DefaultConstructionArgs<SeqOverlappingSchwarz<M,X,TM,TA> > Father;
 
     public:
-      typedef Dune::Amg::AggregatesMap<typename MatrixGraph<M>::VertexDescriptor> AggregatesMap;
+      typedef typename MatrixGraph<M>::VertexDescriptor VertexDescriptor;
+      typedef Dune::Amg::AggregatesMap<VertexDescriptor> AggregatesMap;
       typedef typename AggregatesMap::AggregateDescriptor AggregateDescriptor;
-      typedef typename AggregatesMap::VertexDescriptor VertexDescriptor;
       typedef typename SeqOverlappingSchwarz<M,X,TM,TA>::subdomain_vector Vector;
       typedef typename Vector::value_type Subdomain;
       
@@ -477,6 +477,43 @@ namespace Dune
       void setMatrix(const M& matrix)
       {
 	Father::setMatrix(matrix);
+	
+	/* Create aggregates map where each aggregate is just one vertex. */
+	AggregatesMap amap(matrix.N());
+	VertexDescriptor v=0;
+	for(typename AggregatesMap::iterator iter=amap.begin();
+	    iter!=amap.end(); ++iter)
+	  *iter=v++;
+	
+	std::vector<bool> visited(amap.noVertices(), false);
+	typedef IteratorPropertyMap<std::vector<bool>::iterator,IdentityMap> VisitedMapType;
+	VisitedMapType visitedMap(visited.begin());
+	
+	MatrixGraph<const M> graph(matrix);
+	
+	typedef SeqOverlappingSchwarzSmootherArgs<typename M::field_type> SmootherArgs;
+	
+	switch(Father::getArgs().overlap){
+	case SmootherArgs::vertex:
+	  {  
+	  VertexAdder visitor(subdomains, amap);
+	  createSubdomains(matrix, graph, amap, visitor,  visitedMap);
+	  }
+	  break;
+	case SmootherArgs::aggregate:
+	  {
+	    DUNE_THROW(NotImplemented, "Aggregate overlap is not supported yet");
+	    /*
+	  AggregateAdder<VisitedMapType> visitor(subdomains, amap, graph, visitedMap);
+	  createSubdomains(matrix, graph, amap, visitor, visitedMap);
+	    */
+	  }
+	  break;
+	case SmootherArgs::none:
+	  NoneAdder visitor;
+	  createSubdomains(matrix, graph, amap, visitor, visitedMap);
+	  
+	}
       }
       
       const Vector& getSubDomains()
@@ -654,6 +691,7 @@ namespace Dune
 	delete schwarz;
       }
     };
+
 #endif
   } // namespace Amg
 } // namespace Dune
