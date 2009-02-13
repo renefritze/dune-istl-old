@@ -67,7 +67,7 @@ namespace Dune
   class SeqOverlappingSchwarz;
 
   /**
-   * @brief Coverte for BCRSMatrix to SuperLU Matrix.
+   * @brief Coverter for BCRSMatrix to SuperLU Matrix.
    */
   template<class B, class TA, int n, int m>
   class SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >
@@ -128,11 +128,11 @@ namespace Dune
     
     SuperLUMatrix& operator=(const SuperLUMatrix& mat);
 
+    /** @brief free allocated space. */
+    void free();
   private: 
     /** @brief Initialize data from given matrix. */
     void setMatrix(const Matrix& mat);
-    /** @brief free allocated space. */
-    void free();
 
     int N_, M_, Nnz_;
     B* values;
@@ -464,6 +464,7 @@ namespace Dune
     delete[] rowindex;
     delete[] colstart;
     SUPERLU_FREE(A.Store);
+    N_=M_=Nnz_=0;
   }
 
 }
