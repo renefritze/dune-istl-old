@@ -667,7 +667,9 @@ namespace Dune
 	      else
             dinfo << "Could not build any aggregates. Probably no connected nodes."<<std::endl;
         }
-        delete aggregatesMap;
+	    aggregatesMap->free();
+	    delete aggregatesMap;
+	    aggregatesMaps_.pop_back();
 	    break;
 	  }
     }
