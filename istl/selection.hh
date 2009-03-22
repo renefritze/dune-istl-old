@@ -29,7 +29,7 @@ namespace Dune
      * @brief The type of the Set of attributes.
      *
      * It has to provide a static method
-     * \code bool contains(AttributeType a);\endcode
+     * \code bool contains(AttributeType a); \endcode
      * that returns true if a is in the set.
      * Such types are EnumItem, EnumRange, Combine.
      */
@@ -97,7 +97,7 @@ namespace Dune
      * @brief The type of the Set of attributes.
      *
      * It has to provide a static method
-     * \code bool contains(AttributeType a);\endcode
+     * \code bool contains(AttributeType a); \endcode
      * that returns true if a is in the set.
      * Such types are EnumItem, EnumRange, Combine.
      */
@@ -112,7 +112,7 @@ namespace Dune
      * @brief The type of the local index of the underlying index set.
      *
      * It has to provide a function
-     * \code AttributeType attribute();\endcode
+     * \code AttributeType attribute(); \endcode
      */
     typedef TL LocalIndex;
 
@@ -167,8 +167,6 @@ namespace Dune
     
   };
   
-
-   
   /**
    * @brief An cached selection of indices.
    */
@@ -180,7 +178,7 @@ namespace Dune
      * @brief The type of the Set of attributes.
      *
      * It has to provide a static method
-     * \code bool contains(AttributeType a);\endcode
+     * \code bool contains(AttributeType a); \endcode
      * that returns true if a is in the set.
      * Such types are EnumItem, EnumRange, Combine.
      */
@@ -195,7 +193,7 @@ namespace Dune
      * @brief The type of the local index of the underlying index set.
      *
      * It has to provide a function
-     * \code AttributeType attribute();\endcode
+     * \code AttributeType attribute(); \endcode
      */
     typedef TL LocalIndex;
     
