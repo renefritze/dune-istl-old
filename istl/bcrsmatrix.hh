@@ -173,13 +173,8 @@ namespace Dune {
      B[3][3] = 8;
      \endcode
   */
-#ifdef DUNE_EXPRESSIONTEMPLATES
-  template<class B, class A>
-  class BCRSMatrix : public ExprTmpl::Matrix< BCRSMatrix<B,A> >
-#else
   template<class B, class A=ISTLAllocator>
   class BCRSMatrix
-#endif
   {
     friend class MatrixDimension<BCRSMatrix>;
     
@@ -1349,25 +1344,6 @@ namespace Dune {
     
   };
 
-
-#ifdef DUNE_EXPRESSIONTEMPLATES
-  template <class B, class A>
-  struct FieldType< BCRSMatrix<B,A> >
-  {
-    typedef typename FieldType<B>::type type;
-  };
-  
-  template <class B, class A>
-  struct BlockType< BCRSMatrix<B,A> >
-  {
-    typedef B type;
-  };
-  template <class B, class A>
-  struct RowType< BCRSMatrix<B,A> >
-  {
-    typedef CompressedBlockVectorWindow<B,A> type;
-  };
-#endif
 
   /** @} end documentation */
 
