@@ -92,7 +92,7 @@ namespace Dune
       void setDefaultValuesAnisotropic(std::size_t dim,std::size_t diameter=2)
       {
 	setDefaultValuesIsotropic(dim, diameter);
-	maxDistance_+=1;
+	maxDistance_+=dim-1;
       }
       /**
        * @brief Get the maximal distance allowed between to nodes in a aggregate.
@@ -1308,9 +1308,10 @@ namespace Dune
     inline void Dependency<M,N>::examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col)
     {      
       if(-norm_(*col) >= maxValue_ * alpha()){
-	edge.properties().setDepends();
-	edge.properties().setInfluences();
-      }
+        edge.properties().setDepends();
+        typename G::EdgeProperties& other = graph.getEdgeProperties(edge.target(), edge.source());
+        other.setInfluences();
+	  }
     }
     
     template<class M, class N>
@@ -2071,14 +2072,8 @@ namespace Dune
 	    Vertex mergedNeighbour = mergeNeighbour(seed, aggregates);
 
 	    if(mergedNeighbour != AggregatesMap<Vertex>::UNAGGREGATED){
-	      aggregates[seed] = aggregates[mergedNeighbour];
-	      /* // Reconstruct aggregate. Needed for markFront
-	      this->template breadthFirstSearch<
-	      visitAggregateNeighbours(seed, aggregates[seed], aggregates,)
-	      if(aggregate_->size()==2)
-		// Was a one node aggregate formerly
-		--oneAggregates;
-	      */
+	      // assign vertex to the neighbouring cluster
+	      aggregates[seed] = aggregates[mergedNeighbour];	      
 	    }else{
 	      ++oneAggregates;
 	      ++conAggregates;
