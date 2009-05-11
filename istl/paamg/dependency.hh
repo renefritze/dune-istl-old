@@ -361,13 +361,13 @@ namespace Dune
     inline bool EdgeProperties::isOneWay() const
     {
       // Test whether only the first bit is set
-      return isStrong() && !isTwoWay();
+      //return isStrong() && !isTwoWay();
       return ((flags_) & std::bitset<SIZE>((1<<INFLUENCE)|(1<<DEPEND)))==(1<<DEPEND);
     }
 
     inline bool EdgeProperties::isTwoWay() const
     {
-      // Test whether the first and second bit is set      
+      // Test whether the first and second bit is set 
       return ((flags_) & std::bitset<SIZE>((1<<INFLUENCE)|(1<<DEPEND)))==((1<<INFLUENCE)|(1<<DEPEND));
     }
 
