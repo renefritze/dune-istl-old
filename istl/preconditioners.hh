@@ -62,6 +62,10 @@ namespace Dune {
 
 	  This interface allows the encapsulation of all parallelization
 	  aspects into the preconditioners.
+
+    \tparam X Type of the update
+    \tparam Y Type of the defect
+
   */
   //=====================================================================
   template<class X, class Y>
@@ -128,6 +132,10 @@ namespace Dune {
 
   Wraps the naked ISTL generic SOR preconditioner into the
       solver framework.
+
+    \tparam M The matrix type to operate on
+    \tparam X Type of the update
+    \tparam Y Type of the defect
    */
   template<class M, class X, class Y, int l=1>
   class SeqSSOR : public Preconditioner<X,Y> {
@@ -202,6 +210,10 @@ namespace Dune {
     
     Wraps the naked ISTL generic SOR preconditioner into the
     solver framework.
+
+    \tparam M The matrix type to operate on
+    \tparam X Type of the update
+    \tparam Y Type of the defect
   */
   template<class M, class X, class Y, int l=1>
   class SeqSOR : public Preconditioner<X,Y> {
@@ -293,6 +305,10 @@ namespace Dune {
 
   Wraps the naked ISTL generic block Gauss-Seidel preconditioner into the
       solver framework.
+
+    \tparam M The matrix type to operate on
+    \tparam X Type of the update
+    \tparam Y Type of the defect
    */
   template<class M, class X, class Y, int l=1>
   class SeqGS : public Preconditioner<X,Y> {
@@ -365,6 +381,10 @@ namespace Dune {
     
   Wraps the naked ISTL generic block Jacobi preconditioner into the
       solver framework.
+
+    \tparam M The matrix type to operate on
+    \tparam X Type of the update
+    \tparam Y Type of the defect
    */
   template<class M, class X, class Y, int l=1>
   class SeqJac : public Preconditioner<X,Y> {
@@ -437,8 +457,11 @@ namespace Dune {
   /*! 
     \brief Sequential ILU0 preconditioner.
 
-  Wraps the naked ISTL generic ILU0 preconditioner into the
-      solver framework.
+    Wraps the naked ISTL generic ILU0 preconditioner into the solver framework.
+
+    \tparam M The matrix type to operate on
+    \tparam X Type of the update
+    \tparam Y Type of the defect
    */
   template<class M, class X, class Y>
   class SeqILU0 : public Preconditioner<X,Y> {
@@ -509,6 +532,11 @@ namespace Dune {
 
     Wraps the naked ISTL generic ILU(n) preconditioner into the
     solver framework.
+
+
+    \tparam M The matrix type to operate on
+    \tparam X Type of the update
+    \tparam Y Type of the defect
   */
   template<class M, class X, class Y>
   class SeqILUn : public Preconditioner<X,Y> {
@@ -583,6 +611,9 @@ namespace Dune {
     \brief Richardson preconditioner.
 
 	Multiply simply by a constant.
+
+    \tparam X Type of the update
+    \tparam Y Type of the defect
   */
   template<class X, class Y>
   class Richardson : public Preconditioner<X,Y> {
