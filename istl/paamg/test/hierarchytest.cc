@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
   
-  const int BS=1, N=100;
+  const int BS=1, N=10;
   
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -68,7 +68,10 @@ int main(int argc, char** argv)
   std::cout<<"=== Vector hierarchy has "<<vh.levels()<<" levels! ==="<<std::endl;
   
   hierarchy.recalculateGalerkin(OverlapFlags());
+
+  std::vector<std::size_t> data;
   
+  hierarchy.getCoarsestAggregatesOnFinest(data);
   
   MPI_Finalize();
   
