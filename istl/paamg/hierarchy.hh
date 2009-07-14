@@ -395,7 +395,7 @@ namespace Dune
        * @param[out] data The mapping of fine level unknowns to coarse level 
        * aggregates.
        */
-      void getCoarsestAggregatesOnFinest(std::vector<std::size_t>& data);
+      void getCoarsestAggregatesOnFinest(std::vector<std::size_t>& data) const;
       
     private:
       typedef typename ConstructionTraits<MatrixOperator>::Arguments MatrixArgs;
@@ -827,7 +827,7 @@ namespace Dune
     }
     
     template<class M, class IS, class A>
-    void MatrixHierarchy<M,IS,A>::getCoarsestAggregatesOnFinest(std::vector<std::size_t>& data)
+    void MatrixHierarchy<M,IS,A>::getCoarsestAggregatesOnFinest(std::vector<std::size_t>& data) const
     {
       int levels=aggregatesMaps().size();
       int maxlevels=parallelInformation_.finest()->communicator().max(levels);
@@ -835,6 +835,7 @@ namespace Dune
       // We need an auxiliary vector for the consecutive prolongation.
       std::vector<std::size_t> tmp;
       std::vector<std::size_t> *coarse, *fine;
+
       // make sure the allocated space suffices.
       tmp.reserve(size);
       data.reserve(size);
@@ -855,14 +856,18 @@ namespace Dune
 	std::size_t m=0;
 	
 	for(typename AggregatesMap::const_iterator iter = map.begin(); iter != map.end(); ++iter)
-	  m=std::max(*iter,m);
+	  if(*iter< AggregatesMap::ISOLATED)
+	    m=std::max(*iter,m);
 
 	coarse->resize(m+1);
 	std::size_t i=0;
-	
+	srand((unsigned)std::clock());
 	for(typename std::vector<std::size_t>::iterator iter=coarse->begin(); iter != coarse->end();
 	    ++iter, ++i)
-	  *iter=i;
+	  {
+	    std::size_t val=(rand());
+	    *iter=val;
+	  }
       }
 
       typename ParallelInformationHierarchy::Iterator pinfo = parallelInformation().coarsest();
