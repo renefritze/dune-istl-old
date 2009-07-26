@@ -75,6 +75,8 @@ namespace Dune
 	std::size_t csize=1;
 	for(;dim>0;dim--)
 	  csize*=diameter;
+	  maxDistance_+=diameter-1;
+	}
 	minAggregateSize_=csize;
 	maxAggregateSize_=csize*1.5;
       }
@@ -354,6 +356,10 @@ namespace Dune
     class FirstDiagonal
     {
     public:
+      enum{ /* @brief We preserve the sign.*/
+	is_sign_preserving = true
+      };
+      
       /** 
        * @brief compute the norm of a matrix.
        * @param m The matrix ro compute the norm of.
@@ -372,6 +378,10 @@ namespace Dune
      */
     struct RowSum
     {
+      
+      enum{ /* @brief We preserve the sign.*/
+	is_sign_preserving = false
+      };
       /** 
        * @brief compute the norm of a matrix.
        * @param m The matrix ro compute the norm of.
@@ -1254,18 +1264,27 @@ namespace Dune
     template<class M, class N>
     inline void SymmetricDependency<M,N>::examine(const ColIter& col)
     {
-      maxValue_ = std::max(maxValue_, 
-			   (norm_(*col) * norm_(matrix_->operator[](col.index())[row_]))/
-			   (norm_(matrix_->operator[](col.index())[col.index()]) * diagonal_));
-      //(diagonal_*diagonal_));
+      typename Matrix::field_type eij = norm_(*col);
+      typename Matrix::field_type eji = norm_(matrix_->operator[](col.index())[row_]);
+      
+      // skip positve offdiagonals if norm preserves sign of them.
+      if(!N::is_sign_preserving || eij<0 || eji<0)
+	maxValue_ = std::max(maxValue_, 
+			     eij /diagonal_ * eji/
+			     norm_(matrix_->operator[](col.index())[col.index()]));
     }
     
     template<class M, class N>
     template<class G>
     inline void SymmetricDependency<M,N>::examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col)
     {      
-      if(norm_(matrix_->operator[](edge.target())[edge.source()]) * norm_(*col)/
-	 (norm_(matrix_->operator[](edge.target())[edge.target()]) * diagonal_) > alpha() * maxValue_){
+      typename Matrix::field_type eij = norm_(*col);
+      typename Matrix::field_type eji = norm_(matrix_->operator[](col.index())[row_]);
+      
+      // skip positve offdiagonals if norm preserves sign of them.
+      if(!N::is_sign_preserving || (eij<0 || eji<0))
+	if(eji / norm_(matrix_->operator[](edge.target())[edge.target()]) * 
+	   eij/ diagonal_ > alpha() * maxValue_){
 	edge.properties().setDepends();
 	edge.properties().setInfluences();
 
