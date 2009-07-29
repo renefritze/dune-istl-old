@@ -73,7 +73,8 @@ namespace Dune
       {
 	maxDistance_=dim;
 	std::size_t csize=1;
-	for(;dim>0;dim--)
+	for(;dim>0;dim--){
+	    
 	  csize*=diameter;
 	  maxDistance_+=diameter-1;
 	}
