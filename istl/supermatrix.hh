@@ -329,7 +329,7 @@ namespace Dune
     typedef typename Matrix::row_type::const_iterator CIter;
     typedef typename Matrix::size_type size_type;
     
-    SuperMatrixInitializer(SuperLUMatrix& m);
+    SuperMatrixInitializer(SuperLUMatrix& lum);
 
     SuperMatrixInitializer();
     
@@ -653,7 +653,6 @@ namespace Dune
     char name[] = {'A',0};
     if(N_<0)
       dPrint_CompCol_Matrix(name,&A);
-    assert(*this==mat);
 #endif
   }
 
