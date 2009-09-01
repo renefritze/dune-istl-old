@@ -35,7 +35,7 @@ namespace Dune
       {}
       
       template<class T1>
-      void operator()(const T& t)
+      void operator()(const T1& t)
       {
 	ApplyHelper<tuple_size<T>::value>::apply(*this, t);
       }
