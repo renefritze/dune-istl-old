@@ -160,24 +160,7 @@ namespace Dune
     };
     
 
-#if HAVE_MPI
-    template<typename T>
-    class ConstructionTraits<ParallelInformation<T> >
-    {
-    public:
-      typedef const MPI_Comm Arguments;
-      
-      static inline ParallelInformation<T>* construct(Arguments& args)
-      {
-	return new ParallelInformation<T>(args);
-      }
-      
-      static inline void deconstruct(ParallelInformation<T>* pi)
-      {
-	delete pi;
-      }
-    };
-    
+#if HAVE_MPI    
 
     template<class T1, class T2>
     class ConstructionTraits<OwnerOverlapCopyCommunication<T1,T2> >
