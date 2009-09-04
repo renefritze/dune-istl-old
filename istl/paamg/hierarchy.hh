@@ -6,7 +6,6 @@
 #include<memory>
 #include<limits>
 #include<algorithm>
-#include"pmatrix.hh"
 #include"aggregates.hh"
 #include"graph.hh"
 #include"galerkin.hh"
