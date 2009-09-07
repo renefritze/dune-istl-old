@@ -165,7 +165,7 @@ namespace Dune {
    *
    * set up communication from known distribution with owner/overlap/copy semantics
    */
-  template <class GlobalIdType, class LocalIdType>
+  template <class GlobalIdType, class LocalIdType=int>
   class OwnerOverlapCopyCommunication
   {    
 	// used types
@@ -432,6 +432,17 @@ namespace Dune {
 	OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false), globalLookup_(0)
     {}
     
+    /**
+     * @brief Construct the communication without any indices using MPI_COMM_WORLD.
+     *
+     * The local index set and the remote indices have to be set up
+     * later on.
+     */
+    OwnerOverlapCopyCommunication ()
+      : cc(MPI_COMM_WORLD), pis(), ri(pis,pis,MPI_COMM_WORLD), 
+	OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false), globalLookup_(0)
+    {}
+
     /**
      * @brief Constructor
      * @param indexinfo The set of IndexTripels describing the local and remote indices.
