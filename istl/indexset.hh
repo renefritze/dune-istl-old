@@ -354,7 +354,8 @@ namespace Dune
     /**
      * @brief Indicate that the resizing finishes.
      *
-     * Now every index will get its local id. The local indices will be ordered
+     * @warning Invalidates all pointers stored to the elements of this index set. 
+     * The local indices will be ordered
      * according to the global indices:
      * Let \f$(g_i,l_i)_{i=0}^N \f$ be the set of all indices then \f$l_i < l_j\f$ 
      * if and
@@ -510,7 +511,7 @@ namespace Dune
      * global index of a local index.
      */
     GlobalLookupIndexSet(const ParallelIndexSet& indexset);
-
+    
     /**
      * @brief Destructor.
      */
@@ -966,14 +967,13 @@ namespace Dune
 
    template<class I>
   GlobalLookupIndexSet<I>::GlobalLookupIndexSet(const I& indexset)
-    : indexSet_(indexset)
+    : indexSet_(indexset), size_(0)
   {
     const_iterator end_ = indexSet_.end();
-    size_t size=0;
     for(const_iterator pair = indexSet_.begin(); pair!=end_; ++pair)
       size_=std::max(size_,static_cast<std::size_t>(pair->local()));
     
-    indices_.resize(++size_);
+    indices_.resize(++size_,  0);
     
     for(const_iterator pair = indexSet_.begin(); pair!=end_; ++pair)
       indices_[pair->local()] = &(*pair);
@@ -983,7 +983,6 @@ namespace Dune
   GlobalLookupIndexSet<I>::~GlobalLookupIndexSet()
   {}
   
-
   template<class I>
   inline const IndexPair<typename I::GlobalIndex, typename I::LocalIndex>*
   GlobalLookupIndexSet<I>::pair(const std::size_t& local) const
