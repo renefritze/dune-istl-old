@@ -174,7 +174,7 @@ namespace Dune {
 	typedef typename std::set<IndexTripel>::const_iterator localindex_iterator;
 	typedef typename std::set<RemoteIndexTripel>::const_iterator remoteindex_iterator;
     typedef typename OwnerOverlapCopyAttributeSet::AttributeSet AttributeSet;
-	typedef Dune::ParallelLocalIndex<AttributeSet> LI;
+    	typedef Dune::ParallelLocalIndex<AttributeSet> LI;
   public:
 	typedef Dune::ParallelIndexSet<GlobalIdType,LI,512> PIS;
 	typedef Dune::RemoteIndices<PIS> RI;
@@ -182,6 +182,9 @@ namespace Dune {
 	typedef typename RI::RemoteIndex RX;
 	typedef Dune::BufferedCommunicator<PIS> BC;
 	typedef Dune::Interface<PIS> IF;
+	  typedef EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::owner> OwnerSet;
+	  typedef Combine<EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::owner>,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::overlap>,AttributeSet> OwnerOverlapSet;
+	  typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::copy>,AttributeSet> AllSet;
   protected:
 
     
@@ -233,9 +236,6 @@ namespace Dune {
 	{
 	  if (OwnerToAllInterfaceBuilt)
 		OwnerToAllInterface.free();
-	  typedef EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::owner> OwnerSet;
-	  typedef Combine<EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::owner>,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::overlap>,AttributeSet> OwnerOverlapSet;
-	  typedef Combine<OwnerOverlapSet,EnumItem<AttributeSet,OwnerOverlapCopyAttributeSet::copy>,AttributeSet> AllSet;
 	  OwnerSet sourceFlags;
 	  AllSet destFlags;
 	  OwnerToAllInterface.build(ri,sourceFlags,destFlags);
@@ -387,7 +387,12 @@ namespace Dune {
     {
       return ri;
     }
-
+    void buildGlobalLookup()
+    {
+      assert(!globalLookup_);
+      globalLookup_ = new GlobalLookupIndexSet(pis);
+    }
+    
     void buildGlobalLookup(std::size_t size)
     {
       assert(!globalLookup_);
