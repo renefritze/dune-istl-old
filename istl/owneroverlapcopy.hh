@@ -516,6 +516,7 @@ namespace Dune {
 	  ri.free();
 	  if (OwnerToAllInterfaceBuilt) OwnerToAllInterface.free();
 	  if (OwnerOverlapToAllInterfaceBuilt) OwnerOverlapToAllInterface.free();
+	  if (globalLookup_) delete globalLookup_;
 	}
 
   private:
