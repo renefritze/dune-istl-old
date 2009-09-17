@@ -630,7 +630,16 @@ namespace Dune
       bool accumulate_;
     };
     
-
+    template<typename M>
+    bool repartitionAndDistributeMatrix(const M& origMatrix, M& newMatrix, 
+					SequentialInformation& origSequentialInformationomm, 
+					SequentialInformation*& newComm, 
+					RedistributeInformation<SequentialInformation>& ri,
+					int nparts)
+    {
+      DUNE_THROW(NotImplemented, "Redistribution does not make sense in sequential code!");
+    }
+    
     
   template<typename M, typename C>
   bool repartitionAndDistributeMatrix(const M& origMatrix, M& newMatrix, C& origComm, C*& newComm, 
