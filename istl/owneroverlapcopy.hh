@@ -389,14 +389,27 @@ namespace Dune {
     }
     void buildGlobalLookup()
     {
-      assert(!globalLookup_);
+      if(globalLookup_){
+	  if(pis.seqNo()==oldseqNo)
+	    // Nothing changed!
+	    return;
+	  delete globalLookup_;
+      }
+      
       globalLookup_ = new GlobalLookupIndexSet(pis);
+      oldseqNo = pis.seqNo();
     }
     
     void buildGlobalLookup(std::size_t size)
     {
-      assert(!globalLookup_);
+      if(globalLookup_){
+	  if(pis.seqNo()==oldseqNo)
+	    // Nothing changed!
+	    return;
+	  delete globalLookup_;
+      }
       globalLookup_ = new GlobalLookupIndexSet(pis, size);
+      oldseqNo = pis.seqNo();
     }
 
     void freeGlobalLookup()
@@ -530,6 +543,7 @@ namespace Dune {
 	mutable IF OwnerOverlapToAllInterface;
 	mutable bool OwnerOverlapToAllInterfaceBuilt;
 	mutable std::vector<double> mask;
+    int oldseqNo;
     GlobalLookupIndexSet* globalLookup_;
   };
 

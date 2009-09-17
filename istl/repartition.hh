@@ -26,7 +26,7 @@
 
 namespace Dune 
 {
-    
+#if HAVE_MPI
     /**
      * @brief Fills the holes in an index set.
      *
@@ -101,10 +101,11 @@ namespace Dune
       oocomm.buildGlobalLookup();
 #ifdef DEBUG_REPART
       std::cout<<"Holes are filled!"<<std::endl;
-#endif
       std::cout<<oocomm.communicator().rank()<<": "<<oocomm.indexSet()<<std::endl;
+#endif
     }
 
+#if HAVE_PARMETIS
   namespace
   {
     /**
@@ -611,9 +612,6 @@ namespace Dune
     // Create the vtxdist array and parmetisVtxMapping.
     // Global communications are necessary
     // The parmetis global identifiers for the owner vertices.
-    oocomm.communicator().barrier();
-    std::cout<<std::endl;
-      
     ParmetisDuneIndexMap indexMap(graph,oocomm);
 
   
@@ -836,9 +834,6 @@ namespace Dune
     for(i=0; i < npes; ++i) {
       // the rank of the process defines the sending order,
       // so it starts naturally by 0
-      oocomm.communicator().barrier();
-      if(mype==0)
-	std::cout<<"comm i="<<i<<std::endl;
 
       if (i==mype) {
 	for(j=0; j < npes; ++j) {
@@ -892,7 +887,6 @@ namespace Dune
     }
     delete[] newPartition;
 	     
-    std::cout<<"rank "<<mype<<" communication finished"<<std::endl;
       
     // After all the vertices are received, the vectors must
     // be "merged" together to create the final vectors.
@@ -941,9 +935,8 @@ namespace Dune
     }
     myOverlapSet.clear();
     outputIndexSet.endResize();
-
-    std::cout<< oocomm.communicator().rank()<<" "<<outcomm->communicator().rank()<<" "<<outputIndexSet<<std::endl;
-      
+    outputIndexSet.renumberLocal();
+    
     // build the remoteIndices for the transfer of vertices 
     // according to the repartition
     //
@@ -957,7 +950,6 @@ namespace Dune
     delete[] recvFrom;
     delete[] part;
 
-    std::cout<<"rank="<<mype<<" repart finished!"<<std::endl;
     MPI_Barrier(comm);
       
 #ifdef PERF_REPART  
@@ -976,5 +968,7 @@ namespace Dune
     return color!=MPI_UNDEFINED;
       
   }
+#endif // HAVE_PARMETIS
+#endif // HAVE_MPI
 } // end of namespace Dune
 #endif

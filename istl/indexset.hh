@@ -1011,7 +1011,6 @@ namespace Dune
     : indexSet_(indexset), size_(size), 
       indices_(size_, static_cast<const IndexPair*>(0))
   {
-    assert(size>=indexset.size());
     const_iterator end_ = indexSet_.end();
 
     for(const_iterator pair = indexSet_.begin(); pair!=end_; ++pair){
