@@ -33,11 +33,12 @@ namespace Dune
     typedef OwnerOverlapCopyCommunication<T,T1> Comm;
     
     RedistributeInformation()
-      :remoteIndices()
+      :remoteIndices(), setup_(false)
     {}
-    void setRemoteIndices(typename Comm::RemoteIndices*& ri_)
+    void setRemoteIndices(const SmartPointer<typename Comm::RemoteIndices>& ri_)
     {
       remoteIndices=ri_;
+      setup_=true;
       typename OwnerOverlapCopyCommunication<int>::OwnerSet flags;
       interface.build(*remoteIndices, flags,flags);
     }
@@ -71,12 +72,13 @@ namespace Dune
     }
     bool isSetup() const
     {
-      return remoteIndices;
+      return setup_;
     }
     
   private:
-    typename Comm::RemoteIndices *remoteIndices;
+    SmartPointer<typename Comm::RemoteIndices> remoteIndices;
     Interface<typename Comm::ParallelIndexSet> interface;
+    bool setup_;
   };
 
   /**

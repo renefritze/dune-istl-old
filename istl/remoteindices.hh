@@ -609,7 +609,22 @@ namespace Dune{
 
 
     RemoteIndexListModifier(const RemoteIndexListModifier&);
-
+    
+    /** 
+     * @brief Default constructor.
+     * @warning Object is not usable!
+     */
+    RemoteIndexListModifier()
+      : glist_()
+    {}
+    
+    /** @brief Constructor */
+    ~RemoteIndexListModifier()
+    {
+      if(glist_)
+	delete glist_;
+    }
+    
   private:
     
     /**
