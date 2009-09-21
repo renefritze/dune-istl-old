@@ -16,6 +16,7 @@
 #include<dune/common/tuples.hh>
 #include<dune/istl/bvector.hh>
 #include<dune/istl/indexset.hh>
+#include<dune/istl/matrixutils.hh>
 #include<dune/istl/matrixredistribute.hh>
 #include<dune/istl/paamg/dependency.hh>
 #include<dune/istl/paamg/graph.hh>
@@ -561,7 +562,13 @@ namespace Dune
        */
       bool accumulate() const
       {
+#ifdef HAVE_PARMETIS
 	return accumulate_;
+#else
+	std::cerr<<"Accumulation of data on coarse level only works with ParMETIS installed."
+		 <<"Falling back to no aacumulation"<<std::endl;
+	return false;
+#endif
       }
       /**
        * @brief Set whether he data should be accumulated on fewer processes on coarser levels.
@@ -647,7 +654,12 @@ namespace Dune
 				      int nparts)
   {
     MatrixGraph<const M> graph(origMatrix);
-    
+#ifdef DEBUG_REPART
+    if(origComm.communicator().rank()==0)
+      std::cout<<"Original matrix"<<std::endl;
+    origComm.communicator().barrier();
+  printGlobalSparseMatrix(origMatrix, origComm, std::cout);
+#endif
 #if HAVE_PARMETIS
     typename C::RemoteIndices* datari;
     bool existentOnRedist=Dune::graphRepartition(graph, origComm, nparts,
@@ -659,6 +671,16 @@ namespace Dune
     bool existentOnRedist=false;
     DUNE_THROW(NotImplemented, "Parmetis is not installed or used, but needed here. Did you use the parmetis flags?");
 #endif
+
+#ifdef DEBUG_REPART
+    if(origComm.communicator().rank()==0)
+      std::cout<<"Original matrix"<<std::endl;
+    origComm.communicator().barrier();
+    if(newComm->communicator().size()>0)
+      printGlobalSparseMatrix(newMatrix, *newComm, std::cout);
+    origComm.communicator().barrier();
+#endif
+
     return existentOnRedist;
     
   }
@@ -701,7 +723,10 @@ namespace Dune
       MatrixStats<typename M::matrix_type,MINIMAL_DEBUG_LEVEL<=INFO_DEBUG_LEVEL>::stats(mlevel->getmat());
       
       PInfoIterator infoLevel = parallelInformation_.finest();
-      
+      std::size_t finenonzeros=countNonZeros(mlevel->getmat());
+      finenonzeros = infoLevel->communicator().sum(finenonzeros);
+      std::size_t allnonzeros = finenonzeros;
+
       
       int procs = infoLevel->communicator().size();
       int level = 0;
@@ -917,6 +942,8 @@ namespace Dune
 	    std::cout<<"Calculation of Galerkin product took "<<watch.elapsed()<<" seconds."<<std::endl;
 	}
 	
+	std::size_t nonzeros = countNonZeros(*coarseMatrix);
+	allnonzeros += infoLevel->communicator().sum(nonzeros);
 	MatrixArgs args(*coarseMatrix, *infoLevel);
 	
 	matrices_.addCoarser(args);
@@ -939,6 +966,9 @@ namespace Dune
 		     <<" unknowns per proc (procs="<<infoLevel->communicator().size()<<")"<<std::endl;
 	}
       }
+      
+      if(rank==0 && criterion.debugLevel()>1)
+	std::cout<<"operator complexity: "<<((double)allnonzeros)/finenonzeros<<std::endl;
 
       if(criterion.accumulate() && !redistributes_.back().isSetup() && 
 	 infoLevel->communicator().size()>1){ 
@@ -1021,10 +1051,10 @@ namespace Dune
 	    ++iter, ++i)
 	  {
 	    std::pair<std::set<std::size_t>::iterator,bool> ibpair
-	      = used.insert((((double)rand())/(RAND_MAX+1.0))*coarse->size());
+	      = used.insert(static_cast<std::size_t>((((double)rand())/(RAND_MAX+1.0)))*coarse->size());
 	    
 	    while(!ibpair.second)
-	      ibpair = used.insert((((double)rand())/(RAND_MAX+1.0))*coarse->size());
+	      ibpair = used.insert(static_cast<std::size_t>((((double)rand())/(RAND_MAX+1.0))*coarse->size()));
 	    *iter=*(ibpair.first);
 	  }
       }
