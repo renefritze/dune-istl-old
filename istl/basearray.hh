@@ -538,7 +538,9 @@ namespace Dune {
 		  if (i <= j[q]) r=q;
 		  else l = q+1;
 		}
-	  if (j[l]!=i) DUNE_THROW(ISTLError,"index not in compressed array");
+	  if (j[l]!=i){
+	     DUNE_THROW(ISTLError,"index "<<i<<" not in compressed array");
+	  }	  
 	  return p[l];
 	}
 
@@ -552,7 +554,9 @@ namespace Dune {
 		  if (i <= j[q]) r=q;
 		  else l = q+1;
 		}
-	  if (j[l]!=i) DUNE_THROW(ISTLError,"index not in compressed array");
+	  if (j[l]!=i){
+	     DUNE_THROW(ISTLError,"index "<<i<<" not in compressed array");
+	  }
 	  return p[l];
 	}
 

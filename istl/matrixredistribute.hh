@@ -40,7 +40,7 @@ namespace Dune
       remoteIndices=ri_;
       setup_=true;
       typename OwnerOverlapCopyCommunication<int>::OwnerSet flags;
-      interface.build(*remoteIndices, flags,flags);
+      interface.build(*remoteIndices, flags, flags);
       int rank;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #ifdef DEBUG_REPART
@@ -50,6 +50,7 @@ namespace Dune
       }
 #endif
     }
+    
     template<class GatherScatter, class D>
     void redistribute(const D& from, D& to) const
     {
@@ -373,7 +374,7 @@ namespace Dune
 	assert(ip.global()==gi);
 	std::size_t col = ip.local();
 	cont.sparsity[i].insert(col);
-
+	
 	typedef typename Dune::OwnerOverlapCopyCommunication<int>::OwnerSet OwnerSet;
 	if(!OwnerSet::contains(ip.local().attribute()))
 	   // preserve symmetry for overlap
@@ -440,7 +441,9 @@ namespace Dune
    * @param newMatrix An empty matrix to store the new redistributed matrix in.
    * @param origComm The parallel information of the original partitioning.
    * @param newComm The parallel information of the new partitioning.
-   * @param ri The remote index information between the original and the new partitioning
+   * @param ri The remote index information between the original and the new partitioning.
+   * Upon exit of this method it will be prepared for copying from owner to owner vertices
+   * for data redistribution.
    * @tparam M The matrix type. It is assumed to be sparse. E.g. BCRSMatrix.
    * @tparam C The type of the parallel information, see OwnerOverlapCopyCommunication.
    */
@@ -461,6 +464,30 @@ namespace Dune
     ri.template redistribute<MatrixSparsityPatternGatherScatter<M,IndexSet> >(origsp,newsp);
 
     newsp.storeSparsityPattern(newMatrix);
+
+#ifdef DUNE_ISTL_WITH_CHECKING
+    // Check for symmetry
+    int ret=0;
+    typedef typename M::ConstRowIterator RIter;
+    for(RIter row=newMatrix.begin(), rend=newMatrix.end(); row != rend; ++row){
+      typedef typename M::ConstColIterator CIter;
+      for(CIter col=row->begin(), cend=row->end(); col!=cend; ++col)
+	{
+	  try{
+	    newMatrix[col.index()][row.index()];
+	  }catch(Dune::ISTLError e){
+	    std::cerr<<newComm.communicator().rank()<<": entry ("
+		     <<col.index()<<","<<row.index()<<") missing! for symmetry!"<<std::endl;
+	    ret=1;
+	   
+	  }
+	 
+	}
+    }
+    
+    if(ret)
+      DUNE_THROW(ISTLError, "Matrix not symmetric!");
+#endif
     
     CommMatrixRow<M,IndexSet> origrow(origMatrix, origComm.globalLookup(), newComm.indexSet());
     CommMatrixRow<M,IndexSet> newrow(newMatrix, origComm.globalLookup(), newComm.indexSet(),rowsize);
@@ -469,8 +496,8 @@ namespace Dune
     newrow.setOverlapRowsToDirichlet();
     if(newMatrix.N()>0&&newMatrix.N()<20)
       printmatrix(std::cout, newMatrix, "redist", "row");
+    }
     
-  }
 #endif
 }
 #endif
