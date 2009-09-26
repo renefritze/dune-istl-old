@@ -386,7 +386,7 @@ namespace Dune
       /**
        * @brief Get the number of vertices in the graph.
        */
-      int noVertices() const;
+      std::size_t noVertices() const;
 
       /**
        * @brief Get the maximal vertex descriptor.
@@ -399,7 +399,7 @@ namespace Dune
        /**
        * @brief Get the number of edges in the graph.
        */
-      int noEdges() const;
+      std::size_t noEdges() const;
 
       /**
        * @brief Find the descriptor of an edge.
@@ -644,7 +644,7 @@ namespace Dune
       /**
        * @brief Get the number of vertices in the graph.
        */
-      int noVertices() const;
+      std::size_t noVertices() const;
       
       /**
        * @brief Get the maximal vertex descriptor.
@@ -657,7 +657,7 @@ namespace Dune
       /**
        * @brief Get the number of edges in the graph.
        */
-      int noEdges() const;
+      std::size_t noEdges() const;
       /**
        * @brief Find the descriptor of an edge.
        * @param source The source vertex of the edge we search for.
@@ -684,7 +684,7 @@ namespace Dune
       /** @brief flags indication which vertices are excluded. */
       const T& excluded_;
       /** @brief The number of vertices in this sub graph. */
-      int noVertices_;
+      std::size_t noVertices_;
       /** @brief Vertex behind the last valid vertex of this sub graph. */
       VertexDescriptor endVertex_;
       /** @brief The number of edges in this sub graph.*/
@@ -926,8 +926,13 @@ namespace Dune
       /** 
        * @brief Get the number of vertices in the graph.
        */
-      int noVertices() const;
+      std::size_t noVertices() const;
       
+      /**
+       * @brief Get the number of edges in the graph.
+       */
+      std::size_t noEdges() const;
+
       /**
        * @brief Get the maximal vertex descriptor.
        *
@@ -1284,8 +1289,13 @@ namespace Dune
       /** 
        * @brief Get the number of vertices in the graph.
        */
-      int noVertices() const;
-      
+      std::size_t noVertices() const;
+
+      /**
+       * @brief Get the number of edges in the graph.
+       */
+      std::size_t noEdges() const;
+
       /**
        * @brief Get the maximal vertex descriptor.
        *
@@ -1455,13 +1465,13 @@ namespace Dune
     }
     
     template<class M>
-    inline int MatrixGraph<M>::noEdges() const
+    inline std::size_t MatrixGraph<M>::noEdges() const
     {
       return start_[matrix_.N()];
     }
     
     template<class M>
-    inline int MatrixGraph<M>::noVertices() const
+    inline std::size_t MatrixGraph<M>::noVertices() const
     {
       return matrix_.N();
     }
@@ -1486,7 +1496,7 @@ namespace Dune
       if(found == matrix_[source].end())
 	DUNE_THROW(ISTLError, "Every matrix row is assumed to have a diagonal!");
 #endif
-      int offset = matrix_[source].find(target).offset();
+      std::size_t offset = matrix_[source].find(target).offset();
       if(target>source)
 	offset--;
       
@@ -1916,7 +1926,7 @@ namespace Dune
     }
 
     template<class G, class T>
-    int SubGraph<G,T>::noVertices() const
+    std::size_t SubGraph<G,T>::noVertices() const
     {
       return noVertices_;
     }
@@ -1928,7 +1938,7 @@ namespace Dune
     }
 
     template<class G, class T>
-    inline int SubGraph<G,T>::noEdges() const
+    inline std::size_t SubGraph<G,T>::noEdges() const
     {
       return noEdges_;
     }
@@ -1992,6 +2002,12 @@ namespace Dune
 	}
       noEdges_ = edge-edges_;
       ++endVertex_;
+    }
+
+    template<class G, class V, class VM>
+    inline std::size_t VertexPropertiesGraph<G,V,VM>::noEdges() const
+    {
+      return graph_.noEdges();
     }
 
     template<class G, class V, class VM>
@@ -2120,7 +2136,7 @@ namespace Dune
     }
 
     template<class G, class V, class VM>
-    inline int VertexPropertiesGraph<G,V,VM>::noVertices() const
+    inline std::size_t VertexPropertiesGraph<G,V,VM>::noVertices() const
     {
       return graph_.noVertices();
     }
@@ -2156,6 +2172,13 @@ namespace Dune
     PropertiesGraph<G,V,E,VM,EM>::EdgeIteratorT<C>::EdgeIteratorT(const EdgeIteratorT<C1>& other)
       : Father(other), graph_(other.graph_)
     {}
+
+
+    template<class G, class V, class E, class VM, class EM>
+    inline std::size_t PropertiesGraph<G,V,E,VM,EM>::noEdges() const
+    {
+      return graph_.noEdges();
+    }
 
     template<class G, class V, class E, class VM, class EM>
     template<class C>
@@ -2311,7 +2334,7 @@ namespace Dune
     }
 
     template<class G, class V, class E, class VM, class EM>
-    inline int PropertiesGraph<G,V,E,VM,EM>::noVertices() const
+    inline std::size_t PropertiesGraph<G,V,E,VM,EM>::noVertices() const
     {
       return graph_.noVertices();
     }
