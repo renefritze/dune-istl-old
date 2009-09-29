@@ -28,33 +28,12 @@ namespace Dune
    * It provides an generic utility method for building the interface
    * for a set of remote indices.
    */
-  template<typename T>
   class InterfaceBuilder
   {
   public: 
     class RemotexIndicesStateError : public Exception
     {};
-    
-    /**
-     * @brief Type of the index set.
-     */
-    typedef T ParallelIndexSet;
-    
-    /**
-     * @brief Type of the underlying remote indices class.
-     */
-    typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
-
-    /**
-     * @brief The type of the global index.
-     */
-    typedef typename RemoteIndices::GlobalIndex GlobalIndex;
-    
-    /**
-     * @brief The type of the attribute.
-     */
-    typedef typename RemoteIndices::Attribute Attribute;
-    
+        
     virtual ~InterfaceBuilder()
     {}
 
@@ -102,8 +81,8 @@ namespace Dune
      * void add(int proc, int local);
      * \endcode
      */
-    template<class T1, class T2, class Op, bool send>
-    void buildInterface (const RemoteIndices& remoteIndices, 
+    template<class R, class T1, class T2, class Op, bool send>
+    void buildInterface (const R& remoteIndices, 
 			 const T1& sourceFlags, const T2& destFlags,
 			 Op& functor) const;
   };
@@ -131,7 +110,7 @@ namespace Dune
      * @brief Get the local index for an entry.
      * @param i The  index of the entry.
      */
-    uint32_t& operator[](size_t i)
+    std::size_t& operator[](size_t i)
     {
       assert(i<size_);
       return indices_[i];
@@ -140,7 +119,7 @@ namespace Dune
      * @brief Get the local index for an entry.
      * @param i The  index of the entry.
      */
-    uint32_t operator[](size_t i) const
+    std::size_t operator[](size_t i) const
     {
       assert(i<size_);
       return indices_[i];
@@ -151,7 +130,7 @@ namespace Dune
      */
     void reserve(size_t size)
     {
-      indices_ = new uint32_t[size];
+      indices_ = new std::size_t[size];
       maxSize_ = size;
       
     }
@@ -168,7 +147,7 @@ namespace Dune
     /**
      * @brief Add a new index to the interface.
      */
-    void add(uint32_t index)
+    void add(std::size_t index)
     {
       assert(size_<maxSize_);
       indices_[size_++]=index;
@@ -180,13 +159,23 @@ namespace Dune
     
     virtual ~InterfaceInformation()
     {
-      if(indices_!=0){
-	std::cerr<<"InterfaceInformation::free() should be called before "<<
-	  "destructor!"<<std::endl;
-      }
-      
     }
 
+    bool operator!=(const InterfaceInformation& o) const
+    {
+      return !operator==(o);
+    }
+    
+    bool operator==(const InterfaceInformation& o) const
+    {
+      if(size_!=o.size_)
+	return false;
+      for(std::size_t i=0; i< size_; ++i)
+	if(indices_[i]!=o.indices_[i])
+	  return false;
+      return true;
+    }
+    
   private:
     /**
      * @brief The number of entries in the interface.
@@ -199,7 +188,7 @@ namespace Dune
     /**
      * @brief The local indices of the interface.
      */
-    uint32_t* indices_;
+    std::size_t* indices_;
   };
 
   /** @addtogroup ISTL_Comm
@@ -213,8 +202,7 @@ namespace Dune
    * Describes the communication interface between
    * indices on the local process and those on remote processes.
    */
-  template<typename T>
-  class Interface : public InterfaceBuilder<T>
+  class Interface : public InterfaceBuilder
   {
     
   public:
@@ -222,27 +210,6 @@ namespace Dune
 
     typedef std::map<int,std::pair<Information,Information> > InformationMap;
 
-    /**
-     * @brief Type of the index set.
-     */
-    typedef T ParallelIndexSet;
-
-    /**
-     * @brief Type of the underlying remote indices class.
-     */
-    typedef Dune::RemoteIndices<ParallelIndexSet> RemoteIndices;
-    
-
-    /**
-     * @brief The type of the global index.
-     */
-    typedef typename RemoteIndices::GlobalIndex GlobalIndex;
-    
-    /**
-     * @brief The type of the attribute.
-     */
-    typedef typename RemoteIndices::Attribute Attribute;
-    
     /**
      * @brief Builds the interface.
      *
@@ -259,8 +226,8 @@ namespace Dune
      * @param sourceFlags The set of flags marking indices we send from.
      * @param destFlags The set of flags marking indices we receive for.
      */
-    template<typename T1, typename T2>
-    void build(const RemoteIndices& remoteIndices, const T1& sourceFlags, 
+    template<typename R, typename T1, typename T2>
+    void build(const R& remoteIndices, const T1& sourceFlags, 
 	       const T2& destFlags);
 
     /**
@@ -283,26 +250,66 @@ namespace Dune
      */   
     const InformationMap& interfaces() const;
     
+    Interface(MPI_Comm comm)
+      : interfaces_(), communicator_(comm)
+    {}
+  
     Interface()
-      : interfaces_()
+      : interfaces_(), communicator_(MPI_COMM_NULL)
     {}
     
     /**
      * @brief Print the interface to std::out for debugging.
      */
     void print() const;
+
+    bool operator!=(const Interface& o) const
+    {
+      return ! operator==(o);
+    }
     
+    bool operator==(const Interface& o) const
+    {
+      if(communicator_!=o.communicator_)
+	return false;
+      if(interfaces_.size()!=o.interfaces_.size())
+	return false;
+      typedef InformationMap::const_iterator MIter;
+      
+      for(MIter m=interfaces_.begin(), om=o.interfaces_.begin();
+	  m!=interfaces_.end(); ++m, ++om)
+	{
+	  if(om->first!=m->first)
+	    return false;
+	  if(om->second.first!=om->second.first)
+	    return false;
+	  if(om->second.second!=om->second.second)
+	    return false;
+	}
+      return true;
+    }
+      
     /**
      * @brief Destructor.
      */
     virtual ~Interface();
     
-  private:
-    /**
-     * @brief The indices present on remote processes.
-     */
-    const RemoteIndices* remoteIndices_;
+  protected:
     
+    /**
+     * @brief Get information about the interfaces.
+     *
+     * @return Map of the interfaces.
+     * The key of the map is the process number and the value
+     * is the information pair (first the send and then the receive
+     * information).
+     */   
+    InformationMap& interfaces();
+
+    /** @brief The MPI communicator we use. */
+    MPI_Comm communicator_;
+        
+  private:
     /**
      * @brief Information about the interfaces.
      *
@@ -327,7 +334,7 @@ namespace Dune
 	else
 	  interfaces_[proc].second.reserve(size);
       }
-      void add(int proc, int local)
+      void add(int proc, std::size_t local)
       {
 	if(send){
 	  interfaces_[proc].first.add(local);
@@ -341,14 +348,14 @@ namespace Dune
     };
   };
   
-  template<typename T>
-  template<class T1, class T2, class Op, bool send>
-  void InterfaceBuilder<T>::buildInterface(const RemoteIndices& remoteIndices, const T1& sourceFlags, const T2& destFlags, Op& interfaceInformation) const
+  template<class R, class T1, class T2, class Op, bool send>
+  void InterfaceBuilder::buildInterface(const R& remoteIndices, const T1& sourceFlags, const T2& destFlags, Op& interfaceInformation) const
   {
 
     if(!remoteIndices.isSynced())
       DUNE_THROW(RemotexIndicesStateError,"RemoteIndices is not in sync with the index set. Call RemoteIndices::rebuild first!");
     // Allocate the memory for the data type construction.
+    typedef R RemoteIndices;
     typedef typename RemoteIndices::RemoteIndexMap::const_iterator const_iterator;
     typedef typename RemoteIndices::ParallelIndexSet::const_iterator LocalIterator;
 
@@ -391,7 +398,7 @@ namespace Dune
 
     // compare the local and remote indices and set up the types
     
-    typedef CollectiveIterator<T,typename RemoteIndices::Allocator> CIter;
+    typedef typename RemoteIndices::CollectiveIteratorT  CIter;
     CIter remote = remoteIndices.template iterator<send>();
     LocalIterator localIndex = send ? remoteIndices.source_->begin() : remoteIndices.target_->begin();
     const LocalIterator localEnd = send ?  remoteIndices.source_->end() : remoteIndices.target_->end();
@@ -419,24 +426,27 @@ namespace Dune
       ++localIndex;
     }
   }
-
-  template<typename T>
-  inline MPI_Comm Interface<T>::communicator() const
+  
+  inline MPI_Comm Interface::communicator() const
   {
-    return remoteIndices_->communicator();
+    return communicator_;
     
   }
   
-  template<typename T>
-  inline const std::map<int,std::pair<InterfaceInformation,InterfaceInformation> >& Interface<T>::interfaces() const
+  
+  inline const std::map<int,std::pair<InterfaceInformation,InterfaceInformation> >& Interface::interfaces() const
   {
     return interfaces_;
   }
 
-  template<typename T>
-  void Interface<T>::print() const
+  inline std::map<int,std::pair<InterfaceInformation,InterfaceInformation> >& Interface::interfaces()
   {
-    typedef typename InformationMap::const_iterator const_iterator;
+    return interfaces_;
+  }
+
+  void Interface::print() const
+  {
+    typedef InformationMap::const_iterator const_iterator;
     const const_iterator end=interfaces_.end();
     int rank;
     MPI_Comm_rank(communicator(), &rank);
@@ -460,29 +470,33 @@ namespace Dune
     }
   }
   
-  template<typename T>
-  template<typename T1, typename T2>
-  void Interface<T>::build(const RemoteIndices& remoteIndices, const T1& sourceFlags, 
+  template<typename R, typename T1, typename T2>
+  void Interface::build(const R& remoteIndices, const T1& sourceFlags, 
 			  const T2& destFlags)
   {
-    remoteIndices_=&remoteIndices;
+    communicator_=remoteIndices.communicator();
     
     assert(interfaces_.empty());
 
     // Build the send interface
     InformationBuilder<true> sendInformation(interfaces_);
-    this->template buildInterface<T1,T2,InformationBuilder<true>,true>(remoteIndices, sourceFlags, 
+    this->template buildInterface<R,T1,T2,InformationBuilder<true>,true>(remoteIndices, sourceFlags, 
 							      destFlags, sendInformation);
     
     // Build the receive interface
     InformationBuilder<false> recvInformation(interfaces_);
-    this->template buildInterface<T1,T2,InformationBuilder<false>,false>(remoteIndices,sourceFlags, 
+    this->template buildInterface<R,T1,T2,InformationBuilder<false>,false>(remoteIndices,sourceFlags, 
 								destFlags, recvInformation);
-    
+    typedef InformationMap::iterator const_iterator;
+    for(const_iterator interfacePair = interfaces_.begin(); interfacePair != interfaces_.end();)
+      if(interfacePair->second.first.size()==0 && interfacePair->second.second.size()==0){
+	const_iterator toerase=interfacePair++;
+	interfaces_.erase(toerase);
+      }else
+	++interfacePair;
   }
   
-  template<typename T>
-  void Interface<T>::free()
+  void Interface::free()
   {
     typedef InformationMap::iterator iterator;
     typedef InformationMap::const_iterator const_iterator;
@@ -493,8 +507,8 @@ namespace Dune
     }
     interfaces_.clear();
   }
-  template<typename T>
-  Interface<T>::~Interface()
+
+  Interface::~Interface()
   {
     free();
   }
@@ -503,11 +517,10 @@ namespace Dune
 
 namespace std
 {
-  template<class T>
-  ostream& operator<<(ostream& os, const Dune::Interface<T>& interface)
+  ostream& operator<<(ostream& os, const Dune::Interface& interface)
   {
-    typedef typename Dune::Interface<T>::InformationMap InfoMap;
-    typedef typename InfoMap::const_iterator Iter;
+    typedef Dune::Interface::InformationMap InfoMap;
+    typedef InfoMap::const_iterator Iter;
     for(Iter i=interface.interfaces().begin(), end = interface.interfaces().end();
 	i!=end; ++i)
       {

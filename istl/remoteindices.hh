@@ -141,7 +141,6 @@ namespace Dune{
   template<class T, class A>
   std::ostream& operator<<(std::ostream& os, const RemoteIndices<T,A>& indices);
   
-  template<typename T>
   class InterfaceBuilder;
 
   template<class T, class A>
@@ -175,7 +174,7 @@ namespace Dune{
 						       typename T::LocalIndex::Attribute> > >
   class RemoteIndices
   {
-    friend class InterfaceBuilder<T>;
+    friend class InterfaceBuilder;
     friend class IndicesSyncer<T>;
     template<typename T1,typename A1,typename A2>
     friend void repairLocalIndexPointers(std::map<int,SLList<typename T1::GlobalIndex,A1> >&, 
@@ -193,6 +192,10 @@ namespace Dune{
      */
     typedef T ParallelIndexSet;
  
+    /**
+     * @brief The type of the collective iterator over all remote indices. */
+    typedef CollectiveIterator<T,A> CollectiveIteratorT;
+    
    /**
      * @brief The type of the global index.
      */
@@ -338,7 +341,7 @@ namespace Dune{
      * @brief Get an iterator for colletively iterating over the remote indices of all remote processes.
      */
     template<bool send>
-    inline CollectiveIterator<T,A> iterator() const;
+    inline CollectiveIteratorT iterator() const;
 
     /**
      * @brief Free the index lists.
@@ -1583,7 +1586,7 @@ namespace Dune{
 
   template<typename T, typename A>
   template<bool send>
-  inline CollectiveIterator<T,A> RemoteIndices<T,A>::iterator() const
+  inline typename RemoteIndices<T,A>::CollectiveIteratorT RemoteIndices<T,A>::iterator() const
   {
     return CollectiveIterator<T,A>(remoteIndices_, send);
   }
