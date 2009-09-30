@@ -293,7 +293,8 @@ namespace Dune
      * @brief Destructor.
      */
     virtual ~Interface();
-    
+
+    void strip();
   protected:
     
     /**
@@ -487,6 +488,10 @@ namespace Dune
     InformationBuilder<false> recvInformation(interfaces_);
     this->template buildInterface<R,T1,T2,InformationBuilder<false>,false>(remoteIndices,sourceFlags, 
 								destFlags, recvInformation);
+    strip();
+  }
+  void Interface::strip()
+  {
     typedef InformationMap::iterator const_iterator;
     for(const_iterator interfacePair = interfaces_.begin(); interfacePair != interfaces_.end();)
       if(interfacePair->second.first.size()==0 && interfacePair->second.second.size()==0){

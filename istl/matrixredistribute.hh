@@ -75,8 +75,9 @@ namespace Dune
     void setSetup()
     {
       setup_=true;
+      interface.strip();
     }
-    
+        
     template<class GatherScatter, class D>
     void redistribute(const D& from, D& to) const
     {
