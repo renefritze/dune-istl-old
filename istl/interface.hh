@@ -251,7 +251,7 @@ namespace Dune
     const InformationMap& interfaces() const;
     
     Interface(MPI_Comm comm)
-      : interfaces_(), communicator_(comm)
+      : communicator_(comm), interfaces_()
     {}
   
     Interface()
