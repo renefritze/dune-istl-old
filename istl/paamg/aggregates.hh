@@ -120,7 +120,7 @@ namespace Dune
       {
 	return false;
       }
-      
+
       /** 
        * @brief Get the minimum number of nodes a aggregate has to consist of.
        * @return The minimum number of nodes.
@@ -519,7 +519,7 @@ namespace Dune
        * @return The number of aggregates built.
        */
       template<class M, class G, class C>
-      tuple<int,int,int> buildAggregates(const M& matrix, G& graph, const C& criterion);
+      tuple<int,int,int,int> buildAggregates(const M& matrix, G& graph, const C& criterion);
       
       /**
        * @brief Breadth first search within an aggregate
@@ -835,7 +835,7 @@ namespace Dune
        * @return The number of (not skipped) aggregates built.
        */
       template<class M, class C>
-      tuple<int,int,int> build(const M& m, G& graph, 
+      tuple<int,int,int,int> build(const M& m, G& graph, 
 			       AggregatesMap<Vertex>& aggregates, const C& c);
     private:
       /**
@@ -1641,9 +1641,16 @@ namespace Dune
 	// the calculator should know whether the vertex is isolated.
 	typedef typename Matrix::ConstColIterator ColIterator;
 	ColIterator end = row.end();
+	typename Matrix::field_type absoffdiag=0;
+
 	for(ColIterator col = row.begin(); col != end; ++col)
-	  if(col.index()!=*vertex)
+	  if(col.index()!=*vertex){
 	    criterion.examine(col);
+	    absoffdiag=std::max(absoffdiag, col->frobenius_norm());
+	  }
+	
+	if(absoffdiag==0)
+	  vertex.properties().setExcludedBorder();
 	
 	// reset the vertex properties
 	//vertex.properties().reset();
@@ -2051,11 +2058,11 @@ namespace Dune
 	    if(frontNeighbours >= maxFrontNeighbours){
 	      maxFrontNeighbours = frontNeighbours;
 	      candidate = *vertex;
-	    }else if(con > maxCon){
+	    }
+	  }else if(con > maxCon){
 	      maxCon = con;
 	      maxFrontNeighbours = noFrontNeighbours(*vertex);
 	      candidate = *vertex;
-	    }
 	  }
 	}
 
@@ -2183,7 +2190,7 @@ namespace Dune
       
     template<typename V>
     template<typename M, typename G, typename C>
-    tuple<int,int,int> AggregatesMap<V>::buildAggregates(const M& matrix, G& graph, const C& criterion)
+    tuple<int,int,int,int> AggregatesMap<V>::buildAggregates(const M& matrix, G& graph, const C& criterion)
     {
       Aggregator<G> aggregator;
       return aggregator.build(matrix, graph, *this, criterion);
@@ -2191,7 +2198,7 @@ namespace Dune
     
     template<class G>
     template<class M, class C>
-    tuple<int,int,int> Aggregator<G>::build(const M& m, G& graph, AggregatesMap<Vertex>& aggregates, const C& c)
+    tuple<int,int,int,int> Aggregator<G>::build(const M& m, G& graph, AggregatesMap<Vertex>& aggregates, const C& c)
     {
       // Stack for fast vertex access
       Stack stack_(graph, *this, aggregates);
@@ -2207,7 +2214,9 @@ namespace Dune
 
       dverb<<"Build dependency took "<< watch.elapsed()<<" seconds."<<std::endl;
       int noAggregates, conAggregates, isoAggregates, oneAggregates;
-      noAggregates = conAggregates = isoAggregates = oneAggregates = 0;
+      int skippedAggregates;
+      noAggregates = conAggregates = isoAggregates = oneAggregates = 
+	skippedAggregates = 0;
       
       while(true){
 	Vertex seed = stack_.pop();
@@ -2222,12 +2231,17 @@ namespace Dune
 	
 	aggregate_->seed(seed);
 	
+	if(graph.getVertexProperties(seed).excludedBorder()){
+	  aggregates[seed]=AggregatesMap<Vertex>::ISOLATED;
+	  ++skippedAggregates;
+	  continue;
+	}
 	
 	if(graph.getVertexProperties(seed).isolated()){
 	  if(c.skipIsolated()){
 	    // isolated vertices are not aggregated but skipped on the coarser levels.
 	    aggregates[seed]=AggregatesMap<Vertex>::ISOLATED;
-	    ++isoAggregates;
+	    ++skippedAggregates;
 	    // skip rest as no agglomeration is done.
 	    continue;
 	  }else
@@ -2311,7 +2325,8 @@ namespace Dune
       Dune::dinfo<<" one node aggregates: "<<oneAggregates<<std::endl;
       
       delete aggregate_;
-      return make_tuple(conAggregates,isoAggregates,oneAggregates);
+      return make_tuple(conAggregates+isoAggregates,isoAggregates,
+			oneAggregates,skippedAggregates);
     }
     
     template<class G>
