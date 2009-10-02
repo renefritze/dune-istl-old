@@ -9,6 +9,7 @@
 #include<dune/common/sllist.hh>
 #include<dune/common/static_assert.hh>
 #include<map>
+#include<set>
 #include<utility>
 #include<iostream>
 #include<algorithm>
