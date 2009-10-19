@@ -1,3 +1,5 @@
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_ISTLIO_HH
 #define DUNE_ISTLIO_HH
 
@@ -523,6 +525,9 @@ namespace Dune {
 
     /** \brief Writes sparse matrix in a Matlab-readable format
      *
+     * \code
+#include <dune/istl/io.hh>
+     * \endcode
      * This routine writes the argument BCRSMatrix to a file with the name given by
      * the filename argument.  The file format is ASCII, with no header, and three
      * data columns.  Each row describes a scalar matrix entry and consists of the
