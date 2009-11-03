@@ -1286,6 +1286,8 @@ namespace Dune
       void growIsolatedAggregate(const Vertex& vertex, const AggregatesMap<Vertex>& aggregates, const C& c);
     };
 
+#ifndef DOXYGEN
+
     template<class M, class N>
     inline void SymmetricDependency<M,N>::init(const Matrix* matrix)
     {
@@ -2451,6 +2453,8 @@ namespace Dune
       }
       return NullEntry;
     }
+
+#endif // DOXYGEN
 
     template<class V>
     void printAggregates2d(const AggregatesMap<V>& aggregates, int n, int m,  std::ostream& os)
