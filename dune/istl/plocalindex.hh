@@ -82,7 +82,8 @@ namespace Dune
      * Needed for use in container classes.
      */
     ParallelLocalIndex();
-    
+
+#if 0
     /**
      * @brief Constructor.
      * @param globalIndex The global index.
@@ -91,9 +92,10 @@ namespace Dune
      * @param isPublic True if the index might also be 
      * known to other processes.
      *
-     ParallelLocalIndex(const Attribute& attribute, size_t local, 
-     bool isPublic);
     */
+    ParallelLocalIndex(const Attribute& attribute, size_t local, bool isPublic);
+#endif
+
     /**
      * @brief Get the attribute of the index.
      * @return The associated attribute.
