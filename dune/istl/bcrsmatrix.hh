@@ -458,8 +458,8 @@ namespace Dune {
 	  allocate(_n, _m);
 	}
 
-        /** 
-	 * @bief copy constructor
+    /** 
+	 * @brief copy constructor
 	 *
 	 * Does a deep copy as expected.
 	 */
