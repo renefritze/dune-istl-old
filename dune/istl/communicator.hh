@@ -884,6 +884,8 @@ namespace Dune
     
   };
   
+#ifndef DOXYGEN
+
   template<class V>
   inline const void* CommPolicy<V>::getAddress(const V& v, int index)
   {
@@ -908,20 +910,18 @@ namespace Dune
     return v[index].getsize();
   }
 
-  
   template<class T>
   inline const typename CopyGatherScatter<T>::IndexedType& CopyGatherScatter<T>::gather(const T& vec, std::size_t i)
   {
     return vec[i];
-    
   }
-  
+
   template<class T>
   inline void CopyGatherScatter<T>::scatter(T& vec, const IndexedType& v, std::size_t i)
   {
     vec[i]=v;
-    
   }
+
   template<typename T>
   DatatypeCommunicator<T>::DatatypeCommunicator()
     : remoteIndices_(0), created_(false)
@@ -1489,6 +1489,8 @@ namespace Dune
 
   }
 
+#endif  // DOXYGEN
+  
   /** @} */
 }
 
