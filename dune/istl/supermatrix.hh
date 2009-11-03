@@ -539,6 +539,8 @@ namespace Dune
     initializer.createMatrix();
   }
 
+#ifndef DOXYGEN
+  
   template<class B, class TA, int n, int m>
   bool  SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >::operator==(const BCRSMatrix<FieldMatrix<B,n,m>,TA>& mat) const
   {
@@ -557,6 +559,8 @@ namespace Dune
     
     return true;
   }
+  
+#endif // DOYXGEN
 
   template<class B, class TA, int n, int m>
   bool operator==(SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >& sla, BCRSMatrix<FieldMatrix<B,n,m>,TA>& a)
@@ -564,6 +568,8 @@ namespace Dune
     return a==sla;
   }
 
+#ifndef DOXYGEN
+  
   template<class B, class TA, int n, int m>
   SuperLUMatrix<BCRSMatrix<FieldMatrix<B,n,m>,TA> >::SuperLUMatrix()
     : N_(0), M_(0), Nnz_(0), values(0), rowindex(0), colstart(0)
@@ -672,6 +678,8 @@ namespace Dune
     SUPERLU_FREE(A.Store);
     N_=M_=Nnz_=0;
   }
+
+#endif // DOXYGEN
 
 }
 #endif  
