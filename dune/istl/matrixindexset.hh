@@ -51,8 +51,10 @@ public:
     int rowsize(int row) const {return indices_[row].size();}
 
     /** \brief Import all nonzero entries of a sparse matrix into the index set 
-        \param MatrixType Needs to be BCRSMatrix<...>
-        \param matrix reference to the MatrixType object
+        \tparam MatrixType Needs to be BCRSMatrix<...>
+        \param m reference to the MatrixType object
+        \param rowOffset don't write to rows<rowOffset
+        \param colOffset don't write to cols<colOffset
      */
     template <class MatrixType>
     void import(const MatrixType& m, int rowOffset=0, int colOffset=0) {
@@ -76,7 +78,7 @@ public:
 
     /** \brief Initializes a BCRSMatrix with the indices contained
         in this MatrixIndexSet 
-        \param MatrixType Needs to be BCRSMatrix<...>
+        \tparam MatrixType Needs to be BCRSMatrix<...>
         \param matrix reference to the MatrixType object
     */    
     template <class MatrixType>

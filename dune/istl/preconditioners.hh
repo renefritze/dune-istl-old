@@ -633,10 +633,8 @@ namespace Dune {
 
     /*! \brief Constructor.
       
-    Constructor gets all parameters to operate the prec.
-    \param A The matrix to operate on.
-    \param n The number of iterations to perform.
-    \param w The relaxation factor.
+      Constructor gets all parameters to operate the prec.
+      \param w The relaxation factor.
     */
     Richardson (field_type w=1.0)
 	{
