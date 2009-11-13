@@ -1123,7 +1123,7 @@ namespace Dune
       
   }
   
-  BufferedCommunicator::BufferedCommunicator()
+  inline BufferedCommunicator::BufferedCommunicator()
   {
     buffers_[0]=0;
     buffers_[1]=0;
@@ -1203,7 +1203,7 @@ namespace Dune
     buffers_[1] = new char[bufferSize_[1]];
   }
   
-  void BufferedCommunicator::free()
+  inline void BufferedCommunicator::free()
   {
       messageInformation_.clear();
       if(buffers_[0])
@@ -1214,7 +1214,7 @@ namespace Dune
       buffers_[0]=buffers_[1]=0;
   }
 
-  BufferedCommunicator::~BufferedCommunicator()
+  inline BufferedCommunicator::~BufferedCommunicator()
   {
     free();
   }
