@@ -280,7 +280,7 @@ public:
 
     //! Multiplication of the transposed matrix times a vector
     template <class X, class Y>
-    Y transposedMult(const Y& vec) {
+    Y transposedMult(const X& vec) {
 #ifdef DUNE_ISTL_WITH_CHECKING
         if (N()!=vec.size())
             DUNE_THROW(ISTLError, "Vector size doesn't match the number of matrix rows!");
