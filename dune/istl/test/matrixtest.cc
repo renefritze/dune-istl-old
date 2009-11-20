@@ -6,22 +6,46 @@
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/istl/matrix.hh>
 #include <dune/istl/bdmatrix.hh>
+#include <dune/istl/scaledidmatrix.hh>
+#include <dune/istl/diagonalmatrix.hh>
 
 
 using namespace Dune;
 
 template <class MatrixType>
-void testMatrix(MatrixType& matrix)
+void testSuperMatrix(MatrixType& matrix)
 {
     // ////////////////////////////////////////////////////////
     //   Check the types which are exported by the matrix
     // ////////////////////////////////////////////////////////
 
     typedef typename MatrixType::field_type field_type;
-    
+
     typedef typename MatrixType::block_type block_type;
 
+    typedef typename MatrixType::size_type size_type;
+
     typedef typename MatrixType::allocator_type allocator_type;
+
+    size_type n = matrix.N();
+    size_type m = matrix.M();
+    BlockVector<FieldVector<field_type, block_type::cols> > x(m);
+    BlockVector<FieldVector<field_type, block_type::rows> > y(n);
+
+    testMatrix(matrix, x, y);
+}
+
+
+template <class MatrixType, class X, class Y>
+void testMatrix(MatrixType& matrix, X& x, Y& y)
+{
+    // ////////////////////////////////////////////////////////
+    //   Check the types which are exported by the matrix
+    // ////////////////////////////////////////////////////////
+
+    typedef typename MatrixType::field_type field_type;
+
+    typedef typename MatrixType::block_type block_type;
 
     typedef typename MatrixType::row_type row_type;
 
@@ -43,7 +67,7 @@ void testMatrix(MatrixType& matrix)
 
     typename MatrixType::RowIterator rowIt    = matrix.begin();
     typename MatrixType::RowIterator rowEndIt = matrix.end();
-    
+
     typename MatrixType::size_type numRows = 0, numEntries = 0;
 
     for (; rowIt!=rowEndIt; ++rowIt) {
@@ -69,7 +93,7 @@ void testMatrix(MatrixType& matrix)
 
     typename MatrixType::ConstRowIterator constRowIt    = matrix.begin();
     typename MatrixType::ConstRowIterator constRowEndIt = matrix.end();
-    
+
     numRows    = 0;
     numEntries = 0;
 
@@ -94,7 +118,7 @@ void testMatrix(MatrixType& matrix)
 
     rowIt    = matrix.rbegin();
     rowEndIt = matrix.rend();
-    
+
     numRows    = 0;
     numEntries = 0;
 
@@ -121,7 +145,7 @@ void testMatrix(MatrixType& matrix)
 
     constRowIt    = matrix.rbegin();
     constRowEndIt = matrix.rend();
-    
+
     numRows    = 0;
     numEntries = 0;
 
@@ -145,7 +169,7 @@ void testMatrix(MatrixType& matrix)
 
     size_type n = matrix.N();
     size_type m = matrix.M();
-    
+
     // ///////////////////////////////////////////////////////
     //   Test assignment operators and the copy constructor
     // ///////////////////////////////////////////////////////
@@ -174,8 +198,11 @@ void testMatrix(MatrixType& matrix)
     //   Test the various matrix-vector multiplications
     // ///////////////////////////////////////////////////////////
 
-    BlockVector<FieldVector<field_type, block_type::cols> > x(m);
-    BlockVector<FieldVector<field_type, block_type::rows> > y(n);
+    Y yy=y;
+
+    matrix.mv(x,yy);
+
+    matrix.mtv(x,yy);
 
     matrix.umv(x,y);
 
@@ -225,7 +252,7 @@ int main()
                 for (int l=0; l<3; l++)
                     matrix[i][j][k][l] = (i+j)/((double)(k*l));  // just anything
 
-    testMatrix(matrix);
+    testSuperMatrix(matrix);
 
     // ////////////////////////////////////////////////////////////
     //   Test the BCRSMatrix class -- a sparse dynamic matrix
@@ -261,9 +288,9 @@ int main()
 
     for(RowIterator row = bcrsMatrix.begin(); row != bcrsMatrix.end(); ++row)
       for(ColIterator col = row->begin(); col != row->end(); ++col)
-	*col = 1.0 + (double) row.index() * (double) col.index();
-      
-    testMatrix(bcrsMatrix);
+    *col = 1.0 + (double) row.index() * (double) col.index();
+
+    testSuperMatrix(bcrsMatrix);
 
     // ////////////////////////////////////////////////////////////////////////
     //   Test the BDMatrix class -- a dynamic block-diagonal matrix 
@@ -272,5 +299,36 @@ int main()
     BDMatrix<FieldMatrix<double,4,4> > bdMatrix(2);
     bdMatrix = 4.0;
 
-    testMatrix(bdMatrix);
+    testSuperMatrix(bdMatrix);
+
+    // ////////////////////////////////////////////////////////////////////////
+    //   Test the FieldMatrix class
+    // ////////////////////////////////////////////////////////////////////////
+
+    FieldMatrix<double,4,4> fMatrix;
+    for (int i=0; i<fMatrix.N(); i++)
+        for (int j=0; j<fMatrix.M(); j++)
+            fMatrix[i][j] = (i+j)/3;  // just anything
+    FieldVector<double,4> fvX;
+    FieldVector<double,4> fvY;
+
+    testMatrix(fMatrix, fvX, fvY);
+
+    // ////////////////////////////////////////////////////////////////////////
+    //   Test the ScaledIdentityMatrix class
+    // ////////////////////////////////////////////////////////////////////////
+
+    DiagonalMatrix<double,4> dMatrix;
+    dMatrix = 3.1459;
+
+    testMatrix(dMatrix, fvX, fvY);
+
+    // ////////////////////////////////////////////////////////////////////////
+    //   Test the ScaledIdentityMatrix class
+    // ////////////////////////////////////////////////////////////////////////
+
+    ScaledIdentityMatrix<double,4> sIdMatrix;
+    sIdMatrix = 3.1459;
+
+    testMatrix(sIdMatrix, fvX, fvY);
 }
