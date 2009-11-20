@@ -1,5 +1,5 @@
-#ifndef DUNE_DIAGONAL_MATRIX_HH
-#define DUNE_DIAGONAL_MATRIX_HH
+#ifndef DUNE_DIAGONAL_MATRIX_NEW_HH
+#define DUNE_DIAGONAL_MATRIX_NEW_HH
 
 /*! \file
 \brief  This file implements a quadratic matrix of fixed size which is diagonal.
@@ -9,6 +9,7 @@
 #include<cstddef>
 #include<complex>
 #include<iostream>
+#include<memory>
 #include <dune/common/exceptions.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/fvector.hh>
@@ -20,7 +21,8 @@ namespace Dune {
 
 template< class K, int n > class DiagonalRowVectorConst;
 template< class K, int n > class DiagonalRowVector;
-template< class C, class T, class R, class S> class ReferenceStorageIterator;
+template< class DiagonalMatrixType > class DiagonalMatrixWrapper;
+template< class C, class T, class R> class ContainerWrapperIterator;
 
 
 /**
@@ -29,6 +31,7 @@ template< class C, class T, class R, class S> class ReferenceStorageIterator;
 template<class K, int n>
 class DiagonalMatrix
 {
+    typedef DiagonalMatrixWrapper< DiagonalMatrix<K,n> > WrapperType;
 
     public:
     //===== type definitions and constants
@@ -95,7 +98,7 @@ class DiagonalMatrix
 
     //===== iterator interface to rows of the matrix
     //! Iterator class for sequential access
-    typedef ReferenceStorageIterator<DiagonalMatrix<K,n>,reference,reference,DiagonalMatrix<K,n>&> Iterator;
+    typedef ContainerWrapperIterator<const WrapperType, reference, reference> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
     //! rename the iterators for easier access
@@ -106,30 +109,30 @@ class DiagonalMatrix
     //! begin iterator
     Iterator begin ()
     {
-        return Iterator(*this,0);
+        return Iterator(WrapperType(this),0);
     }
 
     //! end iterator
     Iterator end ()
     {
-        return Iterator(*this,n);
+        return Iterator(WrapperType(this),n);
     }
 
     //! begin iterator
     Iterator rbegin ()
     {
-        return Iterator(*this,n-1);
+        return Iterator(WrapperType(this),n-1);
     }
 
     //! end iterator
     Iterator rend ()
     {
-        return Iterator(*this,-1);
+        return Iterator(WrapperType(this),-1);
     }
 
 
     //! Iterator class for sequential access
-    typedef ReferenceStorageIterator<const DiagonalMatrix<K,n>,const_reference,const_reference,const DiagonalMatrix<K,n>&> ConstIterator;
+    typedef ContainerWrapperIterator<const WrapperType, const_reference, const_reference> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
     //! rename the iterators for easier access
@@ -140,25 +143,25 @@ class DiagonalMatrix
     //! begin iterator
     ConstIterator begin () const
     {
-        return ConstIterator(*this,0);
+        return ConstIterator(WrapperType(this),0);
     }
 
     //! end iterator
     ConstIterator end () const
     {
-        return ConstIterator(*this,n);
+        return ConstIterator(WrapperType(this),n);
     }
 
     //! begin iterator
     ConstIterator rbegin () const
     {
-        return ConstIterator(*this,n-1);
+        return ConstIterator(WrapperType(this),n-1);
     }
 
     //! end iterator
     ConstIterator rend () const
     {
-        return ConstIterator(*this,-1);
+        return ConstIterator(WrapperType(this),-1);
     }
 
 
@@ -256,7 +259,7 @@ class DiagonalMatrix
         if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
         for (size_type i=0; i<n; i++)
-            y[i] += fm_ck(diag_[i])*x[i];
+            y[i] += conjugateComplex(diag_[i])*x[i];
     }
 
     //! y -= A x
@@ -291,9 +294,8 @@ class DiagonalMatrix
         if (x.N()!=N()) DUNE_THROW(FMatrixError,"index out of range");
         if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
-
         for (size_type i=0; i<n; i++)
-            y[i] -= fm_ck(diag_[i])*x[i];
+            y[i] -= conjugateComplex(diag_[i])*x[i];
     }
 
     //! y += alpha A x
@@ -329,7 +331,7 @@ class DiagonalMatrix
         if (y.N()!=M()) DUNE_THROW(FMatrixError,"index out of range");
 #endif
         for (size_type i=0; i<n; i++)
-            y[i] += alpha * fm_ck(diag_[i]) * x[i];
+            y[i] += alpha * conjugateComplex(diag_[i]) * x[i];
     }
 
     //===== norms
@@ -472,14 +474,63 @@ class DiagonalMatrix
 };
 
 
-/** \brief 
+template<class DiagonalMatrixType>
+class DiagonalMatrixWrapper
+{
+        typedef typename DiagonalMatrixType::reference reference;
+        typedef typename DiagonalMatrixType::const_reference const_reference;
+        typedef typename DiagonalMatrixType::field_type K;
+        typedef DiagonalRowVector<K, DiagonalMatrixType::rows> row_type;
+        typedef std::size_t size_type;
+        typedef DiagonalMatrixWrapper< DiagonalMatrixType> MyType;
+
+        friend class ContainerWrapperIterator<const MyType, reference, reference>;
+        friend class ContainerWrapperIterator<const MyType, const_reference, const_reference>;
+
+    public:
+
+        DiagonalMatrixWrapper() :
+            mat_(0)
+        {}
+
+        DiagonalMatrixWrapper(const DiagonalMatrixType* mat) :
+            mat_(const_cast<DiagonalMatrixType*>(mat))
+        {}
+
+        size_type realIndex(int i) const
+        {
+            return i;
+        }
+
+        row_type* pointer(int i) const
+        {
+            row_ = row_type(&(mat_->diagonal(i)), i);
+            return &row_;
+        }
+
+        bool identical(const DiagonalMatrixWrapper& other) const
+        {
+            return mat_==other.mat_;
+        }
+
+    private:
+
+        mutable DiagonalMatrixType* mat_;
+        mutable row_type row_;
+};
+
+/** \brief
  *
  */
 template< class K, int n >
 class DiagonalRowVectorConst
 {
+    template<class DiagonalMatrixType>
+    friend class DiagonalMatrixWrapper;
+    friend class ContainerWrapperIterator<DiagonalRowVectorConst<K,n>, const K, const K&>;
+
 public:
-    // remember size of vector 
+    // remember size of vector
     enum { dimension = n };
 
     // standard constructor and everything is sufficient ...
@@ -524,9 +575,10 @@ public:
     //! same for read only access
     const K& operator[] (size_type i) const
     {
+#ifdef DUNE_FMatrix_WITH_CHECKING
         if (i!=row_)
-            DUNE_THROW(FMatrixError,"index is read only");
-//            return ZERO<K>::Value;
+            DUNE_THROW(FMatrixError,"index is contained in pattern");
+#endif
         return *p_;
     }
 
@@ -538,50 +590,33 @@ public:
     }
 
     //! ConstIterator class for sequential access
-    typedef ReferenceStorageIterator<DiagonalRowVectorConst<K,n>,const K,const K&,DiagonalRowVectorConst<K,n> > ConstIterator;
+    typedef ContainerWrapperIterator<DiagonalRowVectorConst<K,n>, const K, const K&> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
 
     //! begin ConstIterator
     ConstIterator begin () const
     {
-        // the iterator gets this type as '[...]Const' and not as 'const [...]'
-        // thus we must remove constness
-        return ConstIterator(*const_cast<DiagonalRowVectorConst<K,n>*>(this),row_);
+        return ConstIterator(*this,0);
     }
 
     //! end ConstIterator
     ConstIterator end () const
     {
-        // the iterator gets this type as '[...]Const' and not as 'const [...]'
-        // thus we must remove constness
-        return ConstIterator(*const_cast<DiagonalRowVectorConst<K,n>*>(this),row_+1);
+        return ConstIterator(*this,1);
     }
 
     //! begin ConstIterator
     ConstIterator rbegin () const
     {
-        // the iterator gets this type as '[...]Const' and not as 'const [...]'
-        // thus we must remove constness
-        return ConstIterator(*const_cast<DiagonalRowVectorConst<K,n>*>(this),row_);
+        return ConstIterator(*this,0);
     }
 
     //! end ConstIterator
     ConstIterator rend () const
     {
-        // the iterator gets this type as '[...]Const' and not as 'const [...]'
-        // thus we must remove constness
-        return ConstIterator(*const_cast<DiagonalRowVectorConst<K,n>*>(this),-1);
+        return ConstIterator(*this,-1);
     }
-
-    //! return iterator to given element or end()
-//    ConstIterator find (size_type i) const
-//    {
-//        if (i<n)
-//            return ConstIterator(*this,i);
-//        else
-//            return ConstIterator(*this,n);
-//    }
 
     //! Binary vector comparison
     bool operator== (const DiagonalRowVectorConst& y) const
@@ -616,16 +651,34 @@ public:
     }
 
 protected:
+
+    size_type realIndex(int i) const
+    {
+        return rowIndex();
+    }
+
+    K* pointer(size_type i) const
+    {
+        return const_cast<K*>(p_);
+    }
+
+    DiagonalRowVectorConst* operator&()
+    {
+        return this;
+    }
+
     // the data, very simply a pointer to the diagonal value and the row number
     K* p_;
     size_type row_;
-
-    void operator & ();
 };
 
 template< class K, int n >
 class DiagonalRowVector : public DiagonalRowVectorConst<K,n>
 {
+    template<class DiagonalMatrixType>
+    friend class DiagonalMatrixWrapper;
+    friend class ContainerWrapperIterator<DiagonalRowVector<K,n>, K, K&>;
+
 public:
     // standard constructor and everything is sufficient ...
 
@@ -658,55 +711,47 @@ public:
 
     //===== access to components
 
-    //! random access 
+    //! random access
     K& operator[] (size_type i)
     {
+#ifdef DUNE_FMatrix_WITH_CHECKING
         if (i!=row_)
-            DUNE_THROW(FMatrixError,"index is read only");
-//            return ZERO<K>::Value;
+            DUNE_THROW(FMatrixError,"index is contained in pattern");
+#endif
         return *p_;
     }
 
     //! Iterator class for sequential access
-    typedef ReferenceStorageIterator<DiagonalRowVector<K,n>,K,K&,DiagonalRowVector<K,n> > Iterator;
+    typedef ContainerWrapperIterator<DiagonalRowVector<K,n>, K, K&> Iterator;
     //! typedef for stl compliant access
     typedef Iterator iterator;
 
     //! begin iterator
     Iterator begin ()
     {
-        return Iterator(*this,row_);
+        return Iterator(*this, 0);
     }
 
     //! end iterator
     Iterator end ()
     {
-        return Iterator(*this,row_+1);
+        return Iterator(*this, 1);
     }
 
     //! begin iterator
     Iterator rbegin ()
     {
-        return Iterator(*this,row_);
+        return Iterator(*this, 0);
     }
 
     //! end iterator
     Iterator rend ()
     {
-        return Iterator(*this,row_-1);
+        return Iterator(*this, -1);
     }
 
-    //! return iterator to given element or end()
-//    Iterator find (size_type i)
-//    {
-//        if (i<n)
-//            return Iterator(*this,i);
-//        else
-//            return Iterator(*this,n);
-//    }
-
     //! ConstIterator class for sequential access
-    typedef ReferenceStorageIterator<DiagonalRowVectorConst<K,n>,const K,const K&,DiagonalRowVectorConst<K,n> > ConstIterator;
+    typedef ContainerWrapperIterator<DiagonalRowVectorConst<K,n>, const K, const K&> ConstIterator;
     //! typedef for stl compliant access
     typedef ConstIterator const_iterator;
 
@@ -722,11 +767,17 @@ public:
     using DiagonalRowVectorConst<K,n>::rowIndex;
     using DiagonalRowVectorConst<K,n>::diagonal;
 
+protected:
+
+    DiagonalRowVector* operator&()
+    {
+        return this;
+    }
+
 private:
+
     using DiagonalRowVectorConst<K,n>::p_;
     using DiagonalRowVectorConst<K,n>::row_;
-
-    void operator & ();
 };
 
 
@@ -756,97 +807,115 @@ struct mutable_reference< DiagonalRowVectorConst<K,n> >
 };
 
 
-template<class C, class T, class R, class S>
-class ReferenceStorageIterator : public BidirectionalIteratorFacade<ReferenceStorageIterator<C,T,R,S>,T, R, int>
-{
-    friend class ReferenceStorageIterator<typename mutable_reference<C>::type, typename mutable_reference<T>::type, typename mutable_reference<R>::type, typename mutable_reference<S>::type>;
-    friend class ReferenceStorageIterator<typename const_reference<C>::type, typename const_reference<T>::type, typename const_reference<R>::type, typename const_reference<S>::type>;
 
-    typedef ReferenceStorageIterator<typename mutable_reference<C>::type, typename mutable_reference<T>::type, typename mutable_reference<R>::type, typename mutable_reference<S>::type> MyType;
-    typedef ReferenceStorageIterator<typename const_reference<C>::type, typename const_reference<T>::type, typename const_reference<R>::type, typename const_reference<S>::type> MyConstType;
+
+template<class CW, class T, class R>
+class ContainerWrapperIterator : public BidirectionalIteratorFacade<ContainerWrapperIterator<CW,T,R>,T, R, int>
+{
+        typedef typename remove_const<CW>::type NonConstCW;
+
+        friend class ContainerWrapperIterator<CW, typename mutable_reference<T>::type, typename mutable_reference<R>::type>;
+        friend class ContainerWrapperIterator<CW, typename const_reference<T>::type, typename const_reference<R>::type>;
+
+        typedef ContainerWrapperIterator<CW, typename mutable_reference<T>::type, typename mutable_reference<R>::type> MyType;
+        typedef ContainerWrapperIterator<CW, typename const_reference<T>::type, typename const_reference<R>::type> MyConstType;
 
     public:
 
-    // Constructors needed by the facade iterators.
-    ReferenceStorageIterator(): container_(0), position_(0)
-    {}
+        // Constructors needed by the facade iterators.
+        ContainerWrapperIterator():
+            containerWrapper_(),
+            position_(0)
+        {}
 
-    ReferenceStorageIterator(C& cont, int pos)
-        : container_(cont), position_(pos)
-    {}
+        ContainerWrapperIterator(CW containerWrapper, int position) :
+            containerWrapper_(containerWrapper),
+            position_(position)
+        {}
 
-    ReferenceStorageIterator(const MyType& other)
-        : container_(other.container_), position_(other.position_)
-    {}
+        template<class OtherContainerWrapperIteratorType>
+        ContainerWrapperIterator(OtherContainerWrapperIteratorType& other):
+            containerWrapper_(other.containerWrapper_),
+            position_(other.position_)
+        {}
 
-    ReferenceStorageIterator(const MyConstType& other)
-        : container_(other.container_), position_(other.position_)
-    {}
+        ContainerWrapperIterator(const MyType& other):
+            containerWrapper_(other.containerWrapper_),
+            position_(other.position_)
+        {}
 
-    // Methods needed by the forward iterator
-    bool equals(const MyType& other) const
-    {
-        // check for identity since we store references/objects
-        return position_ == other.position_ && container_.identical(other.container_);
-    }
+        ContainerWrapperIterator(const MyConstType& other):
+            containerWrapper_(other.containerWrapper_),
+            position_(other.position_)
+        {}
 
+        template<class OtherContainerWrapperIteratorType>
+        ContainerWrapperIterator& operator=(OtherContainerWrapperIteratorType& other)
+        {
+            containerWrapper_ = other.containerWrapper_;
+            position_ = other.position_;
+        }
 
-    bool equals(const MyConstType& other) const
-    {
-        // check for identity since we store references/objects
-        return position_ == other.position_ && container_.identical(other.container_);
-    }
+        // This operator is needed since we can not get the address of the
+        // temporary object returned by dereference
+        T* operator->() const
+        {
+            return containerWrapper_.pointer(position_);
+        }
 
-    R dereference() const
-    {
-        // iterator facedes cast to const
-        // thus this costness must be removed since the 'const'
-        // container is '[...]Const' and not 'const [...]'
-        return (const_cast< typename remove_const<C>::type& >(container_))[position_];
-    }
+        // Methods needed by the forward iterator
+        bool equals(const MyType& other) const
+        {
+            return position_ == other.position_ && containerWrapper_.identical(other.containerWrapper_);
+        }
 
-    void increment()
-    {
-        ++position_;
-    }
+        bool equals(const MyConstType& other) const
+        {
+            return position_ == other.position_ && containerWrapper_.identical(other.containerWrapper_);
+        }
 
-    // Additional function needed by BidirectionalIterator
-    void decrement()
-    {
-        --position_;
-    }
+        R dereference() const
+        {
+            return *containerWrapper_.pointer(position_);
+        }
 
-    // Additional function needed by RandomAccessIterator
-    R elementAt(int i) const
-    {
-        return (const_cast< typename remove_const<C>::type& >(container_))[position_+i];
-    }
+        void increment()
+        {
+            ++position_;
+        }
 
-    void advance(int n)
-    {
-        position_=position_+n;
-    }
+        // Additional function needed by BidirectionalIterator
+        void decrement()
+        {
+            --position_;
+        }
 
-    std::ptrdiff_t distanceTo(const MyType& other) const
-    {
-        assert(container_.identical(other.container_));
-        return other.position_ - position_;
-    }
+        // Additional function needed by RandomAccessIterator
+        R elementAt(int i) const
+        {
+            return *containerWrapper_.pointer(position_+i);
+        }
 
-    std::ptrdiff_t distanceTo(const MyConstType& other) const
-    {
-        assert(container_.identical(other.container_));
-        return other.position_ - position_;
-    }
+        void advance(int n)
+        {
+            position_=position_+n;
+        }
 
-    std::ptrdiff_t index() const
-    {
-        return position_;
-    }
+        template<class OtherContainerWrapperIteratorType>
+        std::ptrdiff_t distanceTo(OtherContainerWrapperIteratorType& other) const
+        {
+            assert(containerWrapper_.identical(other));
+            return other.position_ - position_;
+        }
+
+        std::ptrdiff_t index() const
+        {
+            return containerWrapper_.realIndex(position_);
+        }
 
     private:
-    S container_;
-    size_t position_;
+        NonConstCW containerWrapper_;
+        size_t position_;
 };
 
 
