@@ -226,6 +226,13 @@ class DiagonalMatrix
             y[i] = diag_[i] * x[i];
     }
 
+    //! y = A^T x
+    template<class X, class Y>
+    void mtv (const X& x, Y& y) const
+    {
+        mv(x, y);
+    }
+
     //! y += A x
     template<class X, class Y>
     void umv (const X& x, Y& y) const
