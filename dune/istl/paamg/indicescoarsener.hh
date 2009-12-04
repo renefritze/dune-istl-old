@@ -30,8 +30,7 @@ namespace Dune
 
     template<typename T, typename E>
     class IndicesCoarsener
-    {
-    };
+    {    };
 
     
 #if HAVE_MPI
@@ -114,11 +113,10 @@ namespace Dune
 	{
 	  AggregateRenumberer<G>::operator()(edge);
 	  const IndexPair* pair= lookup_.pair(edge.target());
-	  if(pair!=0){
-	    globalIndex(pair->global());
-	    attribute(pair->local().attribute());
-	    isPublic(pair->local().isPublic());
-	  }
+	  assert(pair!=static_cast<const IndexPair*>(0));
+	  globalIndex(pair->global());
+	  attribute(pair->local().attribute());
+	  isPublic(pair->local().isPublic());
 	}
 	
 	Vertex operator()(const GlobalIndex& global)
@@ -161,7 +159,7 @@ namespace Dune
 	
 	void globalIndex(const GlobalIndex& global)
 	{
-	  globalIndex_ = global;
+	  globalIndex_ = std::min(global,globalIndex_);
 	}
 	
       private:
@@ -266,7 +264,8 @@ namespace Dune
 	    const IndexPair* pair= lookup.pair(*index);
 	      
 	    renumberer.reset();
-	    if(pair!=0 && !ExcludedAttributes::contains(pair->local().attribute())){
+	    assert(pair!=0);
+	    if(!ExcludedAttributes::contains(pair->local().attribute())){
 	      renumberer.attribute(pair->local().attribute());
 	      renumberer.isPublic(pair->local().isPublic());
 	      renumberer.globalIndex(pair->global());
@@ -278,13 +277,12 @@ namespace Dune
 	    
 	    typedef typename GlobalLookupIndexSet::IndexPair::GlobalIndex GlobalIndex;
 	    
-	    if(renumberer.globalIndex()!=std::numeric_limits<GlobalIndex>::max()){
-	      //std::cout <<" Adding global="<< renumberer.globalIndex()<<" local="<<static_cast<std::size_t>(renumberer)<<std::endl;
-	      coarseIndices.add(renumberer.globalIndex(), 
-				LocalIndex(renumberer, renumberer.attribute(), 
-					   renumberer.isPublic()));
-	    }
+	    assert(renumberer.globalIndex()!=std::numeric_limits<GlobalIndex>::max());
 	    
+	    coarseIndices.add(renumberer.globalIndex(), 
+			      LocalIndex(renumberer, renumberer.attribute(), 
+					 renumberer.isPublic()));
+	    	    
 	    aggregates[*index] = renumberer;
 	    ++renumberer;
 	  }
