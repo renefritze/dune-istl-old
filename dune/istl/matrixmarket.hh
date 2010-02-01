@@ -28,7 +28,7 @@ namespace Dune
     {
       static std::string str()
       {
-        return "integer";
+	return "integer";
       }
     };
     
@@ -37,7 +37,7 @@ namespace Dune
     {
       static std::string str()
       {
-        return "real";
+	return "real";
       }
     };
     
@@ -46,7 +46,7 @@ namespace Dune
     {
       static std::string str()
       {
-        return "real";
+	return "real";
       }
     };
 
@@ -55,7 +55,7 @@ namespace Dune
     {
       static std::string str()
       {
-        return "complex";
+	return "complex";
       }
     };
     
@@ -64,7 +64,7 @@ namespace Dune
     {
       static std::string str()
       {
-        return "complex";
+	return "complex";
       }
     };
 
@@ -84,8 +84,8 @@ namespace Dune
     {
       static void print(std::ostream& os)
       {
-        os<<"%%MatrixMarket matrix coordinate ";
-        os<<mm_numeric_type<T>::str()<<" general"<<std::endl;
+	os<<"%%MatrixMarket matrix coordinate ";
+	os<<mm_numeric_type<T>::str()<<" general"<<std::endl;
       }
     };
 
@@ -94,8 +94,8 @@ namespace Dune
     {
       static void print(std::ostream& os)
       {
-        os<<"%%MatrixMarket matrix array ";
-        os<<mm_numeric_type<T>::str()<<" general"<<std::endl;
+	os<<"%%MatrixMarket matrix array ";
+	os<<mm_numeric_type<T>::str()<<" general"<<std::endl;
       }
     };
 
@@ -117,8 +117,8 @@ namespace Dune
       
       static void print(std::ostream& os, const M& m)
       {
-        os<<"% ISTL_STRUCT blocked ";
-        os<<i<<" "<<j<<std::endl;
+	os<<"% ISTL_STRUCT blocked ";
+	os<<i<<" "<<j<<std::endl;
       }
     };
     
@@ -144,7 +144,7 @@ namespace Dune
     struct MMHeader
     {
       MMHeader()
-        : type(coordinate_type), ctype(double_type), structure(general)
+	: type(coordinate_type), ctype(double_type), structure(general)
       {}
       MM_TYPE type;
       MM_CTYPE ctype;
@@ -156,15 +156,15 @@ namespace Dune
       char c=file.peek();
       // ignore whitespace
       while(c==' ')
-        {
-          file.get();
-          c=file.peek();
-        }
+	{
+	  file.get();
+	  c=file.peek();
+	}
       
       if(c=='\n'){
       /* eat the line feed */
-        file.get();
-        return true;
+	file.get();
+	return true;
       }
       return false;
     }
@@ -175,11 +175,11 @@ namespace Dune
       char c=file.peek();
       // ignore comment lines
       while(c=='%')
-        {
-          /* disgard the rest of the line */
-          file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-          c=file.peek();
-        }
+	{
+	  /* disgard the rest of the line */
+	  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	  c=file.peek();
+	}
     }
     
 
@@ -190,184 +190,184 @@ namespace Dune
       c=file.peek();
       mmHeader=MMHeader();
       if(c!='%')
-        return false;
+	return false;
 
       /* read the banner */
       file >> buffer;
       if(buffer!="%%MatrixMarket"){
-        /* disgard the rest of the line */
-        file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-        return false;
+	/* disgard the rest of the line */
+	file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	return false;
       }
 
       if(lineFeed(file))
-        /* premature end of line */
-        return false;
+	/* premature end of line */
+	return false;
 
       /* read the matrix_type */
       file >> buffer;
 
       if(buffer != "matrix")
-        {
-          /* disgard the rest of the line */
-          file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-          return false;
-        }
+	{
+	  /* disgard the rest of the line */
+	  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	  return false;
+	}
 
       if(lineFeed(file))
-        /* premature end of line */
-        return false;
-        
+	/* premature end of line */
+	return false;
+	
       /* The type of the matrix */
       file >> buffer;
-        
+	
       if(buffer.empty())
-        return false;
+	return false;
 
       std::transform(buffer.begin(), buffer.end(), buffer.begin(), 
-                     tolower);
+		     tolower);
 
       switch(buffer[0])
-        {
-        case 'a':
-          /* sanity check */
-          if(buffer != "array")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.type=array_type;
-          break;
-        case 'c':
-          /* sanity check */
-          if(buffer != "coordinate")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.type=coordinate_type;
-          break;
-        default:
-          file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-          return false;
-        }
-        
+	{
+	case 'a':
+	  /* sanity check */
+	  if(buffer != "array")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.type=array_type;
+	  break;
+	case 'c':
+	  /* sanity check */
+	  if(buffer != "coordinate")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.type=coordinate_type;
+	  break;
+	default:
+	  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	  return false;
+	}
+	
       if(lineFeed(file))
-        /* premature end of line */
-        return false;
-        
+	/* premature end of line */
+	return false;
+	
       /* The numeric type used. */
       file >> buffer;
-        
+	
       if(buffer.empty())
-        return false;
-        
+	return false;
+	
       std::transform(buffer.begin(), buffer.end(), buffer.begin(), 
-                     tolower);
+		     tolower);
       switch(buffer[0])
-        {
-        case 'i':
-          /* sanity check */
-          if(buffer != "integer")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.ctype=integer_type;
-          break;
-        case 'r':
-          /* sanity check */
-          if(buffer != "real")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.ctype=double_type;
-          break;
-        case 'c':
-          /* sanity check */
-          if(buffer != "complex")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.ctype=complex_type;
-          break;
-        case 'p':
-          /* sanity check */
-          if(buffer != "pattern")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.ctype=pattern;
-          break;
-        default:
-          file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-          return false;
-        }
+	{
+	case 'i':
+	  /* sanity check */
+	  if(buffer != "integer")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.ctype=integer_type;
+	  break;
+	case 'r':
+	  /* sanity check */
+	  if(buffer != "real")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.ctype=double_type;
+	  break;
+	case 'c':
+	  /* sanity check */
+	  if(buffer != "complex")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.ctype=complex_type;
+	  break;
+	case 'p':
+	  /* sanity check */
+	  if(buffer != "pattern")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.ctype=pattern;
+	  break;
+	default:
+	  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	  return false;
+	}
 
       if(lineFeed(file))
-        return false;
-        
+	return false;
+	
       file >> buffer;
-        
+	
       std::transform(buffer.begin(), buffer.end(), buffer.begin(), 
-                     tolower);
+		     tolower);
       switch(buffer[0])
-        {
-        case 'g':
-          /* sanity check */
-          if(buffer != "general")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.structure=general;
-          break;
-        case 'h':
-          /* sanity check */
-          if(buffer != "hermitian")
-            {
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-          mmHeader.structure=hermitian;
-          break;
-        case 's':
-          if(buffer.size()==1){
-            file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-            return false;
-          }
-            
-          switch(buffer[1])
-            {
-            case 'y':
-              /* sanity check */
-              if(buffer != "symmetric")
-                {
-                  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-                  return false;
-                }
-              mmHeader.structure=symmetric;
-              break;
-            case 'k':
-              /* sanity check */
-              if(buffer != "skew-symmetric")
-                {
-                  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-                  return false;
-                }
-              mmHeader.structure=skew_symmetric;
-              break;
-            default:
-              file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              return false;
-            }
-        default:
-          file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-          return false;
-        }
+	{
+	case 'g':
+	  /* sanity check */
+	  if(buffer != "general")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.structure=general;
+	  break;
+	case 'h':
+	  /* sanity check */
+	  if(buffer != "hermitian")
+	    {
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	  mmHeader.structure=hermitian;
+	  break;
+	case 's':
+	  if(buffer.size()==1){
+	    file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	    return false;
+	  }
+	    
+	  switch(buffer[1])
+	    {
+	    case 'y':
+	      /* sanity check */
+	      if(buffer != "symmetric")
+		{
+		  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+		  return false;
+		}
+	      mmHeader.structure=symmetric;
+	      break;
+	    case 'k':
+	      /* sanity check */
+	      if(buffer != "skew-symmetric")
+		{
+		  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+		  return false;
+		}
+	      mmHeader.structure=skew_symmetric;
+	      break;
+	    default:
+	      file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      return false;
+	    }
+	default:
+	  file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	  return false;
+	}
       file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
       c=file.peek();
       return true;
@@ -381,20 +381,20 @@ namespace Dune
       
       //empty lines will be disgarded and we will simply read the next line
       while(index==0&&!file.eof())
-        {
-          // strip spaces
-          while(!file.eof() && (c=file.get())==' ');
-          
-          //read the rest of the line until comment
-          while(!file.eof() && (c=file.get())=='\n'){
-            switch(c)
-              {
-              case '%':
-                /* disgard the rest of the line */
-                file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-              }
-          }
-        }
+	{
+	  // strip spaces
+	  while(!file.eof() && (c=file.get())==' ');
+	  
+	  //read the rest of the line until comment
+	  while(!file.eof() && (c=file.get())=='\n'){
+	    switch(c)
+	      {
+	      case '%':
+		/* disgard the rest of the line */
+		file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	      }
+	  }
+	}
       
       //      buffer[index]='\0';
     }
@@ -409,18 +409,18 @@ namespace Dune
       std::size_t blockentries=0;
     
       switch(header.structure)
-        {
-        case general:
-          blockentries = entries/blocksize; break;
-        case skew_symmetric:
-          blockentries = 2*entries/blocksize; break;
-        case symmetric:
-          blockentries = (2*entries-rows)/blocksize; break;
-        case hermitian:
-          blockentries = (2*entries-rows)/blocksize; break;
-        default:
-          throw Dune::NotImplemented();
-        }
+	{
+	case general:
+	  blockentries = entries/blocksize; break;
+	case skew_symmetric:
+	  blockentries = 2*entries/blocksize; break;
+	case symmetric:
+	  blockentries = (2*entries-rows)/blocksize; break;
+	case hermitian:
+	  blockentries = (2*entries-rows)/blocksize; break;
+	default:
+	  throw Dune::NotImplemented();
+	}
       return Dune::make_tuple(blockrows, blockcols, blockentries);
     }
 
@@ -453,7 +453,7 @@ namespace Dune
       T number;
       operator T&()
       {
-        return number;
+	return number;
       }
     };
 
@@ -519,22 +519,22 @@ namespace Dune
        */
       template<typename M>
       void operator()(const std::vector<std::set<IndexData<D> > >& rows,
-                      M& matrix)
+		      M& matrix)
       {    
-        for(typename M::RowIterator iter=matrix.begin();
-            iter!= matrix.end(); ++iter)
-          {
-            for(typename M::size_type brow=iter.index()*brows, 
-                  browend=iter.index()*brows+brows;
-                brow<browend; ++brow)
-              {
-                typedef typename std::set<IndexData<D> >::const_iterator Siter;
-                for(Siter siter=rows[brow].begin(), send=rows[brow].end();
-                    siter != send; ++siter)
-                  (*iter)[siter->index/bcols][brow%brows][siter->index%bcols]=siter->number;
-              }
-          }
-      }     
+	for(typename M::RowIterator iter=matrix.begin();
+	    iter!= matrix.end(); ++iter)
+	  {
+	    for(typename M::size_type brow=iter.index()*brows, 
+		  browend=iter.index()*brows+brows;
+		brow<browend; ++brow)
+	      {
+		typedef typename std::set<IndexData<D> >::const_iterator Siter;
+		for(Siter siter=rows[brow].begin(), send=rows[brow].end();
+		    siter != send; ++siter)
+		  (*iter)[siter->index/bcols][brow%brows][siter->index%bcols]=siter->number;
+	      }
+	  }
+      }	    
     };
   
     template<int brows, int bcols>
@@ -542,48 +542,48 @@ namespace Dune
     {
       template<typename M>
       void operator()(const std::vector<std::set<IndexData<PatternDummy> > >& rows,
-                      M& matrix)
+		      M& matrix)
       {}
     };
   
     template<typename T, typename A, int brows, int bcols, typename D>
     void readSparseEntries(Dune::BCRSMatrix<Dune::FieldMatrix<T,brows,bcols>,A>& matrix,
-                           std::istream& file, std::size_t entries,
-                           const MMHeader& mmHeader, D)
+			   std::istream& file, std::size_t entries,
+			   const MMHeader& mmHeader, D)
     {
       typedef Dune::BCRSMatrix<Dune::FieldMatrix<T,brows,bcols>,A> Matrix;
       std::vector<std::set<IndexData<D> > > rows(matrix.N()*brows);
     
       for(entries; entries>0;--entries){
-        std::size_t row;
-        IndexData<D> data;
-        skipComments(file);
-        file>>row;
-        --row; // Index was 1 based.
-        assert(row/bcols<matrix.N());
-        file>>data;
-        assert(data.index/bcols<matrix.M());
-        rows[row].insert(data);
+	std::size_t row;
+	IndexData<D> data;
+	skipComments(file);
+	file>>row;
+	--row; // Index was 1 based.
+	assert(row/bcols<matrix.N());
+	file>>data;
+	assert(data.index/bcols<matrix.M());
+	rows[row].insert(data);
       }
 
       // TODO extend to capture the nongeneral cases.
       if(mmHeader.structure!= general)
-        DUNE_THROW(Dune::NotImplemented, "Only general is supported right now!");
+	DUNE_THROW(Dune::NotImplemented, "Only general is supported right now!");
     
       // Setup the matrix sparsity pattern
       int nnz=0;
       for(typename Matrix::CreateIterator iter=matrix.createbegin();
-          iter!= matrix.createend(); ++iter)
-        {
-          for(std::size_t brow=iter.index()*brows, browend=iter.index()*brows+brows;
-              brow<browend; ++brow)
-            {
-              typedef typename std::set<IndexData<D> >::const_iterator Siter;
-              for(Siter siter=rows[brow].begin(), send=rows[brow].end();
-                  siter != send; ++siter, ++nnz)
-                iter.insert(siter->index/bcols);
-            }
-        }
+	  iter!= matrix.createend(); ++iter)
+	{
+	  for(std::size_t brow=iter.index()*brows, browend=iter.index()*brows+brows;
+	      brow<browend; ++brow)
+	    {
+	      typedef typename std::set<IndexData<D> >::const_iterator Siter;
+	      for(Siter siter=rows[brow].begin(), send=rows[brow].end();
+		  siter != send; ++siter, ++nnz)
+		iter.insert(siter->index/bcols);
+	    }
+	}
     
       //Set the matrix values
       matrix=0;
@@ -605,7 +605,7 @@ namespace Dune
    */
   template<typename T, typename A, int brows, int bcols>
   void readMatrixMarket(Dune::BCRSMatrix<Dune::FieldMatrix<T,brows,bcols>,A>& matrix,
-                        std::istream& istr)
+			std::istream& istr)
   {
 
     typedef Dune::BCRSMatrix<Dune::FieldMatrix<double,brows,bcols> > Matrix;
@@ -613,7 +613,7 @@ namespace Dune
     MMHeader header;
     if(!readMatrixMarketBanner(istr, header))
       std::cerr << "First line was not a correct Matrix Market banner. Using default:\n"
-                << "%%MatrixMarket matrix coordinate real general"<<std::endl;
+		<< "%%MatrixMarket matrix coordinate real general"<<std::endl;
   
     skipComments(istr);
   
@@ -649,10 +649,10 @@ namespace Dune
     NumericWrapper<double> d;
   
     readSparseEntries(matrix, istr, entries, header,d);
-  }     
+  }	
   template<typename M>
   void printMatrixMarket(M& matrix,
-                        std::ostream ostr)
+			std::ostream ostr)
   {
     mm_header_printer<M>::print(ostr, matrix);
     mm_block_structure_header<M>::print(ostr,matrix);
