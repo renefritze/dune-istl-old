@@ -1,7 +1,7 @@
 #ifndef DUNE_SUPERLU_HH
 #define DUNE_SUPERLU_HH
 
-#ifdef HAVE_SUPERLU
+#if HAVE_SUPERLU
 #ifdef TRUE
 #undef TRUE
 #endif
