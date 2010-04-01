@@ -286,7 +286,7 @@ int main()
                     matrix[i][j][k][l] = (i+j)/((double)(k*l));  // just anything
 
     testSuperMatrix(matrix);
-
+#if 0
     // ////////////////////////////////////////////////////////////
     //   Test the BCRSMatrix class -- a sparse dynamic matrix
     // ////////////////////////////////////////////////////////////
@@ -395,4 +395,5 @@ int main()
     sIdMatrix = 3.1459;
 
     testMatrix(sIdMatrix, fvX, fvY);
+#endif
 }
