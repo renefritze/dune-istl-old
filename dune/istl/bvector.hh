@@ -3,9 +3,9 @@
 
 #include<cmath>
 #include<complex>
+#include<memory>
 
 #include "istlexception.hh"
-#include "allocator.hh"
 #include "basearray.hh"
 
 /*! \file
@@ -29,7 +29,7 @@ namespace Dune {
 	 Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	 enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class block_vector_unmanaged : public base_array_unmanaged<B,A>
   {
   public:
@@ -215,7 +215,7 @@ namespace Dune {
 	 Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	 enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class BlockVector : public block_vector_unmanaged<B,A>
   {
   public:
@@ -250,18 +250,18 @@ namespace Dune {
 	//! makes empty vector
     BlockVector () : block_vector_unmanaged<B,A>(),
 		     capacity_(0)
-	{
-	  this->n = 0;
-	}
+	{}
 
 	//! make vector with _n components
 	explicit BlockVector (size_type _n)
 	{
 	  this->n = _n;
 	  capacity_ = _n;
-	  if (capacity_>0) 
-		this->p = A::template malloc<B>(capacity_);
-	  else
+	  if (capacity_>0) {
+              this->p = this->allocator_.allocate(capacity_);
+              // actually construct the objects
+              new(this->p) B[capacity_];
+          } else
 		{
 		  this->p = 0;
 		  this->n = 0;
@@ -288,9 +288,10 @@ namespace Dune {
 	  else
 	    capacity_ = capacity;
 	  
-	  if (capacity_>0) 
-		this->p = A::template malloc<B>(capacity_);
-	  else
+	  if (capacity_>0) {
+		this->p = this->allocator_.allocate(capacity_);
+                new (this->p) B[capacity_];
+	  } else
 		{
 		  this->p = 0;
 		  this->n = 0;
@@ -323,8 +324,9 @@ namespace Dune {
 
 	if(capacity>0){
 	  // create new array with capacity
-	  this->p = A::template malloc<B>(capacity);
-	  
+	  this->p = this->allocator_.allocate(capacity);
+          new (this->p) B[capacity];
+
 	  if(copyOldValues){
 	    // copy the old values
 	    B* to = this->p;
@@ -333,9 +335,13 @@ namespace Dune {
 	    for(size_type i=0; i < block_vector_unmanaged<B,A>::N(); ++i, ++from, ++to)
 	      *to = *from;
 
-	if(capacity_ > 0)
-	  // free old data
-	  A::template free<B>(pold);
+            if(capacity_ > 0) {
+                // Destruct old objects and free memory
+                int i=capacity_;
+                while (i)
+                    pold[--i].~B();
+                this->allocator_.deallocate(pold,1);
+            }
 	  }
 	}else{
 	  if(capacity_ > 0)
@@ -394,9 +400,10 @@ namespace Dune {
 	  this->n = a.n;
 	  capacity_ = a.capacity_;
 
-	  if (capacity_>0) 
-		this->p = A::template malloc<B>(capacity_);
-	  else
+	  if (capacity_>0) {
+		this->p = this->allocator_.allocate(capacity_);
+                new (this->p) B[capacity_];
+	  } else
 		{
 		  this->n = 0;
 		  this->p = 0;
@@ -416,9 +423,10 @@ namespace Dune {
 	  this->n = a.n;
 	  capacity_ = a.capacity_;
 
-	  if (capacity_>0) 
-		this->p = A::template malloc<B>(capacity_);
-	  else
+	  if (capacity_>0) {
+              this->p = this->allocator_.allocate(capacity_);
+              new (this->p) B[capacity_];
+	  } else
 		{
 		  this->n = 0;
 		  this->p = 0;
@@ -432,7 +440,12 @@ namespace Dune {
 	//! free dynamic memory
 	~BlockVector () 
 	{ 
-	  if (capacity_>0) A::template free<B>(this->p); 
+            if (capacity_>0) {
+                int i=capacity_;
+                while (i)
+                    this->p[--i].~B();
+                this->allocator_.deallocate(this->p,1); 
+            }
 	}
 
 	//! assignment
@@ -443,11 +456,17 @@ namespace Dune {
 		  // adjust size of vector
 		  if (capacity_!=a.capacity_) // check if size is different
 			{
-			  if (capacity_>0) A::template free<B>(this->p); // delete old memory
+                            if (capacity_>0) {
+                                int i=capacity_;
+                                while (i)
+                                    this->p[--i].~B();
+                                this->allocator_.deallocate(this->p,1); // free old memory
+                            }
 			  capacity_ = a.capacity_;
-			  if (capacity_>0) 
-				this->p = A::template malloc<B>(capacity_);
-			  else
+			  if (capacity_>0) {
+                              this->p = this->allocator_.allocate(capacity_);
+                              new (this->p) B[capacity_];
+                          } else
 				{
 				  this->p = 0;
 				  capacity_ = 0;
@@ -477,6 +496,9 @@ namespace Dune {
 	}
   protected:
     size_type capacity_;
+
+      A allocator_;
+
   };
 
   /** @} */
@@ -508,7 +530,7 @@ namespace Dune {
 	  Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	  enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class BlockVectorWindow : public block_vector_unmanaged<B,A>
   {
   public:
@@ -646,7 +668,7 @@ namespace Dune {
 	 Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	 enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class compressed_block_vector_unmanaged : public compressed_base_array_unmanaged<B,A>
   {
   public:
@@ -849,7 +871,7 @@ namespace Dune {
 	  Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	  enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class CompressedBlockVectorWindow : public compressed_block_vector_unmanaged<B,A>
   {
   public:

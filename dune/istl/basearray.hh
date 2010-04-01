@@ -5,9 +5,9 @@
 #include<cmath>
 #include<complex>
 #include<cstddef>
+#include<memory>
 
 #include "istlexception.hh"
-#include "allocator.hh"
 #include <dune/common/iteratorfacades.hh>
 
 /** \file 
@@ -34,7 +34,7 @@ namespace Dune {
 	   Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	   enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class base_array_unmanaged
   {
   public:
@@ -261,7 +261,7 @@ namespace Dune {
 	   Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	   enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class base_array_window : public base_array_unmanaged<B,A>
   {
   public:
@@ -351,7 +351,7 @@ namespace Dune {
 	   Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	   enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class base_array : public base_array_unmanaged<B,A>
   {
   public:
@@ -387,9 +387,10 @@ namespace Dune {
 	base_array (size_type _n)
 	  : base_array_unmanaged<B,A>(_n, 0)
 	{
-	  if (this->n>0) 
-		this->p = A::template malloc<B>(this->n);
-	  else
+            if (this->n>0) {
+		this->p = allocator_.allocate(this->n);
+                new (this->p) B[this->n];
+            } else
 		{
 		  this->n = 0;
 		  this->p = 0;
@@ -402,9 +403,10 @@ namespace Dune {
 	  // allocate memory with same size as a
 	  this->n = a.n;
 
-	  if (this->n>0) 
-		this->p = A::template malloc<B>(this->n);
-	  else
+	  if (this->n>0) {
+              this->p = allocator_.allocate(this->n);
+              new (this->p) B[this->n];
+          } else
 		{
 		  this->n = 0;
 		  this->p = 0;
@@ -421,9 +423,10 @@ namespace Dune {
 
 	  // allocate memory with same size as a
 	  this->n = a.n;
-	  if (this->n>0) 
-		this->p = A::template malloc<B>(this->n);
-	  else
+	  if (this->n>0) {
+		this->p = allocator_.allocate(this->n);
+                new (this->p) B[this->n];
+          } else
 		{
 		  this->n = 0;
 		  this->p = 0;
@@ -437,7 +440,12 @@ namespace Dune {
 	//! free dynamic memory
 	~base_array () 
 	{ 
-	  if (this->n>0) A::template free<B>(this->p); 
+            if (this->n>0) {
+                int i=this->n;
+                while (i)
+                    this->p[--i].~B();
+                allocator_.deallocate(this->p,1);
+            }
 	}
 
 	//! reallocate array to given size, any data is lost
@@ -445,11 +453,17 @@ namespace Dune {
 	{
 	  if (this->n==_n) return;
 
-	  if (this->n>0) A::template free<B>(this->p); 
+	  if (this->n>0) {
+              int i=this->n;
+              while (i)
+                  this->p[--i].~B();
+              allocator_.deallocate(this->p,1); 
+          }
 	  this->n = _n;
-	  if (this->n>0) 
-		this->p = A::template malloc<B>(this->n);
-	  else
+	  if (this->n>0) {
+		this->p = allocator_.allocate(this->n);
+                new (this->p) B[this->n];
+	  } else
 		{
 		  this->n = 0;
 		  this->p = 0;
@@ -464,11 +478,17 @@ namespace Dune {
 		  // adjust size of array
 		  if (this->n!=a.n) // check if size is different
 			{
-			  if (this->n>0) A::template free<B>(this->p); // delete old memory
+                            if (this->n>0) {
+                                int i=this->n;
+                                while (i)
+                                    this->p[--i].~B();
+                                allocator_.deallocate(this->p,1); // delete old memory
+                            }
 			  this->n = a.n;
-			  if (this->n>0) 
-				this->p = A::template malloc<B>(this->n);
-			  else
+			  if (this->n>0) {
+				this->p = allocator_.allocate(this->n);
+                                new (this->p) B[this->n];
+			  } else
 				{
 				  this->n = 0;
 				  this->p = 0;
@@ -486,6 +506,9 @@ namespace Dune {
 	  return this->operator=(static_cast<const base_array&>(a));
 	}
 
+        protected:
+
+        A allocator_;
   };
 
 
@@ -510,7 +533,7 @@ namespace Dune {
 	   Setting the compile time switch DUNE_ISTL_WITH_CHECKING
 	   enables error checking.
   */
-  template<class B, class A=ISTLAllocator>
+  template<class B, class A=std::allocator<B> >
   class compressed_base_array_unmanaged
   {
   public:
