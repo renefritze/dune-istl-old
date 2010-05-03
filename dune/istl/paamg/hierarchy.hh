@@ -781,7 +781,7 @@ namespace Dune
 	ParallelInformation* info =&(*infoLevel);
 
 	if((
-#ifdef ENABLE_PARMETIS 
+#ifdef HAVE_PARMETIS 
 	      (HAVE_PARMETIS && criterion.accumulate()==successiveAccu)
 #else
 	      false
@@ -901,7 +901,7 @@ namespace Dune
 	if(criterion.debugLevel()>2 && rank==0)
 	  std::cout << "Building "<<noAggregates<<" aggregates took "<<watch.elapsed()<<" seconds."<<std::endl;	
 
-	if(!noAggregates || unknowns/noAggregates<criterion.minCoarsenRate())
+	if(!noAggregates || ((double)unknowns)/noAggregates<criterion.minCoarsenRate())
     {
 	    if(rank==0)
         {
