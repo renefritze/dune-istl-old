@@ -25,6 +25,10 @@ namespace Dune
     template<class D>
     void redistributeBackward(D& from, const D& to) const
     {}
+
+    void resetSetup()
+    {}
+    
   };
   
 #if HAVE_MPI
@@ -67,9 +71,11 @@ namespace Dune
 	std::cout<<rank<<": redist interface :"<<interface<<std::endl;
 
 	throw "autsch!";
-	}
+        delete ri;
+	}else
       	
 #endif
+        delete ri;
     }
     void setSetup()
     {
@@ -77,6 +83,11 @@ namespace Dune
       interface.strip();
     }
         
+    void resetSetup()
+    {
+      setup_=false;
+    }
+
     template<class GatherScatter, class D>
     void redistribute(const D& from, D& to) const
     {

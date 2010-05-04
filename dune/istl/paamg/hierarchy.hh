@@ -217,6 +217,11 @@ namespace Dune
 	  element_->redistributed_ = t;
 	}
 
+        void deleteRedistributed()
+        {
+          element_->redistributed_ = 0;
+        }
+        
       private:
 	Element* element_;
       };
@@ -796,7 +801,8 @@ namespace Dune
 	    ParallelInformation* redistComm=0;
 	    std::size_t nodomains = unknowns/(criterion.minAggregateSize()
 				     *criterion.coarsenTarget());
-	    if(nodomains<=criterion.minAggregateSize()/2)
+	    if( nodomains<=criterion.minAggregateSize()/2 || 
+                unknowns <= criterion.coarsenTarget() )
 	      nodomains=1;
 	    
 	    bool existentOnNextLevel = 
@@ -827,7 +833,7 @@ namespace Dune
 	rank = info->communicator().rank();
 	procs = info->communicator().size();
 	if(unknowns <= criterion.coarsenTarget())
-	   // No further coarsening needed
+          // No further coarsening needed
 	   break;
 
 	typedef PropertiesGraphCreator<MatrixOperator> GraphCreator;
@@ -914,6 +920,18 @@ namespace Dune
             aggregatesMap->free();
 	    delete aggregatesMap;
 	    aggregatesMaps_.pop_back();
+
+            if(criterion.accumulate() && mlevel.isRedistributed() && info->communicator().size()>1){
+              // coarse level matrix was already redistributed, but to more than 1 process
+              // Therefore need to delete the redistribution. Further down it will
+              // then be redistributed to 1 process
+              delete &(mlevel.getRedistributed().getmat());
+              mlevel.deleteRedistributed();
+              delete &(infoLevel.getRedistributed());
+              infoLevel.deleteRedistributed();
+              redistributes_.back().resetSetup();
+            }
+                
 	    break;
     }
 	unknowns =  noAggregates;
@@ -988,7 +1006,7 @@ namespace Dune
 	
 	matrices_.addCoarser(args);
 	redistributes_.push_back(RedistributeInfoType());
-      }
+      } // end level loop
       
 
       infoLevel->freeGlobalLookup();
