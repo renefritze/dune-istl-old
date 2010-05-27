@@ -4,8 +4,9 @@
 #define DUNE_PLOCALINDEX_HH
 
 #include "localindex.hh"
-#include "mpitraits.hh"
 #include <iostream>
+
+#include <dune/common/mpitraits.hh>
 
 namespace Dune
 {
