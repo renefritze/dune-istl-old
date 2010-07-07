@@ -6,6 +6,7 @@
 #include<algorithm>
 #include<vector>
 #include<cassert>
+#include<limits>
 #include<dune/common/typetraits.hh>
 #include<dune/common/iteratorfacades.hh>
 #include<dune/istl/istlexception.hh>
