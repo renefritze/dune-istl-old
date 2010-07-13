@@ -387,15 +387,18 @@ namespace Dune
 	      assert(localIndex != localEnd); // Should never happen
 	    }
 	    assert(localIndex->global()==remote->localIndexPair().global());
-	    
-	    // do we send the index?
-	    if( send ? sourceFlags.contains(localIndex->local().attribute()) :
-		destFlags.contains(localIndex->local().attribute()))
-	      ++size;
+	    while(localIndex!=localEnd && localIndex->global()==remote->localIndexPair().global()){
+              // do we send the index?
+              if( send ? sourceFlags.contains(localIndex->local().attribute()) :
+                  destFlags.contains(localIndex->local().attribute()))
+                ++size;
+              ++localIndex;
+            }
 	  }
 	  ++remote;
       }
       interfaceInformation.reserve(process->first, size);
+      std::cout<<process->first<<" "<<size<<std::endl;
     }
 
     // compare the local and remote indices and set up the types
@@ -410,7 +413,10 @@ namespace Dune
 	  destFlags.contains(localIndex->local().attribute()))
       {
 	// search for matching remote indices
-	remote.advance(localIndex->global());
+	for(remote.advance(localIndex->global());
+            remote.begin()!=remote.end();++remote)
+          {
+            
 	// Iterate over the list that are positioned at global
 	typedef typename CIter::iterator ValidIterator;
 	const ValidIterator end = remote.end();
@@ -420,10 +426,12 @@ namespace Dune
 	  if( send ?  destFlags.contains(validEntry->attribute()) :
 	      sourceFlags.contains(validEntry->attribute())){
 	    // We will receive data for this index
+            std::cout<<"Adding: "<<validEntry.process() <<" "<<localIndex->local()<<std::endl;
 	    interfaceInformation.add(validEntry.process(),localIndex->local());
 	  }
 	  ++validEntry;
-	}
+	}  }
+        
       }
       ++localIndex;
     }
