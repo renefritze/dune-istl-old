@@ -333,6 +333,13 @@ namespace Dune {
 	  communication.copyOwnerToAll(v,v);
     }
 
+    template<bool forward>
+    void apply (X& v, const Y& d)
+    {
+      preconditioner.template apply<forward>(v,d);
+      communication.copyOwnerToAll(v,v);
+    }
+    
     /*! 
       \brief Clean up.
       
@@ -345,7 +352,7 @@ namespace Dune {
 
   private:
 	//! \brief a sequential preconditioner
-	Preconditioner<X,Y>& preconditioner;
+	T& preconditioner;
 
 	//! \brief the communication object
 	const communication_type& communication;
