@@ -379,6 +379,7 @@ namespace Dune
       RemoteIterator remote = send ? process->second.first->begin() : process->second.second->begin();
 	
       while(localIndex!=localEnd && remote!=remoteEnd){
+        LocalIterator oldlocalIndex=localIndex;
 	  if( send ?  destFlags.contains(remote->attribute()) :
 	      sourceFlags.contains(remote->attribute())){
 	    // search for the matching local index
@@ -395,10 +396,12 @@ namespace Dune
               ++localIndex;
             }
 	  }
-	  ++remote;
+          typename RemoteIndices::GlobalIndex oldRemote=remote->localIndexPair().global();
+          ++remote;
+	  if(remote!=remoteEnd && remote->localIndexPair().global()==oldRemote)
+            localIndex=oldlocalIndex;
       }
       interfaceInformation.reserve(process->first, size);
-      std::cout<<process->first<<" "<<size<<std::endl;
     }
 
     // compare the local and remote indices and set up the types
@@ -407,6 +410,7 @@ namespace Dune
     CIter remote = remoteIndices.template iterator<send>();
     LocalIterator localIndex = send ? remoteIndices.source_->begin() : remoteIndices.target_->begin();
     const LocalIterator localEnd = send ?  remoteIndices.source_->end() : remoteIndices.target_->end();
+    CIter oldremote = remote;
     
     while(localIndex!=localEnd && !remote.empty()){
       if( send ? sourceFlags.contains(localIndex->local().attribute()) :
@@ -426,14 +430,16 @@ namespace Dune
 	  if( send ?  destFlags.contains(validEntry->attribute()) :
 	      sourceFlags.contains(validEntry->attribute())){
 	    // We will receive data for this index
-            std::cout<<"Adding: "<<validEntry.process() <<" "<<localIndex->local()<<std::endl;
 	    interfaceInformation.add(validEntry.process(),localIndex->local());
 	  }
 	  ++validEntry;
 	}  }
         
       }
+      typename RemoteIndices::GlobalIndex old=localIndex->global();
       ++localIndex;
+      if(old==localIndex->global())
+        remote=oldremote;
     }
   }
   
