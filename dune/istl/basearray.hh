@@ -444,7 +444,7 @@ namespace Dune {
                 int i=this->n;
                 while (i)
                     this->p[--i].~B();
-                allocator_.deallocate(this->p,1);
+                allocator_.deallocate(this->p,this->n);
             }
 	}
 
@@ -457,7 +457,7 @@ namespace Dune {
               int i=this->n;
               while (i)
                   this->p[--i].~B();
-              allocator_.deallocate(this->p,1); 
+              allocator_.deallocate(this->p,this->n); 
           }
 	  this->n = _n;
 	  if (this->n>0) {
@@ -482,7 +482,7 @@ namespace Dune {
                                 int i=this->n;
                                 while (i)
                                     this->p[--i].~B();
-                                allocator_.deallocate(this->p,1); // delete old memory
+                                allocator_.deallocate(this->p,this->n); // delete old memory
                             }
 			  this->n = a.n;
 			  if (this->n>0) {
