@@ -24,10 +24,16 @@ template< class K, int n > class DiagonalRowVector;
 template< class DiagonalMatrixType > class DiagonalMatrixWrapper;
 template< class C, class T, class R> class ContainerWrapperIterator;
 
+/** 
+    @addtogroup DenseMatVec
+    @{
+*/
 
 /**
-    @brief A diagonal matrix of static size
-*/
+ *@brief A diagonal matrix of static size.
+ * This is meant to be a replacement of FieldMatrix for the case that
+ * it is a diagonal matrix.
+ */
 template<class K, int n>
 class DiagonalMatrix
 {
@@ -955,6 +961,6 @@ void istl_assign_to_fmatrix(FieldMatrix<K,n,n>& fm, const DiagonalMatrix<K,n>& s
     for(int i=0; i<n; ++i)
         fm[i][i] = s.diagonal()[i];
 }
-
+/* @} */
 } // end namespace
 #endif
