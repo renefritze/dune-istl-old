@@ -119,48 +119,101 @@ namespace Dune
   struct SymmetricMultiplicativeSchwarzMode
   {};  
 
-  namespace
+
+  
+  template<typename T>
+  struct OverlappingAssigner
   {
-    template<typename T>
+  };
+    
+  template<typename T, typename A, int n, int m>
+  struct OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >
+    {
+      typedef BCRSMatrix<FieldMatrix<T,n,m>,A> matrix_type;
+      typedef typename SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> >::range_type range_type;
+      typedef typename range_type::field_type field_type;
+      typedef typename range_type::block_type block_type;
+      
+      typedef typename matrix_type::size_type size_type;
+      
+      /**
+       * @brief Constructor.
+       * @param mat The global matrix.
+       * @param rhs storage for the local defect.
+       * @param b the global right hand side.
+       * @param x the global left hand side.
+       */
+      OverlappingAssigner(std::size_t maxlength, const BCRSMatrix<FieldMatrix<T,n,m>,A>& mat, 
+                          const range_type& b, range_type& x);
+      
+      void deallocate();
+      
+      void resetIndexForNextDomain();
+      
+      field_type* lhs();
+            
+      field_type* rhs();
+      
+      void relaxResult(field_type relax);
+
+      /**
+       * @brief calculate one entry of the local defect.
+       * @param domain One index of the domain.
+       */
+      void operator()(const size_type& domain);
+
+      void assignResult(block_type& res);
+      
+    private:
+      const matrix_type* mat;
+      field_type* rhs_;
+      field_type* lhs_;
+      const range_type* b;
+      range_type* x;
+      std::size_t i;
+      std::size_t maxlength_;
+    };
+
+    template<typename S, typename T>
     struct AdditiveAdder
     {
     };
     
-    template<typename T, typename A, int n>
-    struct AdditiveAdder<BlockVector<FieldVector<T,n>,A> >
+    template<typename S, typename T, typename A, int n>
+    struct AdditiveAdder<S, BlockVector<FieldVector<T,n>,A> >
     {
       typedef typename A::size_type size_type;
-      AdditiveAdder(BlockVector<FieldVector<T,n>,A>& v, BlockVector<FieldVector<T,n>,A>& x, const T* t, const T& relax_);
+      AdditiveAdder(BlockVector<FieldVector<T,n>,A>& v, BlockVector<FieldVector<T,n>,A>& x,
+                    OverlappingAssigner<S>& assigner, const T& relax_);
       void operator()(const size_type& domain);
       void axpy();
       
     private:
-      const T* t;
       BlockVector<FieldVector<T,n>,A>* v;
       BlockVector<FieldVector<T,n>,A>* x;
+      OverlappingAssigner<S>* assigner;
       T relax;
-      size_type i;
     };
 
-    template<typename T>
+    template<typename S,typename T>
     struct MultiplicativeAdder
     {
     };
     
-    template<typename T, typename A, int n>
-    struct MultiplicativeAdder<BlockVector<FieldVector<T,n>,A> >
+    template<typename S, typename T, typename A, int n>
+    struct MultiplicativeAdder<S, BlockVector<FieldVector<T,n>,A> >
     {
       typedef typename A::size_type size_type;
-      MultiplicativeAdder(BlockVector<FieldVector<T,n>,A>& v, BlockVector<FieldVector<T,n>,A>& x, const T* t, const T& relax_);
+      MultiplicativeAdder(BlockVector<FieldVector<T,n>,A>& v, BlockVector<FieldVector<T,n>,A>& x, 
+                          OverlappingAssigner<S>& assigner_, const T& relax_);
       void operator()(const size_type& domain);
       void axpy();
       
     private:
-      const T* t;
       BlockVector<FieldVector<T,n>,A>* v;
       BlockVector<FieldVector<T,n>,A>* x;
+      OverlappingAssigner<S>* assigner;
       T relax;
-      size_type i;
     };
 
     /**
@@ -172,26 +225,26 @@ namespace Dune
      * SymmetricMultiplicativeSchwarzMode)
      * \tparam X The vector field type
      */
-    template<typename T, class X>
+    template<typename T, class X, class S>
     struct AdderSelector
     {};
     
-    template<class X>
-    struct AdderSelector<AdditiveSchwarzMode,X>
+  template<class X, class S>
+    struct AdderSelector<AdditiveSchwarzMode,X,S>
     {
-      typedef AdditiveAdder<X> Adder;
+      typedef AdditiveAdder<S,X> Adder;
     };
     
-    template<class X>
-    struct AdderSelector<MultiplicativeSchwarzMode,X>
+  template<class X, class S>
+    struct AdderSelector<MultiplicativeSchwarzMode,X,S>
     {
-      typedef MultiplicativeAdder<X> Adder;
+      typedef MultiplicativeAdder<S,X> Adder;
     };    
 
-    template<class X>
-    struct AdderSelector<SymmetricMultiplicativeSchwarzMode,X>
+  template<class X, class S>
+    struct AdderSelector<SymmetricMultiplicativeSchwarzMode,X,S>
     {
-      typedef MultiplicativeAdder<X> Adder;
+      typedef MultiplicativeAdder<S,X> Adder;
     };    
 
     /**
@@ -293,7 +346,6 @@ namespace Dune
         sm.template apply<false>(v, b);
       }
     };
-  }
 
   template<class T>
   struct SeqOverlappingSchwarzAssembler
@@ -448,40 +500,10 @@ namespace Dune
     std::size_t nnz;
 
     bool onTheFly;
-    
-
-    template<typename T>
-    struct Assigner
-    {
-    };
-    
-    template<typename T, typename A, int n>
-    struct Assigner<BlockVector<FieldVector<T,n>,A> >
-    {
-      /**
-       * @brief Constructor.
-       * @param mat The global matrix.
-       * @param rhs storage for the local defect.
-       * @param b the global right hand side.
-       * @param x the global left hand side.
-       */
-      Assigner(const M& mat, T* rhs, const BlockVector<FieldVector<T,n>,A>& b, const BlockVector<FieldVector<T,n>,A>& x);
-      /**
-       * @brief calculate one entry of the local defect.
-       * @param domain One index of the domain.
-       */
-      void operator()(const size_type& domain);
-    private:
-      const M* mat;
-      T* rhs;
-      const BlockVector<FieldVector<T,n>,A>* b;
-      const BlockVector<FieldVector<T,n>,A>* x;
-      size_type i;
-    };
-
   };
   
-  
+
+    
   template<class I, class S, class D>
   OverlappingSchwarzInitializer<I,S,D>::OverlappingSchwarzInitializer(InitializerList& il,
                                                                     const IndexSet& idx,
@@ -786,135 +808,185 @@ namespace Dune
     typedef typename IteratorDirectionSelector<solver_vector,subdomain_vector,forward>::domain_iterator
       domain_iterator;
     
-    field_type *lhs=new field_type[maxlength];
-    field_type *rhs=new field_type[maxlength];
-    for(size_type i=0; i<maxlength; ++i)
-      lhs[i]=0;
-
-    
+    OverlappingAssigner<SuperLU<matrix_type> > assigner(maxlength, mat, b, x);
+        
     domain_iterator domain=IteratorDirectionSelector<solver_vector,subdomain_vector,forward>::begin(subDomains);
     iterator solver = IteratorDirectionSelector<solver_vector,subdomain_vector,forward>::begin(solvers);
     X v(x); // temporary for the update
     v=0;
     
-    typedef typename AdderSelector<TM,X>::Adder Adder;    
-    Adder adder(v, x, lhs, relax);
+    typedef typename AdderSelector<TM,X,SuperLU<M> >::Adder Adder;    
+    Adder adder(v, x, assigner, relax);
     
     nnz=0;
     std::size_t no=0;
     for(;domain != IteratorDirectionSelector<solver_vector,subdomain_vector,forward>::end(subDomains); ++domain){
       //Copy rhs to C-array for SuperLU
-      std::for_each(domain->begin(), domain->end(), Assigner<X>(mat, rhs, b, x));
+      std::for_each(domain->begin(), domain->end(), assigner);
+      assigner.resetIndexForNextDomain();
       if(onTheFly){
 	// Create the subdomain solver
 	slu sdsolver;
 	sdsolver.setSubMatrix(mat, *domain);
 	// Apply
-	sdsolver.apply(lhs,rhs);
+	sdsolver.apply(assigner.lhs(), assigner.rhs());
         nnz+=sdsolver.superLUMatrix().nnz();
       }else{
-	  solver->apply(lhs, rhs);
+        solver->apply(assigner.lhs(), assigner.rhs());
           nnz+=solver->superLUMatrix().nnz();
 	  ++solver;
       }
       ++no;
       //Add relaxed correction to from SuperLU to v
       std::for_each(domain->begin(), domain->end(), adder);
+      assigner.resetIndexForNextDomain();
       
     }
     nnz/=no;
     
     adder.axpy();
-    delete[] lhs;
-    delete[] rhs;
-    
+    assigner.deallocate();
   }   
     
-  template<class M, class X, class TM, class TA>
-  template<typename T, typename A, int n>
-  SeqOverlappingSchwarz<M,X,TM,TA>::Assigner<BlockVector<FieldVector<T,n>,A> >::Assigner(const M& mat_, T* rhs_, const BlockVector<FieldVector<T,n>,A>& b_,
-                                                                                      const BlockVector<FieldVector<T,n>,A>& x_)
-    : mat(&mat_), rhs(rhs_), b(&b_), x(&x_), i(0)
-  {}
-
-  template<class M, class X, class TM, class TA>
-  template<typename T, typename A, int n>
-  void SeqOverlappingSchwarz<M,X,TM,TA>::Assigner<BlockVector<FieldVector<T,n>,A> >::operator()(const size_type& domainIndex)
+  template<typename T, typename A, int n, int m>
+  OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >
+  ::OverlappingAssigner(std::size_t maxlength, 
+                        const BCRSMatrix<FieldMatrix<T,n,m>,A>& mat_, 
+                        const range_type& b_,
+                        range_type& x_)
+    : mat(&mat_), 
+      b(&b_), 
+      x(&x_), i(0), maxlength_(maxlength)
   {
-#ifndef NDEBUG
-    // The current index.
-    size_type starti = i;
-#endif
-
+    rhs_ = new field_type[maxlength];
+    lhs_ = new field_type[maxlength];
+    
+  }
+  
+  template<typename T, typename A, int n, int m>
+  void OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::deallocate()
+  {
+    delete[] rhs_;
+    delete[] lhs_;
+  }
+  
+  template<typename T, typename A, int n, int m>
+  void OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::operator()(const size_type& domainIndex)
+  {
     //assign right hand side of current domainindex block
     // rhs is an array of doubles!
     // rhs[starti] = b[domainindex]
-    for(size_type j=0; j<n; ++j, ++i)
-      rhs[i]=(*b)[domainIndex][j];
+    for(size_type j=0; j<n; ++j, ++i){
+      assert(i<maxlength_);
+      rhs_[i]=(*b)[domainIndex][j];
+    }
+    
     
     // loop over all Matrix row entries and calculate defect.
-    typedef typename M::ConstColIterator col_iterator;
-    typedef typename subdomain_type::const_iterator domain_iterator;
+    typedef typename matrix_type::ConstColIterator col_iterator;
 
     // calculate defect for current row index block
     for(col_iterator col=(*mat)[domainIndex].begin(); col!=(*mat)[domainIndex].end(); ++col){
-        typename X::block_type tmp;
+        block_type tmp;
         (*col).mv((*x)[col.index()], tmp);
         i-=n;
-        for(size_type j=0; j<n; ++j, ++i)
-          rhs[i]-=tmp[j];
+        for(size_type j=0; j<n; ++j, ++i){
+          assert(i<maxlength_);
+          rhs_[i]-=tmp[j];
+        }
+        
     }
-    //assert(starti+static_cast<size_type>(n)==i);
-  }
-  namespace
-  {
     
-  template<typename T, typename A, int n>
-  AdditiveAdder<BlockVector<FieldVector<T,n>,A> >::AdditiveAdder(BlockVector<FieldVector<T,n>,A>& v_, 
-                 BlockVector<FieldVector<T,n>,A>& x_, const T* t_, const T& relax_)
-    : t(t_), v(&v_), x(&x_), relax(relax_), i(0)
+  }
+  template<typename T, typename A, int n, int m>
+  void OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::relaxResult(field_type relax)
+  {
+    for(size_type j=i+n; i<j; ++i){
+      assert(i<maxlength_);
+      lhs_[i]*=relax;
+    }
+    i-=n;
+  }
+  
+  template<typename T, typename A, int n, int m>
+  void OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::assignResult(block_type& res)
+  {
+    // assign the result of the local solve to the global vector
+    for(size_type j=0; j<n; ++j, ++i){
+      assert(i<maxlength_);
+      res[j]+=lhs_[i];
+    }
+  }
+  
+  template<typename T, typename A, int n, int m>
+  void OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::resetIndexForNextDomain()
+  {
+    i=0;
+  }
+  
+  template<typename T, typename A, int n, int m>
+  typename OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::field_type* 
+  OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::lhs()
+  {
+    return lhs_;
+  }
+  
+  template<typename T, typename A, int n, int m>
+  typename OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::field_type* 
+  OverlappingAssigner<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >::rhs()
+  {
+    return rhs_;
+  }
+  
+    
+  template<typename S, typename T, typename A, int n>
+  AdditiveAdder<S,BlockVector<FieldVector<T,n>,A> >::AdditiveAdder(BlockVector<FieldVector<T,n>,A>& v_, 
+                                                                   BlockVector<FieldVector<T,n>,A>& x_, 
+                                                                   OverlappingAssigner<S>& assigner_, 
+                                                                   const T& relax_)
+    : v(&v_), x(&x_), assigner(&assigner_), relax(relax_)
   {}
 
-  template<typename T, typename A, int n>
-  void AdditiveAdder<BlockVector<FieldVector<T,n>,A> >::operator()(const size_type& domainIndex)
+  template<typename S, typename T, typename A, int n>
+  void AdditiveAdder<S,BlockVector<FieldVector<T,n>,A> >::operator()(const size_type& domainIndex)
   {
     // add the result of the local solve to the current update
-    for(size_type j=0; j<n; ++j, ++i)
-      (*v)[domainIndex][j]+=t[i];
+    assigner->assignResult((*v)[domainIndex]);
   }
 
  
-  template<typename T, typename A, int n>
-  void AdditiveAdder<BlockVector<FieldVector<T,n>,A> >::axpy()
+  template<typename S, typename T, typename A, int n>
+  void AdditiveAdder<S,BlockVector<FieldVector<T,n>,A> >::axpy()
   {
     // relax the update and add it to the current guess.
     x->axpy(relax,*v);
   }
 
  
-  template<typename T, typename A, int n>
-  MultiplicativeAdder<BlockVector<FieldVector<T,n>,A> >
+  template<typename S, typename T, typename A, int n>
+  MultiplicativeAdder<S,BlockVector<FieldVector<T,n>,A> >
   ::MultiplicativeAdder(BlockVector<FieldVector<T,n>,A>& v_, 
-                        BlockVector<FieldVector<T,n>,A>& x_, const T* t_, const T& relax_)
-    : t(t_), v(&v_), x(&x_), relax(relax_), i(0)
+                        BlockVector<FieldVector<T,n>,A>& x_, 
+                        OverlappingAssigner<S>& assigner_, const T& relax_)
+    : v(&v_), x(&x_), assigner(&assigner_), relax(relax_)
   {}
 
   
-  template<typename T, typename A, int n>
-  void MultiplicativeAdder<BlockVector<FieldVector<T,n>,A> >::operator()(const size_type& domainIndex)
+  template<typename S,typename T, typename A, int n>
+  void MultiplicativeAdder<S,BlockVector<FieldVector<T,n>,A> >::operator()(const size_type& domainIndex)
   {
     // add the result of the local solve to the current guess
-    for(size_type j=0; j<n; ++j, ++i)
-      (*x)[domainIndex][j]+=relax*t[i];
+    assigner->relaxResult(relax);
+assigner->assignResult((*x)[domainIndex]);
   }
 
   
-  template<typename T, typename A, int n>
-  void MultiplicativeAdder<BlockVector<FieldVector<T,n>,A> >::axpy()
+  template<typename S,typename T, typename A, int n>
+  void MultiplicativeAdder<S,BlockVector<FieldVector<T,n>,A> >::axpy()
   {
     // nothing to do, as the corrections already relaxed and added in operator()
   }
-  }
+  
   
   /** @} */
 #endif  
