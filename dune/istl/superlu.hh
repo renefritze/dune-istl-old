@@ -45,6 +45,9 @@ namespace Dune
   template<class M, class T, class TM, class TA>
   class SeqOverlappingSchwarz;
   
+  template<class T>
+  class SeqOverlappingSchwarzAssembler;
+  
   /**
    * @brief SuperLu Solver
    *
@@ -132,7 +135,8 @@ namespace Dune
     friend class std::mem_fun_ref_t<void,SuperLU>;
     template<class M,class X, class TM, class T1>
     friend class SeqOverlappingSchwarz;
-
+    friend class SeqOverlappingSchwarzAssembler<SuperLU<Matrix> >;
+    
     /** @brief computes the LU Decomposition */
     void decompose();
     
