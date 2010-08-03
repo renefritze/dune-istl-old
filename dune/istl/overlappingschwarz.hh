@@ -1092,7 +1092,7 @@ namespace Dune
   template<class M, class X, class Y>
   void OverlappingAssigner<ILU0SubdomainSolver<M,X,Y> >::assignResult(block_type& res)
   {
-    res=(*lhs_)[i++];
+    res+=(*lhs_)[i++];
   }
 
   template<class M, class X, class Y>
@@ -1151,7 +1151,7 @@ namespace Dune
   {
     // add the result of the local solve to the current guess
     assigner->relaxResult(relax);
-assigner->assignResult((*x)[domainIndex]);
+    assigner->assignResult((*x)[domainIndex]);
   }
 
   
