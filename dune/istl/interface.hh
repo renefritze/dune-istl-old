@@ -412,7 +412,11 @@ namespace Dune
     const LocalIterator localEnd = send ?  remoteIndices.source_->end() : remoteIndices.target_->end();
     CIter oldremote = remote;
     
-    while(localIndex!=localEnd && !remote.empty()){
+    if(localIndex==localEnd)
+      //no indices
+      return;
+    
+    while(!remote.empty()){
       if( send ? sourceFlags.contains(localIndex->local().attribute()) :
 	  destFlags.contains(localIndex->local().attribute()))
       {
@@ -438,7 +442,10 @@ namespace Dune
       }
       typename RemoteIndices::GlobalIndex old=localIndex->global();
       ++localIndex;
+      if(localIndex==localEnd) // no more indices
+        break;
       if(old==localIndex->global())
+        // we have the same global index as the previous one
         remote=oldremote;
     }
   }
