@@ -55,7 +55,7 @@ namespace Dune {
   struct OwnerOverlapCopyAttributeSet
   {
 	enum AttributeSet { 
-	  owner=1, overlap=2, copy=0 };
+	  owner=1, overlap=2, copy=3 };
   };
 
   /**
