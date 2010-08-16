@@ -56,6 +56,7 @@ namespace Dune{
   template<typename T, typename A, bool mode>
   class RemoteIndexListModifier;
 
+ 
   /**
    * @brief Information about an index residing on another processor.
    */
@@ -64,10 +65,11 @@ namespace Dune{
   {
     template<typename T>
     friend class IndicesSyncer;
-    
+
     template<typename T, typename A, typename A1>
-    friend void repairLocalIndexPointers(std::map<int,SLList<typename T::GlobalIndex,A> >&, RemoteIndices<T,A1>&,
-					 const T&); 
+    friend void repairLocalIndexPointers(std::map<int,SLList<std::pair<typename T::GlobalIndex, typename T::LocalIndex::Attribute>,A> >&, 
+                                         RemoteIndices<T,A1>&,
+                                         const T&);
 
     template<typename T, typename A, bool mode>
     friend class RemoteIndexListModifier;
@@ -178,10 +180,10 @@ namespace Dune{
   {
     friend class InterfaceBuilder;
     friend class IndicesSyncer<T>;
-    template<typename T1,typename A1,typename A2>
-    friend void repairLocalIndexPointers(std::map<int,SLList<typename T1::GlobalIndex,A1> >&, 
-					 RemoteIndices<T1,A2>&,
-					 const T1&);
+    template<typename T1, typename A2, typename A1>
+    friend void repairLocalIndexPointers(std::map<int,SLList<std::pair<typename T1::GlobalIndex, typename T1::LocalIndex::Attribute>,A2> >&, 
+                                         RemoteIndices<T1,A1>&,
+                                         const T1&);
     
     template<class G, class T1, class T2>
     friend void fillIndexSetHoles(const G& graph, Dune::OwnerOverlapCopyCommunication<T1,T2>& oocomm);
@@ -755,7 +757,18 @@ namespace Dune{
      * @param global The index we search for.
      */
     inline void advance(const GlobalIndex& global);
-    
+
+    /**
+     * @brief Advances all underlying iterators.
+     * 
+     * All iterators are advanced until they point to a remote index whose
+     * global id is bigger or equal to global.
+     * Iterators pointing to their end are removed.
+     * @param global The index we search for.
+     * @param attribute The attribute we search for.
+     */
+    inline void advance(const GlobalIndex& global, const Attribute& attribute);
+
     CollectiveIterator& operator++();
     
     /**
@@ -778,13 +791,25 @@ namespace Dune{
       
       //! \todo Please doc me!
       iterator(const RealIterator& iter, const ConstRealIterator& end, GlobalIndex& index)
-	: iter_(iter), end_(end), index_(index)
+	: iter_(iter), end_(end), index_(index), noattribute(true)
       {
 	// Move to the first valid entry
 	while(iter_!=end_ && iter_->second.first->localIndexPair().global()!=index_)
 	  ++iter_;
       }
       
+      iterator(const RealIterator& iter, const ConstRealIterator& end, GlobalIndex index,
+               Attribute attribute)
+	: iter_(iter), end_(end), index_(index), attribute_(attribute), noattribute(false)
+      {
+        // Move to the first valid entry
+	while(iter_!=end_ && iter_->second.first->localIndexPair().global()!=index_)
+	  ++iter_;
+	// Move to the first valid entry
+	while(iter_!=end_ && iter_->second.first->localIndexPair().global()==index_
+              && iter_->second.first->localIndexPair().local().attribute()!=attribute)
+	  ++iter_;
+      }
       //! \todo Please doc me!
       iterator(const iterator& other)
 	: iter_(other.iter_), end_(other.end_), index_(other.index_)
@@ -795,7 +820,9 @@ namespace Dune{
       {	
 	++iter_;
 	// If entry is not valid move on
-	while(iter_!=end_ && iter_->second.first->localIndexPair().global()!=index_)
+	while(iter_!=end_ && iter_->second.first->localIndexPair().global()!=index_ &&
+              (noattribute || 
+               iter_->second.first->localIndexPair().local().attribute()!=attribute_))
 	  ++iter_;
 		  
 	return *this;
@@ -837,6 +864,8 @@ namespace Dune{
       RealIterator iter_;
       RealIterator end_;
       GlobalIndex index_;
+      Attribute attribute_;
+      bool noattribute;
     };
     
     iterator begin();
@@ -847,6 +876,8 @@ namespace Dune{
     
     Map map_;
     GlobalIndex index_;
+    Attribute attribute_;
+    bool noattribute;
   };
     
   template<typename TG, typename TA>
@@ -1717,6 +1748,45 @@ namespace Dune{
       }
     }
     index_=index;
+    noattribute=true;
+  }
+
+  template<typename T, typename A>
+  inline void CollectiveIterator<T,A>::advance(const GlobalIndex& index,
+                                               const Attribute& attribute)
+  {
+    typedef typename Map::iterator iterator;
+    typedef typename Map::const_iterator const_iterator;
+    const const_iterator end = map_.end();
+    
+    for(iterator iter = map_.begin(); iter != end;){
+      // Step the iterator until we are >= index
+      typename RemoteIndexList::const_iterator current = iter->second.first;
+      typename RemoteIndexList::const_iterator rend = iter->second.second;
+      RemoteIndex remoteIndex;
+      if(current != rend)
+	remoteIndex = *current;
+
+      // Move to global index or bigger
+      while(iter->second.first!=iter->second.second && iter->second.first->localIndexPair().global()<index)
+	++(iter->second.first);
+      
+      // move to attribute or bigger
+      while(iter->second.first!=iter->second.second 
+            && iter->second.first->localIndexPair().global()==index
+            && iter->second.first->localIndexPair().local().attribute()<attribute)
+	++(iter->second.first);
+
+      // erase from the map if there are no more entries.
+      if(iter->second.first == iter->second.second)
+	map_.erase(iter++);
+      else{
+	++iter;
+      }
+    }
+    index_=index;
+    attribute_=attribute;
+    noattribute=false;
   }
 
   template<typename T, typename A>
@@ -1755,7 +1825,11 @@ namespace Dune{
   inline typename CollectiveIterator<T,A>::iterator
   CollectiveIterator<T,A>::begin()
   {
-    return iterator(map_.begin(), map_.end(), index_);
+    if(noattribute)
+      return iterator(map_.begin(), map_.end(), index_);
+    else
+      return iterator(map_.begin(), map_.end(), index_,
+                      attribute_);
   }
    
   template<typename T, typename A>
