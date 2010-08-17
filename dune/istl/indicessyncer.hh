@@ -662,8 +662,9 @@ namespace Dune
       ValidIterator end = collIter.end();
 
       // Count the remote indices we know.
-      for(ValidIterator valid = collIter.begin(); valid != end; ++valid)
+      for(ValidIterator valid = collIter.begin(); valid != end; ++valid){
 	++knownRemote;
+      }
       
       if(knownRemote>0){
 	Dune::dverb<<rank_<<": publishing "<<knownRemote<<" for index "<<index->global()<< " for processes ";
@@ -896,13 +897,15 @@ namespace Dune
       // Search for corresponding remote indices in all iterator tuples
       typedef typename IteratorsMap::iterator Iterator;
       Iterator iteratorsEnd = iteratorsMap_.end();
-      GlobalIndex global = index->global();
 
       // advance all iterators to a position with global index >= index->global()
-      for(Iterator iterators = iteratorsMap_.begin(); iteratorsEnd != iterators; ++iterators)
-	while(iterators->second.isNotAtEnd() && iterators->second.globalIndexPair() < *index)
+      for(Iterator iterators = iteratorsMap_.begin(); iteratorsEnd != iterators; ++iterators){
+	while(iterators->second.isNotAtEnd() && 
+              iterators->second.globalIndexPair().first < index->global())
 	  ++(iterators->second);
-	        
+        assert(!iterators->second.isNotAtEnd() || iterators->second.globalIndexPair().first >= index->global());
+      }
+      
       // Add all remote indices positioned at global which were already present before calling sync
       // to the message.
       // Count how many remote indices we will send
@@ -920,21 +923,19 @@ namespace Dune
             }
           
 	if(iterators->second.isNotAtEnd() && iterators->second.isOld() 
-	   && iterators->second.globalIndexPair() == *index){
+	   && iterators->second.globalIndexPair().first == index->global()){
 	  indices++;
 	  if(destination == iterators->first)
 	    knownRemote = true;
 	}
         }
       
-      if(!knownRemote || indices==0)
+      if(!knownRemote)
 	// We do not need to send any indices
 	continue;
       
       Dune::dverb<<rank_<<": sending "<<indices<<" for index "<<index->global()<<" to "<<destination<<std::endl;
 
-      pairs+=indices;
-      assert(pairs <= infoSend_[destination].pairs);
 
       // Pack the global index, the attribute and the number
       MPI_Pack(const_cast<GlobalIndex*>(&(index->global())), 1, MPITraits<GlobalIndex>::getType(), buffer, bufferSize, &bpos, 
@@ -951,18 +952,20 @@ namespace Dune
       // Pack the information about the remote indices
       for(Iterator iterators = iteratorsMap_.begin(); iteratorsEnd != iterators; ++iterators)
 	if(iterators->second.isNotAtEnd() && iterators->second.isOld() 
-	   && iterators->second.globalIndexPair() == *index){
+	   && iterators->second.globalIndexPair().first == index->global()){
 	  int process = iterators->first;
+
+          ++pairs;
+          assert(pairs <= infoSend_[destination].pairs);
 	  MPI_Pack(&process, 1, MPI_INT, buffer, bufferSize, &bpos, 
 		   remoteIndices_.communicator());
 	  char attr = iterators->second.remoteIndex().attribute();
 	  
 	  MPI_Pack(&attr, 1, MPI_CHAR, buffer, bufferSize, &bpos, 
 		   remoteIndices_.communicator());
-          ++pairs;
-          assert(pairs <= infoSend_[destination].pairs);
+          --indices;
 	}
-      
+      assert(indices==0);
       ++published;
       Dune::dvverb<<" (publish="<<published<<", pairs="<<pairs<<")"<<std::endl;
       assert(published <= infoSend_[destination].publish);
