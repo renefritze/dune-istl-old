@@ -299,7 +299,7 @@ namespace Dune
       return os << props.flags_;
     }
     
-    EdgeProperties::EdgeProperties()
+    inline EdgeProperties::EdgeProperties()
       : flags_()
     {}
 
