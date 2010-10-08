@@ -5,7 +5,6 @@
 #include<iostream>
 
 #include "istlexception.hh"
-#include "allocator.hh"
 
 #include "gsetc.hh"
 
