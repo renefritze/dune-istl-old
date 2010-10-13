@@ -1089,7 +1089,7 @@ namespace Dune
       SLList<std::pair<int,Attribute> > sourceAttributeList;
       sourceAttributeList.push_back(std::make_pair(source,Attribute(sourceAttribute)));
       bool foundSelf=false;
-      Attribute myAttribute;
+      Attribute myAttribute=Attribute();
       
       // Unpack the remote indices
       for(;pairs>0;--pairs){
