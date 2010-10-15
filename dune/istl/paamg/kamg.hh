@@ -62,22 +62,22 @@ namespace Dune
       {
         *amg_.rhs = d;
         *amg_.lhs = v;
-        *amg_.update=0;
-	amg_.level=0;
           // Copy data
+        *amg_.update=0;
+
         amg_.presmooth();
         bool processFineLevel = 
-          amg_.moveToFineLevel();
-        
+          amg_.moveToCoarseLevel();
+
         if(processFineLevel){
-          typename AMG::Domain x=*amg_.update;
           typename AMG::Range b=*amg_.rhs;
+          typename AMG::Domain x=*amg_.update;
           InverseOperatorResult res;
           coarseSolver_->apply(x, b, res);
           *amg_.update=x;
         }
         
-        amg_.moveToCoarseLevel(processFineLevel);
+        amg_.moveToFineLevel(processFineLevel);
         
         amg_.postsmooth();
         v=*amg_.update;
@@ -160,8 +160,8 @@ namespace Dune
        */
       KAMG(const OperatorHierarchy& matrices, CoarseSolver& coarseSolver, 
            const SmootherArgs& smootherArgs, std::size_t gamma,
-           std::size_t preSmoothingSteps =1,
-           std::size_t postSmoothingSteps = 1);
+           std::size_t preSmoothingSteps =1, std::size_t postSmoothingSteps = 1,
+           std::size_t maxLevelKrylovSteps = 3 , double minDefectReduction =1e-1);
 
       /**
        * @brief Construct an AMG with an inexact coarse solver based on the smoother.
@@ -175,12 +175,15 @@ namespace Dune
        * @param gamma 1 for V-cycle, 2 for W-cycle
        * @param preSmoothingSteps The number of smoothing steps for premoothing.
        * @param postSmoothingSteps The number of smoothing steps for postmoothing.
+       * @param maxLevelKrylovSteps The maximum number of Krylov steps allowed at each level.
+       * @param minDefectReduction The defect reduction to achieve on each krylov level.
        * @param pinfo The information about the parallel distribution of the data.
        */
       template<class C>
       KAMG(const Operator& fineOperator, const C& criterion,
            const SmootherArgs& smootherArgs, std::size_t gamma=1,
            std::size_t preSmoothingSteps=1, std::size_t postSmoothingSteps=1,
+           std::size_t maxLevelKrylovSteps=3, double minDefectReduction=1e-1,
            const ParallelInformation& pinfo=ParallelInformation());
 
       /**  \copydoc Solver::pre(X&,Y&) */
@@ -189,10 +192,16 @@ namespace Dune
       void post(Domain& x);
       /**  \copydoc Solver::apply(X&,Y&) */
       void apply(Domain& x, const Range& b);
-      
     private:
       /** @brief The underlying amg. */
       Amg amg;
+      
+      /** \brief The maximum number of Krylov steps allowed at each level. */
+      std::size_t maxLevelKrylovSteps;
+
+      /** \brief The defect reduction to achieve on each krylov level. */
+      double levelDefectReduction;
+      
       /** @brief pointers to the allocated scalar products. */
       std::vector<typename Amg::ScalarProduct*> scalarproducts;
       
@@ -204,20 +213,23 @@ namespace Dune
     KAMG<M,X,S,P,K,A>::KAMG(const OperatorHierarchy& matrices, CoarseSolver& coarseSolver, 
                             const SmootherArgs& smootherArgs,
                             std::size_t gamma, std::size_t preSmoothingSteps,
-                            std::size_t postSmoothingSteps)
+                            std::size_t postSmoothingSteps,
+                            std::size_t ksteps, double reduction)
       : amg(matrices, coarseSolver, smootherArgs, gamma, preSmoothingSteps,
-            postSmoothingSteps)
+            postSmoothingSteps), maxLevelKrylovSteps(ksteps), levelDefectReduction(reduction)
     {}
     
     template<class M, class X, class S, class P, class K, class A>
       template<class C>
     KAMG<M,X,S,P,K,A>::KAMG(const Operator& fineOperator, const C& criterion,
-           const SmootherArgs& smootherArgs, std::size_t gamma,
-           std::size_t preSmoothingSteps, std::size_t postSmoothingSteps,
-           const ParallelInformation& pinfo)
+                            const SmootherArgs& smootherArgs, std::size_t gamma,
+                            std::size_t preSmoothingSteps, std::size_t postSmoothingSteps,
+                            std::size_t ksteps, double reduction,
+                            const ParallelInformation& pinfo)
       : amg(fineOperator, criterion, smootherArgs, gamma, preSmoothingSteps,
-            postSmoothingSteps, false, pinfo)
+            postSmoothingSteps, false, pinfo), maxLevelKrylovSteps(ksteps), levelDefectReduction(reduction)
     {}
+
     
     template<class M, class X, class S, class P, class K, class A>
     void KAMG<M,X,S,P,K,A>::pre(Domain& x, Range& b)
@@ -225,11 +237,11 @@ namespace Dune
       amg.pre(x,b);
       scalarproducts.reserve(amg.levels());
       ksolvers.reserve(amg.levels());
+
       typename OperatorHierarchy::ParallelMatrixHierarchy::Iterator
         matrix = amg.matrices_->matrices().coarsest();
       typename ParallelInformationHierarchy::Iterator 
-        pinfo = amg.matrices_->parallelInformation().coarsest();
-      
+        pinfo = amg.matrices_->parallelInformation().coarsest();      
       bool hasCoarsest=(amg.levels()==amg.maxlevels());
       KrylovSolver* ks=0;
 
@@ -240,15 +252,16 @@ namespace Dune
         --pinfo;
         ksolvers.push_back(new KAmgTwoGrid<Amg>(amg, amg.solver_));
       }else
-      ksolvers.push_back(new KAmgTwoGrid<Amg>(amg, ks));
+        ksolvers.push_back(new KAmgTwoGrid<Amg>(amg, ks));
+
+      std::ostringstream s;
       
-      double reduction = 1e-2;
-      int maxit = 3;
       if(matrix!=amg.matrices_->matrices().finest())
         while(true){
           scalarproducts.push_back(Amg::ScalarProductChooser::construct(*pinfo));
           ks = new KrylovSolver(*matrix, *(scalarproducts.back()), 
-                                *(ksolvers.back()), reduction, maxit, 0);
+                                *(ksolvers.back()), levelDefectReduction, 
+                                maxLevelKrylovSteps, 0);
           ksolvers.push_back(new KAmgTwoGrid<Amg>(amg, ks)); 
           --matrix;
           --pinfo;
