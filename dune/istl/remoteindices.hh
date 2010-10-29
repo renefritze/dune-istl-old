@@ -389,7 +389,11 @@ namespace Dune{
     /** @brief Get the index set at destination. */
     inline const ParallelIndexSet& destinationIndexSet() const;
 
-  private:    
+  private:
+    /** copying is forbidden. */
+    RemoteIndices(const RemoteIndices&)
+    {} 
+
     /** @brief Index set used at the source of the communication. */
     const ParallelIndexSet* source_;
 
