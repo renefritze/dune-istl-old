@@ -1,3 +1,5 @@
+// -*- tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set et ts=8 sw=2 sts=2:
 #ifndef DUNE_OVERLAPPINGSCHWARZ_HH
 #define DUNE_OVERLAPPINGSCHWARZ_HH
 #include<cassert>
@@ -1053,7 +1055,7 @@ namespace Dune
       }else{
         solver->apply(assigner.lhs(), assigner.rhs());
         //nnz+=solver->nnz();
-	  ++solver;
+        ++solver;
       }
       ++no;
       //Add relaxed correction to from SuperLU to v

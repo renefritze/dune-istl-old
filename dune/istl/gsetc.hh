@@ -1,3 +1,5 @@
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set et ts=4 sw=2 sts=2:
 #ifndef DUNE_GSETC_HH
 #define DUNE_GSETC_HH
 
@@ -409,7 +411,7 @@ namespace Dune {
 		  for (; j.index()<i.index(); ++j)
 			(*j).mmv(x[j.index()],rhs);
 		  coliterator diag=j; 
-		  for (; j!=endj; ++j)
+		  for (; j != endj; ++j)
 			(*j).mmv(x[j.index()],rhs);
 		  algmeta_itsteps<I-1>::dbgs(*diag,x[i.index()],rhs,w);
 		}
