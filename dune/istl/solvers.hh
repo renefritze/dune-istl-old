@@ -124,11 +124,6 @@ namespace Dune {
     //! \brief Destructor
     virtual ~InverseOperator () {}
 
-    void setPrefix(const std::string& s)
-    {
-      prefix=s;
-    }
-    
   protected: 
     // spacing values 
     enum { iterationSpacing = 5 , normSpacing = 16 }; 
@@ -136,8 +131,8 @@ namespace Dune {
     //! helper function for printing header of solver output 
     void printHeader(std::ostream& s) const 
     {
-      s << std::setw(iterationSpacing)  << prefix << " Iter";
-      s << std::setw(normSpacing) << prefix << "Defect";
+      s << std::setw(iterationSpacing)  << " Iter";
+      s << std::setw(normSpacing) << "Defect";
       s << std::setw(normSpacing) << "Rate" << std::endl;
     }
 
@@ -150,7 +145,7 @@ namespace Dune {
     {
       const DataType rate = norm/norm_old;
       s << std::setw(iterationSpacing)  << iter << " ";
-      s << std::setw(normSpacing) << prefix << norm << " ";
+      s << std::setw(normSpacing) << norm << " ";
       s << std::setw(normSpacing) << rate << std::endl;
     }
 
@@ -160,12 +155,9 @@ namespace Dune {
                      const double iter,
                      const DataType& norm) const 
     {
-      s << std::setw(iterationSpacing)  << prefix << iter << " ";
+      s << std::setw(iterationSpacing)  << iter << " ";
       s << std::setw(normSpacing) << norm << std::endl;
     }
-  private:
-    std::string prefix;
-    
   };
 
 
@@ -589,9 +581,6 @@ namespace Dune {
           break;
         }
 
-        if(i>=_maxit)
-          break;
-        
         // determine new search direction
         q = 0;                      // clear correction
         _prec.apply(q,b);           // apply preconditioner
