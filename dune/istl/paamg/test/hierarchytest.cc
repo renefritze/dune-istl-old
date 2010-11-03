@@ -13,8 +13,12 @@ int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
   
-  const int BS=1, N=10;
+  const int BS=1;
+  int N=10;
   
+  if(argc>1)
+    N = atoi(argv[1]);
+
   int procs, rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &procs);
@@ -42,16 +46,11 @@ int main(int argc, char** argv)
   
   remoteIndices.rebuild<false>();
 
-  typedef Dune::Interface Interface;
-  
-  Interface interface;
-  
-  typedef Dune::EnumItem<GridFlag,GridAttributes::overlap> OverlapFlags;
+  typedef Dune::NegateSet<Communication::OwnerSet> OverlapFlags;
   typedef Dune::OverlappingSchwarzOperator<BCRSMat,Vector,Vector,Communication> Operator;
   typedef Dune::Amg::MatrixHierarchy<Operator,Communication> Hierarchy;
   typedef Dune::Amg::Hierarchy<Vector> VHierarchy;
 
-  interface.build(remoteIndices, Dune::NegateSet<OverlapFlags>(), OverlapFlags());
   Operator op(mat, pinfo);
   Hierarchy hierarchy(op, pinfo);
   VHierarchy vh(b);
@@ -60,15 +59,19 @@ int main(int argc, char** argv)
     Criterion;
 
   Criterion criterion(100,4);
+  Dune::Timer timer;
   
   hierarchy.build<OverlapFlags>(criterion);
   hierarchy.coarsenVector(vh);
   
+  std::cout<<"Building hierarchy took "<<timer.elapsed()<<std::endl;
   
   std::cout<<"=== Vector hierarchy has "<<vh.levels()<<" levels! ==="<<std::endl;
+  timer.reset();
   
   hierarchy.recalculateGalerkin(OverlapFlags());
 
+  std::cout<<"Recalculation took "<<timer.elapsed()<<std::endl;
   std::vector<std::size_t> data;
   
   hierarchy.getCoarsestAggregatesOnFinest(data);
