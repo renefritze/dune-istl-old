@@ -710,7 +710,7 @@ namespace Dune
 	
 	
 	subdomains.resize(pairs.size());
-	std::cout <<std::endl<< "Created "<<pairs.size()<<" ("<<total<<") pair domains"<<std::endl<<std::endl;
+        Dune::dinfo <<std::endl<< "Created "<<pairs.size()<<" ("<<total<<") pair domains"<<std::endl<<std::endl;
 	typedef typename std::set<std::pair<size_type,size_type> >::const_iterator SIter;
 	typename Vector::iterator subdomain=subdomains.begin();
 	
@@ -728,7 +728,7 @@ namespace Dune
 	  minsize=std::min(minsize, subdomains[i].size());
 	  maxsize=std::max(maxsize, subdomains[i].size());
 	}
-	std::cout<<"Subdomain size: min="<<minsize<<" max="<<maxsize<<" avg="<<(sum/subdomains.size())
+        Dune::dinfo<<"Subdomain size: min="<<minsize<<" max="<<maxsize<<" avg="<<(sum/subdomains.size())
 		 <<" no="<<subdomains.size()<<std::endl;
       }
       
@@ -786,7 +786,7 @@ namespace Dune
 	  minsize=std::min(minsize, subdomains[i].size());
 	  maxsize=std::max(maxsize, subdomains[i].size());
 	}
-	std::cout<<"Subdomain size: min="<<minsize<<" max="<<maxsize<<" avg="<<(sum/subdomains.size())
+        Dune::dinfo<<"Subdomain size: min="<<minsize<<" max="<<maxsize<<" avg="<<(sum/subdomains.size())
 		 <<" no="<<subdomains.size()<<" isolated="<<isolated<<std::endl;
 	
 	  
