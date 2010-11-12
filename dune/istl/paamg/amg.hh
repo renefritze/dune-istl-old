@@ -11,6 +11,7 @@
 #include<dune/istl/scalarproducts.hh>
 #include<dune/istl/superlu.hh>
 #include<dune/common/typetraits.hh>
+#include<dune/common/exceptions.hh>
 
 namespace Dune
 {
@@ -161,7 +162,6 @@ namespace Dune
       typename Hierarchy<Domain,A>::Iterator update;
       typename Hierarchy<Range,A>::Iterator rhs;
       
-
       void additiveMgc();
 
       /** @brief Apply pre smoothing on the current level. */
@@ -213,8 +213,8 @@ namespace Dune
       Smoother *coarseSmoother_;
     };
 
-    template<class M, class X, class S, class P, class A>
-    AMG<M,X,S,P,A>::AMG(const OperatorHierarchy& matrices, CoarseSolver& coarseSolver, 
+    template<class M, class X, class S, class PI, class A>
+    AMG<M,X,S,PI,A>::AMG(const OperatorHierarchy& matrices, CoarseSolver& coarseSolver, 
 			const SmootherArgs& smootherArgs,
 			std::size_t gamma, std::size_t preSmoothingSteps,
 			std::size_t postSmoothingSteps, bool additive_)
@@ -261,8 +261,8 @@ namespace Dune
 	std::cout<<"Building Hierarchy of "<<matrices_->maxlevels()<<" levels took "<<watch.elapsed()<<" seconds."<<std::endl;
     }
     
-    template<class M, class X, class S, class P, class A>
-    AMG<M,X,S,P,A>::~AMG()
+    template<class M, class X, class S, class PI, class A>
+    AMG<M,X,S,PI,A>::~AMG()
     {
       if(buildHierarchy_){
 	delete matrices_;
@@ -270,9 +270,10 @@ namespace Dune
       if(scalarProduct_)
 	delete scalarProduct_;
     }
+
     
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>::pre(Domain& x, Range& b)
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>::pre(Domain& x, Range& b)
     {
       if(smoothers_.levels()>0)
 	smoothers_.finest()->pre(x,b);
@@ -344,15 +345,15 @@ namespace Dune
 	       && matrices_->parallelInformation().coarsest().getRedistributed().communicator().size()==1
 	       && matrices_->parallelInformation().coarsest().getRedistributed().communicator().size()>0)){ // redistribute and 1 proc
 	  std::cout<<"Using superlu"<<std::endl;
-	  if(matrices_->parallelInformation().coarsest().isRedistributed())
-	    {
-	      if(matrices_->matrices().coarsest().getRedistributed().getmat().N()>0)
-		// We are still participating on this level
-		solver_  = new SuperLU<typename M::matrix_type>(matrices_->matrices().coarsest().getRedistributed().getmat());
-	      else
-		solver_ = 0;
-	    }else
-	      solver_  = new SuperLU<typename M::matrix_type>(matrices_->matrices().coarsest()->getmat());
+	  if(matrices_->parallelInformation().coarsest().isRedistributed()){
+            if(matrices_->matrices().coarsest().getRedistributed().getmat().N()>0){
+              // We are still participating on this level
+              solver_  = new SuperLU<typename M::matrix_type>(matrices_->matrices().coarsest().getRedistributed().getmat());
+            }else
+              solver_ = 0;
+          }else{
+            solver_  = new SuperLU<typename M::matrix_type>(matrices_->matrices().coarsest()->getmat());
+          }
 	}else
 #endif
 	  {
@@ -372,20 +373,20 @@ namespace Dune
 	  }
       }
     }
-    template<class M, class X, class S, class P, class A>
-    std::size_t AMG<M,X,S,P,A>::levels()
+    template<class M, class X, class S, class PI, class A>
+    std::size_t AMG<M,X,S,PI,A>::levels()
     {
       return matrices_->levels();
     }
-    template<class M, class X, class S, class P, class A>
-    std::size_t AMG<M,X,S,P,A>::maxlevels()
+    template<class M, class X, class S, class PI, class A>
+    std::size_t AMG<M,X,S,PI,A>::maxlevels()
     {
       return matrices_->maxlevels();
     }
 
     /** \copydoc Preconditioner::apply */
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>::apply(Domain& v, const Range& d)
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>::apply(Domain& v, const Range& d)
     {
       if(additive){
 	*(rhs_->finest())=d;
@@ -411,8 +412,8 @@ namespace Dune
       
     }
 
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>::initIteratorsWithFineLevel()
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>::initIteratorsWithFineLevel()
     {
       smoother = smoothers_.finest();
       matrix = matrices_->matrices().finest();
@@ -425,8 +426,8 @@ namespace Dune
       rhs = rhs_->finest();
     }
     
-    template<class M, class X, class S, class P, class A>
-    bool AMG<M,X,S,P,A>
+    template<class M, class X, class S, class PI, class A>
+    bool AMG<M,X,S,PI,A>
     ::moveToCoarseLevel()
     {
       
@@ -469,8 +470,8 @@ namespace Dune
       return processNextLevel;
     }
     
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>
     ::moveToFineLevel(bool processNextLevel)
     {
       if(processNextLevel){
@@ -511,8 +512,8 @@ namespace Dune
     }
     
     
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>
     ::presmooth()
     {
       
@@ -528,8 +529,8 @@ namespace Dune
           }
     }
     
-     template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>
+     template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>
      ::postsmooth()
     { 
       
@@ -545,8 +546,8 @@ namespace Dune
     }
     
     
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>::mgc(){
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>::mgc(){
       if(matrix == matrices_->matrices().coarsest() && levels()==maxlevels()){
 	// Solve directly
 	InverseOperatorResult res;
@@ -591,8 +592,8 @@ namespace Dune
       }
     }
 
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>::additiveMgc(){
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>::additiveMgc(){
       
       // restrict residual to all levels
       typename ParallelInformationHierarchy::Iterator pinfo=matrices_->parallelInformation().finest();
@@ -641,8 +642,8 @@ namespace Dune
 
     
     /** \copydoc Preconditioner::post */
-    template<class M, class X, class S, class P, class A>
-    void AMG<M,X,S,P,A>::post(Domain& x)
+    template<class M, class X, class S, class PI, class A>
+    void AMG<M,X,S,PI,A>::post(Domain& x)
     {
       if(buildHierarchy_){
 	if(solver_)
@@ -675,9 +676,9 @@ namespace Dune
       delete rhs_;
     }
 
-    template<class M, class X, class S, class P, class A>
+    template<class M, class X, class S, class PI, class A>
     template<class A1>
-    void AMG<M,X,S,P,A>::getCoarsestAggregateNumbers(std::vector<std::size_t,A1>& cont)
+    void AMG<M,X,S,PI,A>::getCoarsestAggregateNumbers(std::vector<std::size_t,A1>& cont)
     {
       matrices_->getCoarsestAggregatesOnFinest(cont);
     }
