@@ -1,3 +1,6 @@
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set ts=4 sw=2 et sts=2:
+
 #ifndef DUNE_SOLVERS_HH
 #define DUNE_SOLVERS_HH
 
