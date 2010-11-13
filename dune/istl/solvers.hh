@@ -536,9 +536,9 @@ namespace Dune {
         res.conv_rate  = 0;
         res.elapsed=0;
         if (_verbose>0)                 // final print 
-                        std::cout << "=== rate=" << res.conv_rate
-                                  << ", T=" << res.elapsed << ", TIT=" << res.elapsed
-                                  << ", IT=0" << std::endl;
+          std::cout << "=== rate=" << res.conv_rate
+                    << ", T=" << res.elapsed << ", TIT=" << res.elapsed
+                    << ", IT=0" << std::endl;
         return;
       }
 
@@ -610,27 +610,28 @@ namespace Dune {
                   << ", TIT=" << res.elapsed/i
                   << ", IT=" << i << std::endl;
       }
-  }
+    }
 
     /*! 
       \brief Apply inverse operator with given reduction factor.
 
       \copydoc InverseOperator::apply(X&,Y&,double,InverseOperatorResult&)
     */
-  virtual void apply (X& x, X& b, double reduction, InverseOperatorResult& res)
-  {
-    _reduction = reduction;
-    (*this).apply(x,b,res);
-  }
+    virtual void apply (X& x, X& b, double reduction,
+                        InverseOperatorResult& res)
+    {
+      _reduction = reduction;
+      (*this).apply(x,b,res);
+    }
 
   private:
-  SeqScalarProduct<X> ssp;
-  LinearOperator<X,X>& _op;
-  Preconditioner<X,X>& _prec;
-  ScalarProduct<X>& _sp;
-  double _reduction;
-  int _maxit;
-  int _verbose;
+    SeqScalarProduct<X> ssp;
+    LinearOperator<X,X>& _op;
+    Preconditioner<X,X>& _prec;
+    ScalarProduct<X>& _sp;
+    double _reduction;
+    int _maxit;
+    int _verbose;
   };
 
 
