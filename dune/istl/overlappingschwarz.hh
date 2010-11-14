@@ -539,7 +539,6 @@ namespace Dune
       void axpy();
       
     private:
-      BlockVector<FieldVector<T,n>,A>* v;
       BlockVector<FieldVector<T,n>,A>* x;
       OverlappingAssigner<S>* assigner;
       T relax;
@@ -1567,7 +1566,7 @@ namespace Dune
   ::MultiplicativeAdder(BlockVector<FieldVector<T,n>,A>& v_, 
                         BlockVector<FieldVector<T,n>,A>& x_, 
                         OverlappingAssigner<S>& assigner_, const T& relax_)
-    : v(&v_), x(&x_), assigner(&assigner_), relax(relax_)
+    : x(&x_), assigner(&assigner_), relax(relax_)
   {}
 
   
