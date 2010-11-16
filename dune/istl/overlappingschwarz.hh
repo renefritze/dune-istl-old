@@ -248,8 +248,8 @@ namespace Dune
     DynamicVector<K> & lhs();
     
     /**
-     * @brief Get the local left hand side.
-     * @return The local left hand side.
+     * @brief Get the local right hand side.
+     * @return The local right hand side.
      */
     inline
     DynamicVector<K> & rhs();
@@ -290,7 +290,7 @@ namespace Dune
     DynamicVector<field_type> * lhs_;
     /** @brief The global right hand side for the defect calculation. */
     const range_type* b;
-    /** @brief The global left hand side for adding the local update to. */
+    /** @brief The global right hand side for adding the local update to. */
     range_type* x;
     /** @brief The current local index. */
     std::size_t i;
@@ -337,8 +337,8 @@ namespace Dune
       field_type* lhs();
             
       /**
-       * @brief Get the local left hand side.
-       * @return The local left hand side.
+       * @brief Get the local right hand side.
+       * @return The local right hand side.
        */
       field_type* rhs();
       
@@ -374,7 +374,7 @@ namespace Dune
       field_type* lhs_;
       /** @brief The global right hand side for the defect calculation. */
       const range_type* b;
-      /** @brief The global left hand side for adding the local update to. */
+      /** @brief The global right hand side for adding the local update to. */
       range_type* x;
       /** @brief The current local index. */
       std::size_t i;
@@ -422,8 +422,8 @@ namespace Dune
     X& lhs();
     
     /**
-     * @brief Get the local left hand side.
-     * @return The local left hand side.
+     * @brief Get the local right hand side.
+     * @return The local right hand side.
      */
     Y& rhs();
     
@@ -453,9 +453,9 @@ namespace Dune
      * @brief The global matrix for the defect calculation.
      */
     const M* mat;
-    /** @brief The local right hand side. */
-    X* lhs_;
     /** @brief The local left hand side. */
+    X* lhs_;
+    /** @brief The local right hand side. */
     Y* rhs_;
     /** @brief The global right hand side for the defect calculation. */
     const Y* b;
