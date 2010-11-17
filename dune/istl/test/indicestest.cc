@@ -135,6 +135,8 @@ void testIndices(MPI_Comm comm)
   Array* globalArray;
   int index=0;
   
+  std::cout<<rank<<": Nx="<<Nx<<" Ny="<<Ny<<" size="<<size<<std::endl;
+  
   for(int j=0; j<Ny; j++)
     for(int i=start; i<end; i++){
       bool isPublic = (i<=start+1)||(i>=end-2);
@@ -325,7 +327,11 @@ void testIndicesBuffered(MPI_Comm comm)
   RemoteIndices accuIndices(distIndexSet, globalIndexSet, comm);
         
   accuIndices.rebuild<true>();
-
+  std::cout<<"dist "<<rank<<": "<<distIndexSet<<std::endl;
+  std::cout<<"global "<<rank<<": "<<globalIndexSet<<std::endl;
+  std::cout << accuIndices<<std::endl;
+  std::cout <<" end remote indices"<<std::endl;
+  
   RemoteIndices overlapIndices(distIndexSet, distIndexSet, comm);
   overlapIndices.rebuild<false>();
 
@@ -339,7 +345,7 @@ void testIndicesBuffered(MPI_Comm comm)
   overlapInterface.build(overlapIndices, Dune::EnumItem<GridFlags,owner>(), 
 			   Dune::EnumItem<GridFlags,overlap>());
   overlapInterface.print();
-    //accuInterface.print();
+  accuInterface.print();
     
     //accuInterface.print();
 
@@ -625,6 +631,10 @@ void testIndicesBuffered(MPI_Comm comm)
     redistribute.backward<ArrayGatherScatter>(array, redistributedArray);
 
     std::cout<<rank<<": final array: "<<array<<std::endl;
+
+    redistribute.forward<ArrayGatherScatter>(array, redistributedArray);
+    
+    std::cout<<rank<<": final array with overlap communicated: "<<array<<std::endl;
 } 
 
 
@@ -684,7 +694,7 @@ int main(int argc, char **argv)
 #endif
 
   //  testIndices(comm);
-  //testIndicesBuffered(comm);
+  testIndicesBuffered(comm);
   
   if(rank==0)
     std::cout<<std::endl<<"Redistributing bla!"<<std::endl<<std::endl;
