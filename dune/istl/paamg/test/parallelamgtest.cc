@@ -91,7 +91,7 @@ void testAmg(int N, int coarsenTarget)
   
   Communication comm(MPI_COMM_WORLD);
   
-  BCRSMat mat = setupAnisotropic2d<BS>(N, comm.indexSet(), comm.communicator(), &n, 1);
+  BCRSMat mat = setupAnisotropic2d<BS,double>(N, comm.indexSet(), comm.communicator(), &n, 1);
 
   const BCRSMat& cmat = mat;
   
@@ -159,9 +159,19 @@ void testAmg(int N, int coarsenTarget)
   watch.reset();
   
   amgCG.apply(x,b,r);
+  amg.recalculateHierarchy();
+  
+  
   MPI_Barrier(MPI_COMM_WORLD);
-    
   double solvetime = watch.elapsed();
+
+  b=0;
+  x=100;
+  
+  setBoundary(x, b, N, comm.indexSet());
+    
+  Dune::CGSolver<Vector> amgCG1(fop, sp, amg, 10e-8, 300, (rank==0)?2:0);
+  amgCG1.apply(x,b,r);
 
   if(!r.converged && rank==0)
     std::cerr<<" AMG Cg solver did not converge!"<<std::endl;
