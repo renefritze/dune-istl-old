@@ -1,9 +1,9 @@
 #include"config.h"
 #include<iostream>
-#include<dune/istl/selection.hh>
 #include<dune/common/timer.hh>
 #include<dune/common/enumset.hh>
-#include<dune/istl/remoteindices.hh>
+#include<dune/common/parallel/remoteindices.hh>
+#include<dune/common/parallel/selection.hh>
 
 enum GridFlags{ 
   owner, overlap, border 
