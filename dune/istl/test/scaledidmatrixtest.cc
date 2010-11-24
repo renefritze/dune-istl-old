@@ -1,5 +1,4 @@
 #include "config.h"
-#define DUNE_ISTL_WITH_CHECKING
 
 // include this first to see whether it includes all necessary headers itself
 #include <dune/istl/scaledidmatrix.hh>
