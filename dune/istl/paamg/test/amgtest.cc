@@ -23,8 +23,11 @@ namespace std
 #include<cstdlib>
 #include<ctime>
 
+typedef double XREAL;
+
+ /* 
 typedef HPA::xreal XREAL;
-//typedef double XREAL;
+
 namespace Dune
 {
 template<>
@@ -36,7 +39,7 @@ struct DoubleConverter<HPA::xreal>
     }
   };
 }
-
+ */
 
 template<class M, class V>
 void randomize(const M& mat, V& b)
