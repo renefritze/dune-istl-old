@@ -764,7 +764,7 @@ namespace Dune
       os<<*cur<<" ";
   }
 #if !HAVE_PARMETIS
-  typedef idxtype std::size_t;
+  typedef std::size_t idxtype;
 #endif
 
   bool isValidGraph(std::size_t noVtx, std::size_t gnoVtx, idxtype noEdges, idxtype* xadj,
@@ -1636,6 +1636,16 @@ namespace Dune
 #else
   template<class G, class P,class T1, class T2, class R>
   bool graphRepartition(const G& graph, P& oocomm, int nparts,
+			P*& outcomm,
+			R& redistInf)
+  {
+    if(nparts!=oocomm.size())
+      DUNE_THROW(NotImplemented, "only available for MPI programs");
+  }
+
+
+  template<class G, class P,class T1, class T2, class R>
+  bool commGraphRepartition(const G& graph, P& oocomm, int nparts,
 			P*& outcomm,
 			R& redistInf)
   {
