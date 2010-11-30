@@ -9,7 +9,6 @@
 
 #include"solvercategory.hh"
 
-#include<dune/common/ftraits.hh>
 
 namespace Dune {
   /**
@@ -54,8 +53,7 @@ sequential case are provided.
 	/*! \brief Norm of a right-hand side vector. 
 	  The vector must be consistent on the interior+border partition
 	 */
-	virtual typename FieldTraits<X>::real_type
-        norm (const X& x) = 0;
+	virtual double norm (const X& x) = 0;
 
 
 	//! every abstract base class has a virtual destructor
@@ -113,8 +111,7 @@ sequential case are provided.
 	/*! \brief Norm of a right-hand side vector. 
 	  The vector must be consistent on the interior+border partition
 	 */
-	virtual typename FieldTraits<X>::real_type
-        norm (const X& x)
+	virtual double norm (const X& x)
 	{
 	  return x.two_norm();
 	}
