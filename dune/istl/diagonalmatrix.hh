@@ -1,3 +1,5 @@
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+// vi: set et ts=4 sw=4 sts=4:
 #ifndef DUNE_DIAGONAL_MATRIX_NEW_HH
 #define DUNE_DIAGONAL_MATRIX_NEW_HH
 
@@ -124,14 +126,34 @@ class DiagonalMatrix
         return Iterator(WrapperType(this),n);
     }
 
-    //! begin iterator
-    Iterator rbegin ()
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeEnd
+    //! instead.
+    Iterator rbegin() DUNE_DEPRECATED
+    {
+        return beforeEnd();
+    }
+
+    //! @returns an iterator that is positioned before
+    //! the end iterator of the rows, i.e. at the last row.
+	Iterator beforeEnd ()
     {
         return Iterator(WrapperType(this),n-1);
     }
 
-    //! end iterator
-    Iterator rend ()
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeBegin
+    //! instead.
+    Iterator rend ()  DUNE_DEPRECATED
+    {
+        return beforeBegin();
+    }
+
+    //! @returns an iterator that is positioned before
+    //! the first row of the matrix.
+	Iterator beforeBegin ()
     {
         return Iterator(WrapperType(this),-1);
     }
@@ -158,14 +180,34 @@ class DiagonalMatrix
         return ConstIterator(WrapperType(this),n);
     }
 
-    //! begin iterator
-    ConstIterator rbegin () const
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeEnd
+    //! instead.
+    ConstIterator rbegin() const DUNE_DEPRECATED
+    {
+        return beforeEnd();
+    }
+
+    //! @returns an iterator that is positioned before
+    //! the end iterator of the rows. i.e. at the last row.
+	ConstIterator beforeEnd() const
     {
         return ConstIterator(WrapperType(this),n-1);
     }
 
-    //! end iterator
-    ConstIterator rend () const
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeBegin
+    //! instead.
+    ConstIterator rend () const DUNE_DEPRECATED
+    {
+        return beforeBegin();
+    }
+    
+    //! @returns an iterator that is positioned before
+    //! the first rowof the matrix.
+	ConstIterator beforeBegin () const
     {
         return ConstIterator(WrapperType(this),-1);
     }
@@ -619,14 +661,34 @@ public:
         return ConstIterator(*this,1);
     }
 
-    //! begin ConstIterator
-    ConstIterator rbegin () const
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeEnd
+    //! instead.
+    ConstIterator rbegin() const DUNE_DEPRECATED
+    {
+        return beforeEnd();
+    }
+
+    //! @returns an iterator that is positioned before
+    //! the end iterator of the rows. i.e. at the row.
+	ConstIterator beforeEnd() const
     {
         return ConstIterator(*this,0);
     }
 
-    //! end ConstIterator
-    ConstIterator rend () const
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeBegin
+    //! instead.
+    ConstIterator rend () const DUNE_DEPRECATED
+    {
+        return beforeBegin();
+    }
+    
+    //! @returns an iterator that is positioned before
+    //! the first row of the matrix.
+	ConstIterator beforeBegin () const
     {
         return ConstIterator(*this,-1);
     }
@@ -751,14 +813,34 @@ public:
         return Iterator(*this, 1);
     }
 
-    //! begin iterator
-    Iterator rbegin ()
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeEnd
+    //! instead.
+    Iterator rbegin() DUNE_DEPRECATED
+    {
+        return beforeEnd();
+    }
+
+    //! @returns an iterator that is positioned before
+    //! the end iterator of the rows, i.e. at the last row.
+	Iterator beforeEnd ()
     {
         return Iterator(*this, 0);
     }
 
-    //! end iterator
-    Iterator rend ()
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeBegin
+    //! instead.
+    Iterator rend ()  DUNE_DEPRECATED
+    {
+        return beforeBegin();
+    }
+
+    //! @returns an iterator that is positioned before
+    //! the first row of the matrix.
+	Iterator beforeBegin ()
     {
         return Iterator(*this, -1);
     }
@@ -775,6 +857,8 @@ public:
     using DiagonalRowVectorConst<K,n>::end;
     using DiagonalRowVectorConst<K,n>::rbegin;
     using DiagonalRowVectorConst<K,n>::rend;
+    using DiagonalRowVectorConst<K,n>::beforeEnd;
+    using DiagonalRowVectorConst<K,n>::beforeBegin;
     using DiagonalRowVectorConst<K,n>::N;
     using DiagonalRowVectorConst<K,n>::dim;
     using DiagonalRowVectorConst<K,n>::rowIndex;

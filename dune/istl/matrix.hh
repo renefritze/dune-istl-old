@@ -1,3 +1,5 @@
+// -*- tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+// vi: set et ts=8 sw=4 sts=4:
 #ifndef DUNE_MATRIX_HH
 #define DUNE_MATRIX_HH
 
@@ -84,16 +86,36 @@ public:
         return data_.end();
     }
 
-    /** \brief Get iterator to last row */
-    RowIterator rbegin()
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeEnd
+    //! instead.
+    RowIterator rbegin() DUNE_DEPRECATED
     {
-        return data_.rbegin();
+        return beforeEnd();
     }
 
-    /** \brief Get iterator to one before first row */
-    RowIterator rend()
+    //! @returns an iterator that is positioned before
+    //! the end iterator of the rows, i.e. at the last row.
+    RowIterator beforeEnd ()
     {
-        return data_.rend();
+        return data_.beforeEnd();
+    }
+
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeBegin
+    //! instead.
+    RowIterator rend ()  DUNE_DEPRECATED
+    {
+        return beforeBegin();
+    }
+
+    //! @returns an iterator that is positioned before
+    //! the first row of the matrix.
+    RowIterator beforeBegin ()
+    {
+        return data_.beforeBegin();
     }
 
     /** \brief Get const iterator to first row */
@@ -108,16 +130,36 @@ public:
         return data_.end();
     }
 
-    /** \brief Get const iterator to last row */
-    ConstRowIterator rbegin() const
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeEnd
+    //! instead.
+    ConstRowIterator rbegin() const DUNE_DEPRECATED
     {
-        return data_.rbegin();
+        return beforeEnd();
     }
 
-    /** \brief Get const iterator to one before first row */
-    ConstRowIterator rend() const
+    //! @returns an iterator that is positioned before
+    //! the end iterator of the rows. i.e. at the last row.
+    ConstRowIterator beforeEnd() const
     {
-        return data_.rend();
+        return data_.beforeEnd();
+    }
+
+    //! @deprecated This method was renamed to make
+    //! it distinct from the STL version which returns
+    //! a reverse iterator. Use the new method beforeBegin
+    //! instead.
+    ConstRowIterator rend () const DUNE_DEPRECATED
+    {
+        return beforeBegin();
+    }
+    
+    //! @returns an iterator that is positioned before
+    //! the first row if the matrix.
+    ConstRowIterator beforeBegin () const
+    {
+        return data_.beforeBegin();
     }
 
     /** \brief Assignment from scalar */
