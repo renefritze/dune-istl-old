@@ -769,7 +769,7 @@ namespace Dune
   typedef std::size_t idxtype;
 #endif
 
-  bool isValidGraph(std::size_t noVtx, std::size_t gnoVtx, idxtype noEdges, idxtype* xadj,
+  inline bool isValidGraph(std::size_t noVtx, std::size_t gnoVtx, idxtype noEdges, idxtype* xadj,
                   idxtype* adjncy, bool checkSymmetry)
   {
     bool correct=true;
