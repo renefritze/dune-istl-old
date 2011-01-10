@@ -756,6 +756,10 @@ namespace Dune
   void METIS_PartGraphKway(int *nvtxs, idxtype *xadj, idxtype *adjncy, idxtype *vwgt, 
                            idxtype *adjwgt, int *wgtflag, int *numflag, int *nparts, 
                            int *options, int *edgecut, idxtype *part);
+  
+  void METIS_PartGraphRecursive(int *nvtxs, idxtype *xadj, idxtype *adjncy, idxtype *vwgt, 
+                           idxtype *adjwgt, int *wgtflag, int *numflag, int *nparts, 
+                           int *options, int *edgecut, idxtype *part);
   }
 #endif
 
@@ -1111,7 +1115,7 @@ namespace Dune
 	  time.reset();
 	  options[0]=0; options[1]=1; options[2]=1; options[3]=3; options[4]=3;
           // Call metis
-          METIS_PartGraphKway(&noVertices, gxadj, gadjncy, gvwgt, gadjwgt, &wgtflag,
+          METIS_PartGraphRecursive(&noVertices, gxadj, gadjncy, gvwgt, gadjwgt, &wgtflag,
                               &numflag, &nparts, options, &edgecut, gpart);
 
 	  if(verbose && oocomm.communicator().rank()==0)
