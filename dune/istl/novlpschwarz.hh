@@ -101,14 +101,19 @@ namespace Dune {
     {
       y = 0;
       novlp_op_apply(x,y,1);
-      communication.addOwnerCopyToAll(y,y); 
+      communication.addOwnerCopyToOwnerCopy(y,y); 
     }
 
     //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
     virtual void applyscaleadd (field_type alpha, const X& x, Y& y) const
     {
-      novlp_op_apply(x,y,alpha);
-      communication.addOwnerCopyToAll(y,y);
+	  // only apply communication to alpha*A*x to make it consistent,
+	  // y already has to be consistent. 
+	  Y y1(y);
+	  y = 0;
+	  novlp_op_apply(x,y,alpha);
+	  communication.addOwnerCopyToOwnerCopy(y,y);
+	  y += y1;
     }
     
     //! get matrix via *
@@ -123,93 +128,99 @@ namespace Dune {
       const PIS& pis=communication.indexSet();
       const RI& ri = communication.remoteIndices();
       
-      // set up mask vector
-      if (mask.size()!=static_cast<typename std::vector<double>::size_type>(x.size())){
-	mask.resize(x.size());
-	for (typename std::vector<double>::size_type i=0; i<mask.size(); i++) 
-	  mask[i] = 1; 
-	for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
-	  if (i->local().attribute()!=OwnerOverlapCopyAttributeSet::owner)
-	    mask[i->local().local()] = 0;
-	  else if (i->local().attribute()==OwnerOverlapCopyAttributeSet::overlap)
-		mask[i->local().local()] = 2;
-      }
-
       // at the beginning make a multimap "bordercontribution".
       // process has i and j as border dofs but is not the owner
-      // => only contribute to Ax if i,j is in bordercontribution	      
+      // => only contribute to Ax if i,j is in bordercontribution     
       if (buildcomm == true){
-	for (MM::iterator iter = bordercontribution.begin();
-	     iter != bordercontribution.end(); ++iter)
-	  bordercontribution.erase(iter);
-	for (RowIterator i = _A_.begin(); i != _A_.end(); ++i){
-	  if (mask[i.index()] == 0){
-	    std::set<int> neighbours; //processes have i as interior/border dof
-	    int iowner; //process which owns i
-	    for (RIIterator remote = ri.begin(); remote != ri.end(); ++remote){
-	      RIL& ril = *(remote->second.first);
-	      for (RILIterator rindex = ril.begin(); rindex != ril.end(); ++rindex){
-		if (rindex->attribute() != OwnerOverlapCopyAttributeSet::overlap){
-		  if (rindex->localIndexPair().local().local() == i.index()){
-		    neighbours.insert(remote->first);
-		    if(rindex->attribute()==OwnerOverlapCopyAttributeSet::owner)
-		      iowner = remote->first;
-		  }
-		}
-	      }
-	    }
-	    for (ColIterator j = _A_[i.index()].begin(); j != _A_[i.index()].end(); ++j){
-	      if (mask[j.index()] == 0){
-		bool flag = true;
-		for (RIIterator remote = ri.begin(); remote != ri.end(); ++remote)
-		  if (neighbours.find(remote->first) != neighbours.end()){  
-		    RIL& ril = *(remote->second.first); 
-		    for (RILIterator rindex = ril.begin(); rindex != ril.end(); 
-			 ++rindex)
-		      if (rindex->attribute() != OwnerOverlapCopyAttributeSet::overlap 
-			  && rindex->localIndexPair().local().local()==j.index()){
-			if (rindex->attribute() == OwnerOverlapCopyAttributeSet::owner
-			    || remote->first == iowner
-			    || remote->first << communication.communicator().rank())
-			  flag = false;
-		      }
-		  }
-		//don´t contribute to Ax if 
-		//1. the owner of j has i as interior/border dof
-		//2. iowner has j as interior/border dof 
-		//3. there is another process with smaller rank that has i and j 
-		//   as interor/border dofs
-		// if the owner of j does not have i as interior/border dof, 
-		// it will not be taken into account
-		if (flag==true)
-		  bordercontribution.insert(std::pair<int,int>(i.index(),j.index()));
-	      }
-	    }
-	  }
-	}
-	buildcomm = false;
+      
+        // set up mask vector
+        if (mask.size()!=static_cast<typename std::vector<double>::size_type>(x.size())){
+          mask.resize(x.size());
+          for (typename std::vector<double>::size_type i=0; i<mask.size(); i++) 
+            mask[i] = 1; 
+          for (typename PIS::const_iterator i=pis.begin(); i!=pis.end(); ++i)
+            if (i->local().attribute()==OwnerOverlapCopyAttributeSet::copy)
+              mask[i->local().local()] = 0;
+            else if (i->local().attribute()==OwnerOverlapCopyAttributeSet::overlap)
+              mask[i->local().local()] = 2;
+        }
+        
+        for (MM::iterator iter = bordercontribution.begin();
+             iter != bordercontribution.end(); ++iter)
+          bordercontribution.erase(iter);
+        for (RowIterator i = _A_.begin(); i != _A_.end(); ++i){
+          if (mask[i.index()] == 0){
+            std::set<int> neighbours; //processes have i as interior/border dof
+            int iowner; //process which owns i
+            for (RIIterator remote = ri.begin(); remote != ri.end(); ++remote){
+              RIL& ril = *(remote->second.first);
+              for (RILIterator rindex = ril.begin(); rindex != ril.end(); ++rindex){
+                if (rindex->attribute() != OwnerOverlapCopyAttributeSet::overlap){
+                  if (rindex->localIndexPair().local().local() == i.index()){
+                    neighbours.insert(remote->first);
+                    if(rindex->attribute()==OwnerOverlapCopyAttributeSet::owner)
+                      iowner = remote->first;
+                  }
+                }
+              }
+            }
+            for (ColIterator j = _A_[i.index()].begin(); j != _A_[i.index()].end(); ++j){
+              if (mask[j.index()] == 0){
+                bool flag = true;
+                for (RIIterator remote = ri.begin(); remote != ri.end(); ++remote)
+                  if (neighbours.find(remote->first) != neighbours.end()){  
+                    RIL& ril = *(remote->second.first); 
+                    for (RILIterator rindex = ril.begin(); rindex != ril.end(); 
+                         ++rindex)
+                      if (rindex->attribute() != OwnerOverlapCopyAttributeSet::overlap 
+                          && rindex->localIndexPair().local().local()==j.index()){
+                        if (rindex->attribute() == OwnerOverlapCopyAttributeSet::owner
+                            || remote->first == iowner
+                            || remote->first < communication.communicator().rank()){
+                          flag = false;
+                          continue;
+                        }
+                      }
+                    if (flag == false)
+                      continue;
+                  }
+                // don´t contribute to Ax if 
+                // 1. the owner of j has i as interior/border dof
+                // 2. iowner has j as interior/border dof 
+                // 3. there is another process with smaller rank that has i and j 
+                // as interor/border dofs
+                // if the owner of j does not have i as interior/border dof, 
+                // it will not be taken into account
+                if (flag==true)
+                  bordercontribution.insert(std::pair<int,int>(i.index(),j.index()));
+              }
+            }
+          }
+        }
+        buildcomm = false;
       }
       
       //compute alpha*A*x nonoverlapping case
       for (RowIterator i = _A_.begin(); i != _A_.end(); ++i){ 
-	if (mask[i.index()] == 0){ 
-	  //dof doesn't belong to process but is border (not ghost)
-	  for (ColIterator j = _A_[i.index()].begin(); j != _A_[i.index()].end(); ++j){
-	    if (mask[j.index()]==1) //j is owner => then sum entries
-	      (*j).usmv(alpha,x[j.index()],y[i.index()]);
-	    else if (mask[j.index()]==0){
-	      std::pair<MM::iterator, MM::iterator> itp = 
-		bordercontribution.equal_range(i.index());
-	      for (MM::iterator it = itp.first; it != itp.second; ++it) 
-		if ((*it).second == (int)j.index())
-		  (*j).usmv(alpha,x[j.index()],y[i.index()]); 
-	    }
-	  }
-	}
-	else if (mask[i.index()] == 1){
-	  for (ColIterator j = _A_[i.index()].begin(); j != _A_[i.index()].end(); ++j)
-	    (*j).usmv(alpha,x[j.index()],y[i.index()]);
-	}
+        if (mask[i.index()] == 0){ 
+          //dof doesn't belong to process but is border (not ghost)
+          for (ColIterator j = _A_[i.index()].begin(); j != _A_[i.index()].end(); ++j){
+            if (mask[j.index()] == 1) //j is owner => then sum entries
+              (*j).usmv(alpha,x[j.index()],y[i.index()]);
+            else if (mask[j.index()] == 0){
+              std::pair<MM::iterator, MM::iterator> itp = 
+                bordercontribution.equal_range(i.index());
+              for (MM::iterator it = itp.first; it != itp.second; ++it) 
+                if ((*it).second == (int)j.index())
+                  (*j).usmv(alpha,x[j.index()],y[i.index()]); 
+            }
+          }
+        }
+        else if (mask[i.index()] == 1){
+          for (ColIterator j = _A_[i.index()].begin(); j != _A_[i.index()].end(); ++j)
+            if (mask[j.index()] != 2)
+              (*j).usmv(alpha,x[j.index()],y[i.index()]);
+        }
       }
     }
     
@@ -220,7 +231,7 @@ namespace Dune {
     mutable std::vector<double> mask;
     mutable std::multimap<int,int>  bordercontribution;
   };
-
+  
   /** @} */
 
   /** 
@@ -272,14 +283,14 @@ namespace Dune {
 	{
 	  return communication.norm(x);
 	}
-
-      /*! \brief make additive vector consistent
-       */
-      void make_consistent (X& x) const
-      {
-        communication.copyOwnerToAll(x,x);
-      }
-
+    
+    /*! \brief make additive vector consistent
+     */
+    void make_consistent (X& x) const
+    {
+      communication.copyOwnerToAll(x,x);
+    }
+    
   private:
 	const communication_type& communication;
   };
@@ -293,9 +304,9 @@ namespace Dune {
     typedef C communication_type;
 
     enum{
-    /** @brief The solver category. */
+      /** @brief The solver category. */
       solverCategory=SolverCategory::nonoverlapping
-	};
+    };
 
     static ScalarProduct* construct(const communication_type& comm)
     {
@@ -323,9 +334,9 @@ namespace Dune {
     friend class Amg::ConstructionTraits<NonoverlappingBlockPreconditioner<C,P> >;
   public:
     //! \brief The domain type of the preconditioner.
-      typedef typename P::domain_type domain_type;
+    typedef typename P::domain_type domain_type;
     //! \brief The range type of the preconditioner.
-     typedef typename P::range_type range_type;
+    typedef typename P::range_type range_type;
     //! \brief The type of the communication object.
     typedef C communication_type;
 
@@ -341,10 +352,10 @@ namespace Dune {
     \param c The communication object for syncing owner and copy
     data points. (E.~g. OwnerOverlapCommunication )
     */
-      NonoverlappingBlockPreconditioner (P& prec, const communication_type& c)
-        : preconditioner(prec), communication(c)
-      {}
-
+    NonoverlappingBlockPreconditioner (P& prec, const communication_type& c)
+      : preconditioner(prec), communication(c)
+    {}
+    
     /*! 
       \brief Prepare the preconditioner.
       
@@ -362,8 +373,11 @@ namespace Dune {
     */
     virtual void apply (domain_type& v, const range_type& d)
     {
-	  preconditioner.apply(v,d);
-	  communication.addOwnerCopyToAll(v,v);
+      // block preconditioner equivalent to WrappedPreconditioner from 
+      // pdelab/backend/ovlpistsolverbackend.hh, 
+      // but not to BlockPreconditioner from schwarz.hh
+      preconditioner.apply(v,d);
+      communication.addOwnerCopyToOwnerCopy(v,v);
     }
 
     /*! 
