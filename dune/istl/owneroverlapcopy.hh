@@ -283,7 +283,7 @@ namespace Dune {
      * @return The Solver Category.
      */
 
-    const SolverCategory getSolverCategory () const {
+    const SolverCategory::Category getSolverCategory () const {
       return category;
     }
 
