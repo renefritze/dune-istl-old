@@ -5,6 +5,7 @@
 #include<dune/istl/bvector.hh>
 #include<dune/istl/operators.hh>
 #include<dune/istl/owneroverlapcopy.hh>
+#include<dune/istl/solvercategory.hh>
 #include"pinfo.hh"
 
 namespace Dune
@@ -103,12 +104,12 @@ namespace Dune
 #if HAVE_MPI    
     struct OwnerOverlapCopyCommunicationArgs
     {
-      OwnerOverlapCopyCommunicationArgs(MPI_Comm comm, int cat)
+      OwnerOverlapCopyCommunicationArgs(MPI_Comm comm, SolverCategory::Category cat)
 	: comm_(comm), cat_(cat)
       {}
       
       MPI_Comm comm_;
-      int cat_;
+      SolverCategory::Category cat_;
     };
 #endif
 
