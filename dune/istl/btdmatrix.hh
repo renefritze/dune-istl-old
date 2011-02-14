@@ -102,7 +102,7 @@ public:
 
     /** \brief Use the Thomas algorithm to solve the system Ax=b
      *
-     * \exception ISLTError if the matrix is singular
+     * \exception ISTLError if the matrix is singular
      *
      * \todo Implementation currently only works for scalar matrices
      */
