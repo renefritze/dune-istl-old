@@ -2,6 +2,9 @@
     \brief Unit tests for the different dynamic matrices provided by ISTL
 */
 #include"config.h"
+
+#include <fenv.h>
+
 #include <dune/common/fmatrix.hh>
 #include <dune/istl/bcrsmatrix.hh>
 #include <dune/istl/matrix.hh>
@@ -274,6 +277,8 @@ void testSolve(const MatrixType& matrix)
 
 int main()
 {
+    feenableexcept(FE_INVALID);
+    
     // ////////////////////////////////////////////////////////////
     //   Test the Matrix class -- a scalar dense dynamic matrix
     // ////////////////////////////////////////////////////////////
