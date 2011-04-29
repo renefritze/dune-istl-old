@@ -2,6 +2,8 @@
 #ifndef DUNE_AMG_AGGREGATES_HH
 #define DUNE_AMG_AGGREGATES_HH
 
+
+#include"parameters.hh"
 #include"graph.hh"
 #include"properties.hh"
 #include"combinedfunctor.hh"
@@ -56,10 +58,12 @@ namespace Dune
        * setDefaultValuesAnisotropic or setup the values by hand
        */
       AggregationCriterion()
-	: maxDistance_(2), minAggregateSize_(4), maxAggregateSize_(6), 
-	  connectivity_(15), debugLevel_(2), skipiso_(false)
+	: T()
       {}
       
+      AggregationCriterion(const Parameters& parms)
+	: T(parms)
+      {}
       /**
        * @brief Sets reasonable default values for an isotropic problem.
        *
@@ -217,65 +221,12 @@ namespace Dune
 	<<" connectivity="<<criterion.maxConnectivity()<<" debugLevel="<<criterion.debugLevel()<<"}";
       return os;
     }
-
-    /**
-     * @brief Paramters needed to check whether a node depends on another.
-     */
-    class DependencyParameters
-    {
-    public:
-      /** @brief Constructor */
-      DependencyParameters()
-	: alpha_(1.0/3.0), beta_(1.0E-5)
-      {}
-      
-      /**
-       * @brief Set threshold for marking nodes as isolated.
-       * The default value is 1.0E-5.
-       */
-      void setBeta(double b)
-      {
-	beta_ = b;
-      }
-      
-      /**
-       * @brief Get the threshold for marking nodes as isolated.
-       * The default value is 1.0E-5.
-       * @return beta
-       */
-      double beta() const
-      {
-	return beta_;
-      }
-      
-      /**
-       * @brief Set the scaling value for marking connections as strong.
-       * Default value is 1/3
-       */
-      void setAlpha(double a)
-      {
-	alpha_ = a;
-      }
-
-      /**
-       * @brief Get the scaling value for marking connections as strong.
-       * Default value is 1/3
-       */
-      double alpha() const
-      {
-	return alpha_;
-      }
-      
-    private:
-      double alpha_, beta_;
-    };
-    
     
     /**
      * @brief Dependency policy for symmetric matrices.
      */
     template<class M, class N>
-    class Dependency : public DependencyParameters
+    class Dependency : public Parameters
     {
     public:
       /**
@@ -308,6 +259,15 @@ namespace Dune
       void examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col);
 
       bool isIsolated();
+
+      Dependency(const Parameters& parms)
+        : Parameters(parms)
+      {}
+      
+      Dependency()
+        :Parameters()
+      {}
+      
     private:
       /** @brief The matrix we work on. */
       const Matrix* matrix_;
@@ -325,7 +285,7 @@ namespace Dune
      * @brief Dependency policy for symmetric matrices.
      */
     template<class M, class N>
-    class SymmetricDependency : public DependencyParameters
+    class SymmetricDependency : public Parameters
     {
     public:
       /**
@@ -358,6 +318,15 @@ namespace Dune
       void examine(G& graph, const typename G::EdgeIterator& edge, const ColIter& col);
 
       bool isIsolated();
+
+      
+      SymmetricDependency(const Parameters& parms)
+        : Parameters(parms)
+      {}
+      SymmetricDependency()
+        :Parameters()
+      {}
+      
     private:
       /** @brief The matrix we work on. */
       const Matrix* matrix_;
@@ -466,7 +435,14 @@ namespace Dune
      */
     template<class M, class Norm>
     class SymmetricCriterion : public AggregationCriterion<SymmetricDependency<M,Norm> >
-    {};
+    {
+    public:
+      SymmetricCriterion(const Parameters& parms)
+        : AggregationCriterion<SymmetricDependency<M,Norm> >(parms)
+      {}
+      SymmetricCriterion()
+      {}
+    };
 
     
     /**
@@ -482,7 +458,14 @@ namespace Dune
      */
     template<class M, class Norm>
     class UnSymmetricCriterion : public AggregationCriterion<Dependency<M,Norm> >
-    {};
+    {
+    public:
+      UnSymmetricCriterion(const Parameters& parms)
+        : AggregationCriterion<Dependency<M,Norm> >(parms)
+      {}
+      UnSymmetricCriterion()
+      {}
+    };
     // forward declaration
     template<class G> class Aggregator;
 
