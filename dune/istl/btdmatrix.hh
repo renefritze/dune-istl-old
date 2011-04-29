@@ -1,6 +1,7 @@
 #ifndef DUNE_BLOCK_TRIDIAGONAL_MATRIX_HH
 #define DUNE_BLOCK_TRIDIAGONAL_MATRIX_HH
 
+#include <dune/common/fmatrix.hh>
 #include <dune/istl/bcrsmatrix.hh>
 
 /** \file
