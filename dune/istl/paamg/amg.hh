@@ -264,6 +264,8 @@ namespace Dune
       bool buildHierarchy_;
       bool additive;
       Smoother *coarseSmoother_;
+      /** @brief The verbosity level. */
+      std::size_t verbosity_;
     };
 
     template<class M, class X, class S, class PI, class A>
@@ -274,7 +276,7 @@ namespace Dune
       : matrices_(&matrices), smootherArgs_(smootherArgs),
 	smoothers_(), solver_(&coarseSolver), scalarProduct_(0),
 	gamma_(gamma), preSteps_(preSmoothingSteps), postSteps_(postSmoothingSteps), buildHierarchy_(false),
-	additive(additive_), coarseSmoother_()
+	additive(additive_), coarseSmoother_(), verbosity_(2)
     {
       assert(matrices_->isBuilt());
       
@@ -290,7 +292,7 @@ namespace Dune
 	smoothers_(), solver_(&coarseSolver), scalarProduct_(0),
 	gamma_(parms.getGamma()), preSteps_(parms.getNoPreSmoothSteps()), 
         postSteps_(parms.getNoPostSmoothSteps()), buildHierarchy_(false),
-	additive(parms.getAdditive()), coarseSmoother_()
+	additive(parms.getAdditive()), coarseSmoother_(), verbosity_(parms.debugLevel())
     {
       assert(matrices_->isBuilt());
       
@@ -310,7 +312,7 @@ namespace Dune
       : smootherArgs_(smootherArgs),
 	smoothers_(), solver_(), scalarProduct_(0), gamma_(gamma),
 	preSteps_(preSmoothingSteps), postSteps_(postSmoothingSteps), buildHierarchy_(true),
-	additive(additive_), coarseSmoother_()
+	additive(additive_), coarseSmoother_(), verbosity_(criterion.debugLevel())
     {
       dune_static_assert(static_cast<int>(M::category)==static_cast<int>(S::category),
 			 "Matrix and Solver must match in terms of category!");
@@ -325,7 +327,7 @@ namespace Dune
       // build the necessary smoother hierarchies
       matrices_->coarsenSmoother(smoothers_, smootherArgs_);
 
-      if(criterion.debugLevel()>0 && matrices_->parallelInformation().finest()->communicator().rank()==0)
+      if(verbosity_>0 && matrices_->parallelInformation().finest()->communicator().rank()==0)
 	std::cout<<"Building Hierarchy of "<<matrices_->maxlevels()<<" levels took "<<watch.elapsed()<<" seconds."<<std::endl;
     }
 
@@ -339,7 +341,7 @@ namespace Dune
 	smoothers_(), solver_(), scalarProduct_(0), 
         gamma_(criterion.getGamma()), preSteps_(criterion.getNoPreSmoothSteps()), 
         postSteps_(criterion.getNoPostSmoothSteps()), buildHierarchy_(true),
-	additive(criterion.getAdditive()), coarseSmoother_()
+	additive(criterion.getAdditive()), coarseSmoother_(), verbosity_(criterion.debugLevel())
     {
       dune_static_assert(static_cast<int>(M::category)==static_cast<int>(S::category),
 			 "Matrix and Solver must match in terms of category!");
@@ -354,7 +356,7 @@ namespace Dune
       // build the necessary smoother hierarchies
       matrices_->coarsenSmoother(smoothers_, smootherArgs_);
 
-      if(criterion.debugLevel()>0 && matrices_->parallelInformation().finest()->communicator().rank()==0)
+      if(verbosity_>0 && matrices_->parallelInformation().finest()->communicator().rank()==0)
 	std::cout<<"Building Hierarchy of "<<matrices_->maxlevels()<<" levels took "<<watch.elapsed()<<" seconds."<<std::endl;
     }
     
@@ -441,6 +443,7 @@ namespace Dune
 	   || (matrices_->parallelInformation().coarsest().isRedistributed() 
 	       && matrices_->parallelInformation().coarsest().getRedistributed().communicator().size()==1
 	       && matrices_->parallelInformation().coarsest().getRedistributed().communicator().size()>0)){ // redistribute and 1 proc
+	  if(verbosity_>0 && matrices_->parallelInformation().coarsest()->communicator().rank()==0)
 	  std::cout<<"Using superlu"<<std::endl;
 	  if(matrices_->parallelInformation().coarsest().isRedistributed())
 	    {
