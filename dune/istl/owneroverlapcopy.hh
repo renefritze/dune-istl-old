@@ -268,6 +268,16 @@ namespace Dune {
 	  OwnerCopyToOwnerCopyInterfaceBuilt = true;
 	}
 
+	void buildCopyToAllInterface () const
+	{
+	  if (CopyToAllInterfaceBuilt)
+		CopyToAllInterface.free();
+	  CopySet sourceFlags;
+	  AllSet destFlags;
+	  CopyToAllInterface.build(ri,sourceFlags,destFlags);
+	  CopyToAllInterfaceBuilt = true;
+	}
+
   public:
 
     /**
@@ -309,6 +319,22 @@ namespace Dune {
 	  communicator.free();
 	}
 
+    /**
+     * @brief Communicate values from copy data points to all other data points.
+     *
+     * @brief source The data to send from.
+     * @brief dest The data to send to.
+     */
+	template<class T>
+	void copyCopyToAll (const T& source, T& dest) const
+	{
+	  if (!CopyToAllInterfaceBuilt)
+		buildCopyToAllInterface ();
+	  BC communicator;
+	  communicator.template build<T>(CopyToAllInterface);
+	  communicator.template forward<CopyGatherScatter<T> >(source,dest);
+	  communicator.free();
+	}
 
     /**
      * @brief Communicate values from owner data points to all other data points and add them to those values.
@@ -525,7 +551,7 @@ namespace Dune {
       : cc(comm_), pis(), ri(pis,pis,comm_), 
         OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false), 
         OwnerCopyToAllInterfaceBuilt(false), OwnerCopyToOwnerCopyInterfaceBuilt(false), 
-        globalLookup_(0), category(cat)
+        CopyToAllInterfaceBuilt(false), globalLookup_(0), category(cat)
     {}
     
     /**
@@ -538,7 +564,7 @@ namespace Dune {
       : cc(MPI_COMM_WORLD), pis(), ri(pis,pis,MPI_COMM_WORLD), 
         OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false), 
         OwnerCopyToAllInterfaceBuilt(false), OwnerCopyToOwnerCopyInterfaceBuilt(false), 
-        globalLookup_(0), category(cat)
+        CopyToAllInterfaceBuilt(false), globalLookup_(0), category(cat)
     {}
 
     /**
@@ -549,7 +575,7 @@ namespace Dune {
 	OwnerOverlapCopyCommunication (const IndexInfoFromGrid<GlobalIdType, LocalIdType>& indexinfo, MPI_Comm comm_, SolverCategory::Category cat = SolverCategory::overlapping)
 	  : cc(comm_), OwnerToAllInterfaceBuilt(false), OwnerOverlapToAllInterfaceBuilt(false), 
         OwnerCopyToAllInterfaceBuilt(false), OwnerCopyToOwnerCopyInterfaceBuilt(false), 
-        globalLookup_(0), category(cat)
+        CopyToAllInterfaceBuilt(false), globalLookup_(0), category(cat)
 	{
 	  // set up an ISTL index set
 	  pis.beginResize();
@@ -613,6 +639,7 @@ namespace Dune {
 	  if (OwnerOverlapToAllInterfaceBuilt) OwnerOverlapToAllInterface.free();
 	  if (OwnerCopyToAllInterfaceBuilt) OwnerCopyToAllInterface.free();
 	  if (OwnerCopyToOwnerCopyInterfaceBuilt) OwnerCopyToOwnerCopyInterface.free();
+      if (CopyToAllInterfaceBuilt) CopyToAllInterface.free();
 	  if (globalLookup_) delete globalLookup_;
 	}
 
@@ -630,6 +657,8 @@ namespace Dune {
 	mutable bool OwnerCopyToAllInterfaceBuilt;
     mutable IF OwnerCopyToOwnerCopyInterface;
 	mutable bool OwnerCopyToOwnerCopyInterfaceBuilt;
+    mutable IF CopyToAllInterface;
+	mutable bool CopyToAllInterfaceBuilt;
 	mutable std::vector<double> mask;
     int oldseqNo;
     GlobalLookupIndexSet* globalLookup_;
