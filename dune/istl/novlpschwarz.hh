@@ -82,10 +82,10 @@ namespace Dune {
     typedef std::multimap<int,std::pair<int,RILIterator> > RIMap;
     typedef typename RIMap::iterator RIMapit;
     
-	enum {
-	  //! \brief The solver category.
-	  category=SolverCategory::nonoverlapping
-	};
+    enum {
+      //! \brief The solver category.
+      category=SolverCategory::nonoverlapping
+    };
 
     /** 
      * @brief constructor: just store a reference to a matrix.
@@ -109,13 +109,13 @@ namespace Dune {
     //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
     virtual void applyscaleadd (field_type alpha, const X& x, Y& y) const
     {
-	  // only apply communication to alpha*A*x to make it consistent,
-	  // y already has to be consistent. 
-	  Y y1(y);
-	  y = 0;
-	  novlp_op_apply(x,y,alpha);
-	  communication.addOwnerCopyToOwnerCopy(y,y);
-	  y += y1;
+      // only apply communication to alpha*A*x to make it consistent,
+      // y already has to be consistent. 
+      Y y1(y);
+      y = 0;
+      novlp_op_apply(x,y,alpha);
+      communication.addOwnerCopyToOwnerCopy(y,y);
+      y += y1;
     }
     
     //! get matrix via *
@@ -262,35 +262,35 @@ namespace Dune {
     //! \brief The type of the communication object
     typedef C communication_type;
     
-	//! define the category
-	enum {category=SolverCategory::nonoverlapping};
+    //! define the category
+    enum {category=SolverCategory::nonoverlapping};
 
-	/*! \brief Constructor
-	 * \param com The communication object for syncing owner and copy
-	 * data points. (E.~g. OwnerOverlapCommunication )
-	 */
-	NonoverlappingSchwarzScalarProduct (const communication_type& com)
-	  : communication(com)
-	{}
+    /*! \brief Constructor
+     * \param com The communication object for syncing owner and copy
+     * data points. (E.~g. OwnerOverlapCommunication )
+     */
+    NonoverlappingSchwarzScalarProduct (const communication_type& com)
+      : communication(com)
+    {}
 
-	/*! \brief Dot product of two vectors. 
-	  It is assumed that the vectors are consistent on the interior+border
-	  partition.
-	*/
-	virtual field_type dot (const X& x, const X& y)
-	{
-	  field_type result;
-	  communication.dot(x,y,result);
-	  return result;
-	}
+    /*! \brief Dot product of two vectors. 
+      It is assumed that the vectors are consistent on the interior+border
+      partition.
+    */
+    virtual field_type dot (const X& x, const X& y)
+    {
+      field_type result;
+      communication.dot(x,y,result);
+      return result;
+    }
 
-	/*! \brief Norm of a right-hand side vector. 
-	  The vector must be consistent on the interior+border partition
-	*/
-	virtual double norm (const X& x)
-	{
-	  return communication.norm(x);
-	}
+    /*! \brief Norm of a right-hand side vector. 
+      The vector must be consistent on the interior+border partition
+    */
+    virtual double norm (const X& x)
+    {
+      return communication.norm(x);
+    }
     
     /*! \brief make additive vector consistent
      */
@@ -300,7 +300,7 @@ namespace Dune {
     }
     
   private:
-	const communication_type& communication;
+    const communication_type& communication;
   };
 
   template<class X, class C>
@@ -355,10 +355,10 @@ namespace Dune {
     
     /*! \brief Constructor.
 
-    constructor gets all parameters to operate the prec.
-    \param prec The sequential preconditioner.
-    \param c The communication object for syncing owner and copy
-    data points. (E.~g. OwnerOverlapCommunication )
+      constructor gets all parameters to operate the prec.
+      \param prec The sequential preconditioner.
+      \param c The communication object for syncing owner and copy
+      data points. (E.~g. OwnerOverlapCommunication )
     */
     NonoverlappingBlockPreconditioner (P& prec, const communication_type& c)
       : preconditioner(prec), communication(c)
@@ -370,9 +370,9 @@ namespace Dune {
       \copydoc Preconditioner::pre(domain_type&,range_type&)
     */
     virtual void pre (domain_type& x, range_type& b) 
-	{
-	  preconditioner.pre(x,b);
-	}
+    {
+      preconditioner.pre(x,b);
+    }
 
     /*! 
       \brief Apply the preconditioner
@@ -394,16 +394,16 @@ namespace Dune {
       \copydoc Preconditioner::post(domain_type&)
     */
     virtual void post (domain_type& x) 
-	{
-	  preconditioner.post(x);
-	}
+    {
+      preconditioner.post(x);
+    }
 
   private:
-	//! \brief a sequential preconditioner
-	P& preconditioner;
+    //! \brief a sequential preconditioner
+    P& preconditioner;
 
-	//! \brief the communication object
-	const communication_type& communication;
+    //! \brief the communication object
+    const communication_type& communication;
   };
 
   /** @} end documentation */
