@@ -1,5 +1,8 @@
 #ifndef DUNE_AMG_PARAMETERS_HH
 #define DUNE_AMG_PARAMETERS_HH
+
+#include<cstddef>
+
 namespace Dune
 {
   namespace Amg
