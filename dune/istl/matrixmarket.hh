@@ -669,7 +669,7 @@ namespace Dune
     template<typename T, typename A, int brows, int bcols, typename D>
     void readSparseEntries(Dune::BCRSMatrix<Dune::FieldMatrix<T,brows,bcols>,A>& matrix,
 			   std::istream& file, std::size_t entries,
-			   const MMHeader& mmHeader, D)
+			   const MMHeader& mmHeader, const D&)
     {
       typedef Dune::BCRSMatrix<Dune::FieldMatrix<T,brows,bcols>,A> Matrix;
       // First path
@@ -831,10 +831,8 @@ namespace Dune
   
     if(header.type==array_type)
       DUNE_THROW(Dune::NotImplemented, "Array format currently not supported for matrices!");
-  
-    NumericWrapper<double> d;
-  
-    readSparseEntries(matrix, istr, entries, header,d);
+    
+    readSparseEntries(matrix, istr, entries, header, NumericWrapper<double>());
   }	
   
   template<typename M>
@@ -937,7 +935,42 @@ namespace Dune
     // Choose the correct function for matrix and vector
     writeMatrixMarket(matrix,ostr,integral_constant<int,IsMatrix<M>::value>());
   }
+
   
+  /**
+   * @brief Stores a parallel matrix/vector in matrix market format in a file.
+   *
+   * More about the matrix market exchange format can be found
+   * <a href="http://math.nist.gov/MatrixMarket/formats.html">here</a>.
+   * 
+   * @param matrix The matrix/vector to store.
+   * @param filename the name of the filename (without suffix and rank!)
+   *        rank i will write the file filename_i.mm
+   */
+  template<typename M>
+  void storeMatrixMarket(const M& matrix,
+                         std::string filename)
+  {
+    std::ofstream file(filename.c_str());
+    file.setf(std::ios::scientific,std::ios::floatfield);
+    writeMatrixMarket(matrix, file);
+    file.close();
+  }
+  
+#if HAVE_MPI
+  /**
+   * @brief Stores a parallel matrix/vector in matrix market format in a file.
+   *
+   * More about the matrix market exchange format can be found
+   * <a href="http://math.nist.gov/MatrixMarket/formats.html">here</a>.
+   * 
+   * @param matrix The matrix/vector to store.
+   * @param filename the name of the filename (without suffix and rank!)
+   *        rank i will write the file filename_i.mm
+   * @param comm The information about the data distribution.
+   * @param storeIndices Whether to store the parallel index information.
+   *        If true rank i writes the index information to file filename_i.idx.
+   */
   template<typename M, typename G, typename L>
   void storeMatrixMarket(const M& matrix,
                          std::string filename,
@@ -982,6 +1015,9 @@ namespace Dune
 
   /**
    * @brief Load a parallel matrix/vector stored in matrix market format.
+   *
+   * More about the matrix market exchange format can be found
+   * <a href="http://math.nist.gov/MatrixMarket/formats.html">here</a>.
    *
    * @param matrix Where to store the matrix/vector.
    * @param filename the name of the filename (without suffix and rank!)
@@ -1056,6 +1092,31 @@ namespace Dune
     }
     comm.ri.template rebuild<false>();
   }
+
+  #endif
+  
+    /**
+   * @brief Load a matrix/vector stored in matrix market format.
+   *
+   * More about the matrix market exchange format can be found
+   * <a href="http://math.nist.gov/MatrixMarket/formats.html">here</a>.
+   *
+   * @param matrix Where to store the matrix/vector.
+   * @param filename the name of the filename (without suffix and rank!)
+   *        rank i will read the file filename_i.mm
+   */
+  template<typename M>
+  void loadMatrixMarket(M& matrix,
+                        const std::string& filename)
+  {
+    std::ifstream file;
+    file.open(filename.c_str(), std::ios::in);
+    if(!file)
+      DUNE_THROW(IOError, "Could not open file" << filename);
+    readMatrixMarket(matrix,file);
+    file.close();
+  }
+  
   /** @} */
 }
 #endif
