@@ -6,7 +6,7 @@
 
 #include "istlexception.hh"
 
-#if HAVE_BOOST
+#ifdef HAVE_BOOST
 #ifdef HAVE_BOOST_FUSION
 
 #include <boost/fusion/sequence.hpp>
