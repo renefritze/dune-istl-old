@@ -636,7 +636,7 @@ namespace Dune {
 
         //! @returns an iterator that is positioned before
         //! the first entry of the vector.
-	Iterator beforeBegin ()
+	Iterator beforeBegin () const
 	{
 	  return Iterator(block,-1);
 	}
