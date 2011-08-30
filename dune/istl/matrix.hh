@@ -320,8 +320,8 @@ public:
     /// Generic matrix multiplication.
     friend Matrix<T> operator*(const Matrix<T>& m1, const Matrix<T>& m2) {
         Matrix<T> out(m1.N(), m2.M());
-        out.clear();
-
+        out = 0;
+        
         for (size_type i=0; i<out.N(); i++ ) {
             for ( size_type j=0; j<out.M(); j++ ) 
                 for (size_type k=0; k<m1.M(); k++)
