@@ -437,10 +437,15 @@ namespace Dune
        * @param matrix The matrix describing the dependency.
        * @param graph The graph corresponding to the matrix.
        * @param criterion The aggregation criterion.
-       * @return The number of aggregates built.
+       * @param finestLevel Whether this the finest level. In that case rows representing 
+       * Dirichlet boundaries will be detected and ignored during aggregation.
+       * @return A tuple of the total number of aggregates, the number of isolated aggregates, the
+       *         number of isolated aggregates, the number of aggregates consisting only of one vertex, and 
+       *         the number of skipped aggregates built.
        */
       template<class M, class G, class C>
-      tuple<int,int,int,int> buildAggregates(const M& matrix, G& graph, const C& criterion);
+      tuple<int,int,int,int> buildAggregates(const M& matrix, G& graph, const C& criterion,
+                                             bool finestLevel);
       
       /**
        * @brief Breadth first search within an aggregate
@@ -583,7 +588,8 @@ namespace Dune
       template<class G, class C>
       void buildDependency(G& graph,
 			   const typename C::Matrix& matrix,
-			   C criterion);
+			   C criterion,
+                           bool finestLevel);
     
     /**
      * @brief A class for temporarily storing the vertices of an
@@ -753,11 +759,16 @@ namespace Dune
        * @param aggregates Aggregate map we will build. All entries should be initialized
        * to UNAGGREGATED!
        * @param c The coarsening criterion to use.
-       * @return The number of (not skipped) aggregates built.
+       * @param finestLevel Whether this the finest level. In that case rows representing 
+       * Dirichlet boundaries will be detected and ignored during aggregation.
+       * @return A tuple of the total number of aggregates, the number of isolated aggregates, the
+       *         number of isolated aggregates, the number of aggregates consisting only of one vertex, and 
+       *         the number of skipped aggregates built.
        */
       template<class M, class C>
       tuple<int,int,int,int> build(const M& m, G& graph, 
-			       AggregatesMap<Vertex>& aggregates, const C& c);
+                                   AggregatesMap<Vertex>& aggregates, const C& c,
+                                   bool finestLevel);
     private:
       /**
        * @brief The allocator we use for our lists and the
@@ -1555,7 +1566,7 @@ namespace Dune
     template<class G, class C>
     void buildDependency(G& graph,
 			 const typename C::Matrix& matrix,
-			 C criterion)
+			 C criterion, bool firstlevel)
     {
       // The Criterion we use for building the dependency.
       typedef C Criterion;
@@ -1582,15 +1593,21 @@ namespace Dune
 	ColIterator end = row.end();
 	typename Matrix::field_type absoffdiag=0;
 
-	for(ColIterator col = row.begin(); col != end; ++col)
-	  if(col.index()!=*vertex){
-	    criterion.examine(col);
-	    absoffdiag=std::max(absoffdiag, col->frobenius_norm());
-	  }
+        if(firstlevel){
+          for(ColIterator col = row.begin(); col != end; ++col)
+            if(col.index()!=*vertex){
+              criterion.examine(col);
+              absoffdiag=std::max(absoffdiag, col->frobenius_norm());
+            }
 	
 	if(absoffdiag==0)
 	  vertex.properties().setExcludedBorder();
-	
+	}
+        else
+          for(ColIterator col = row.begin(); col != end; ++col)
+            if(col.index()!=*vertex)
+              criterion.examine(col);
+
 	// reset the vertex properties
 	//vertex.properties().reset();
 		
@@ -2142,15 +2159,17 @@ namespace Dune
       
     template<typename V>
     template<typename M, typename G, typename C>
-    tuple<int,int,int,int> AggregatesMap<V>::buildAggregates(const M& matrix, G& graph, const C& criterion)
+    tuple<int,int,int,int> AggregatesMap<V>::buildAggregates(const M& matrix, G& graph, const C& criterion,
+                                                             bool finestLevel)
     {
       Aggregator<G> aggregator;
-      return aggregator.build(matrix, graph, *this, criterion);
+      return aggregator.build(matrix, graph, *this, criterion, finestLevel);
     }
     
     template<class G>
     template<class M, class C>
-    tuple<int,int,int,int> Aggregator<G>::build(const M& m, G& graph, AggregatesMap<Vertex>& aggregates, const C& c)
+    tuple<int,int,int,int> Aggregator<G>::build(const M& m, G& graph, AggregatesMap<Vertex>& aggregates, const C& c,
+                                                bool finestLevel)
     {
       // Stack for fast vertex access
       Stack stack_(graph, *this, aggregates);
@@ -2162,7 +2181,7 @@ namespace Dune
       Timer watch;
       watch.reset();
 
-      buildDependency(graph, m, c);
+      buildDependency(graph, m, c, finestLevel);
 
       dverb<<"Build dependency took "<< watch.elapsed()<<" seconds."<<std::endl;
       int noAggregates, conAggregates, isoAggregates, oneAggregates;
@@ -2195,6 +2214,7 @@ namespace Dune
 	    // isolated vertices are not aggregated but skipped on the coarser levels.
 	    aggregates[seed]=AggregatesMap<Vertex>::ISOLATED;
 	    ++skippedAggregates;
+            throw "huch";
 	    // skip rest as no agglomeration is done.
 	    continue;
 	  }else
