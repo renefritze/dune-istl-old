@@ -348,11 +348,11 @@ namespace Dune
     
     double def0=d.two_norm();
     */
-    #if SUPERLU_MIN_VERSION_4_3
+#ifdef SUPERLU_MIN_VERSION_4_3
     options.IterRefine=SLU_DOUBLE;
-    #else
+#else
     options.IterRefine=DOUBLE;
-    #endif
+#endif
     
     dgssvx(&options, &static_cast<SuperMatrix&>(mat), perm_c, perm_r, etree, &equed, R, C,
            &L, &U, work, lwork, &B, &X, &rpg, &rcond, &ferr, &berr,
@@ -417,11 +417,11 @@ namespace Dune
     /* Initialize the statistics variables. */
     StatInit(&stat);
 
-    #if SUPERLU_MIN_VERSION_4_3
+#ifdef SUPERLU_MIN_VERSION_4_3
     options.IterRefine=SLU_DOUBLE;
-    #else
+#else
     options.IterRefine=DOUBLE;
-    #endif
+#endif
     
     dgssvx(&options, &static_cast<SuperMatrix&>(mat), perm_c, perm_r, etree, &equed, R, C,
            &L, &U, work, lwork, &B, &X, &rpg, &rcond, &ferr, &berr,
@@ -448,5 +448,5 @@ namespace Dune
   /** @} */
 }
 
-#endif
-#endif
+#endif // HAVE_SUPERLU
+#endif // DUNE_SUPERLU_HH
