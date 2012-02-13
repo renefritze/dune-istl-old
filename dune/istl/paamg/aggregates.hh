@@ -1,4 +1,6 @@
-// $Id$ 
+// -*- tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+// vi: set ts=8 sw=2 et sts=2:
+// $Id$
 #ifndef DUNE_AMG_AGGREGATES_HH
 #define DUNE_AMG_AGGREGATES_HH
 
