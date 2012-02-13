@@ -89,8 +89,8 @@ namespace Dune
 #endif
 
     template<class V, class V1>
-     template<typename T>
-    inline void 
+    template<typename T>
+    inline void
     Transfer<V,V1,SequentialInformation>::prolongate(const AggregatesMap<Vertex>& aggregates,
 						     Vector& coarse, Vector& fine, Vector& fineRedist,
 						     T damp,
