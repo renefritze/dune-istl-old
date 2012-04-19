@@ -2,7 +2,7 @@
 #define DUNE_PARDISO_HH
 
 #include <dune/istl/preconditioners.hh>
-
+#include <dune/istl/solvertype.hh>
 /* Change this, if your Fortran compiler does not append underscores. */
 /* e.g. the AIX compiler:  #define F77_FUNC(func) func                */
 
@@ -207,12 +207,13 @@ namespace Dune {
     int num_procs_; //!< number of processors.
   };
 
-}
-
-
-
-
-
-
+  template<class M, class X, class Y>
+  struct IsDirectSolver<SeqPardiso<M,X,Y> >
+  {
+    enum{ value=true};
+  };
+  
+  
+} // end namespace Dune
 #endif
 

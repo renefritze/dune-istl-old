@@ -24,6 +24,7 @@
 #include<dune/common/fmatrix.hh>
 #include<dune/common/fvector.hh>
 #include<dune/common/stdstreams.hh>
+#include <dune/istl/solvertype.hh>
 
 namespace Dune
 {
@@ -446,6 +447,12 @@ namespace Dune
     StatFree(&stat);
   }
   /** @} */
+
+  template<typename T, typename A, int n, int m>
+  struct IsDirectSolver<SuperLU<BCRSMatrix<FieldMatrix<T,n,m>,A> > >
+  {
+    enum{ value=true};
+  };
 }
 
 #endif // HAVE_SUPERLU
