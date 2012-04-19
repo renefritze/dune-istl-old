@@ -12,7 +12,7 @@ class MatrixIndexSet
 {
 
 public:
-    typedef size_t size_type;
+    typedef std::size_t size_type;
 
     /** \brief Default constructor */
     MatrixIndexSet() : rows_(0), cols_(0)
