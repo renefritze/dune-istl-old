@@ -4,7 +4,7 @@
 #include<dune/common/fmatrix.hh>
 #include<dune/common/fvector.hh>
 #include<dune/common/float_cmp.hh>
-#ifndef MM_SEQUENTIAL
+#if HAVE_MPI
 #include<dune/istl/paamg/test/anisotropic.hh>
 #include"mpi.h"
 #include<dune/istl/schwarz.hh>
@@ -19,7 +19,7 @@
 
 int main(int argc, char** argv)
 {
-#ifndef MM_SEQUENTIAL    
+#if HAVE_MPI
   MPI_Init(&argc, &argv);
   int size;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
   typedef Dune::FieldVector<double,BS> VectorBlock;
   typedef Dune::BlockVector<VectorBlock> BVector;
 
-#ifndef MM_SEQUENTIAL
+#ifndef HAVE_MPI
   typedef int GlobalId;
   typedef Dune::OwnerOverlapCopyCommunication<GlobalId> Communication;
   Communication comm(MPI_COMM_WORLD);
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
       *sentry=i;
   }
 
-#ifndef MM_SEQUENTIAL
+#ifndef HAVE_MPI
   comm.remoteIndices().rebuild<false>();
   comm.copyOwnerToAll(bv,bv);  
 
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
   BCRSMat mat1;
   BVector bv1,cv1;
 
-#ifndef MM_SEQUENTIAL 
+#ifndef HAVE_MPI 
   Communication comm1(MPI_COMM_WORLD);
   
   loadMatrixMarket(mat1, std::string("testmat"), comm1);
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
   
   cv1.resize(mat1.M());
 
-#ifndef MM_SEQUENTIAL
+#ifndef HAVE_MPI
   Dune::OverlappingSchwarzOperator<BCRSMat,BVector,BVector,Communication> op1(mat1, comm1);
   op1.apply(bv1, cv1);
   
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
         ++ret;
      }
 
-#ifndef MM_SEQUENTIAL
+#ifndef HAVE_MPI
   if(ret!=0)
     MPI_Abort(MPI_COMM_WORLD, ret);
   MPI_Finalize();
