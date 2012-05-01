@@ -23,7 +23,6 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
   int size;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-#else
 #endif
   const int BS=1;
   int N=100;
@@ -62,7 +61,7 @@ int main(int argc, char** argv)
       *sentry=i;
   }
 
-#ifndef HAVE_MPI
+#if HAVE_MPI
   comm.remoteIndices().rebuild<false>();
   comm.copyOwnerToAll(bv,bv);  
 
@@ -83,7 +82,7 @@ int main(int argc, char** argv)
   BCRSMat mat1;
   BVector bv1,cv1;
 
-#ifndef HAVE_MPI 
+#if HAVE_MPI 
   Communication comm1(MPI_COMM_WORLD);
   
   loadMatrixMarket(mat1, std::string("testmat"), comm1);
@@ -124,7 +123,7 @@ int main(int argc, char** argv)
   
   cv1.resize(mat1.M());
 
-#ifndef HAVE_MPI
+#if HAVE_MPI
   Dune::OverlappingSchwarzOperator<BCRSMat,BVector,BVector,Communication> op1(mat1, comm1);
   op1.apply(bv1, cv1);
   
@@ -146,7 +145,7 @@ int main(int argc, char** argv)
         ++ret;
      }
 
-#ifndef HAVE_MPI
+#if HAVE_MPI
   if(ret!=0)
     MPI_Abort(MPI_COMM_WORLD, ret);
   MPI_Finalize();
