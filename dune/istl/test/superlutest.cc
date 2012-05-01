@@ -1,12 +1,16 @@
 #include"config.h"
-#include<dune/istl/bvector.hh>
-#include<dune/istl/operators.hh>
+
+#include<complex>
+
 #include<dune/common/fmatrix.hh>
 #include<dune/common/fvector.hh>
-#include<laplacian.hh>
 #include<dune/common/timer.hh>
+
+#include<dune/istl/bvector.hh>
+#include<dune/istl/operators.hh>
 #include<dune/istl/superlu.hh>
-#include<complex>
+
+#include"laplacian.hh"
 
 #ifndef SUPERLU_NTYPE
 #define SUPERLU_NTYPE 1
@@ -20,11 +24,9 @@ typedef double FIELD_TYPE;
 typedef float FIELD_TYPE;
 #endif
 
-
 #if SUPERLU_NTYPE==2
 typedef std::complex<float> FIELD_TYPE;
 #endif
-
 
 #if SUPERLU_NTYPE>=3
 typedef std::complex<double> FIELD_TYPE;
@@ -32,7 +34,6 @@ typedef std::complex<double> FIELD_TYPE;
 
 int main(int argc, char** argv)
 {
-    
   const int BS=1;
   std::size_t N=100;
   
@@ -75,5 +76,4 @@ int main(int argc, char** argv)
 
   std::cout<<"Defect reduction is "<<res.reduction<<std::endl;
   solver1.apply(x,b, res);
-  
 }
