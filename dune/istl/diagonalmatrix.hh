@@ -1,7 +1,7 @@
 // -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 // vi: set et ts=4 sw=4 sts=4:
-#ifndef DUNE_DIAGONAL_MATRIX_NEW_HH
-#define DUNE_DIAGONAL_MATRIX_NEW_HH
+#ifndef DUNE_DIAGONAL_MATRIX_HH
+#define DUNE_DIAGONAL_MATRIX_HH
 
 /*! \file
 \brief  This file implements a quadratic matrix of fixed size which is diagonal.
