@@ -127,7 +127,7 @@ namespace Dune
        */
       void addCoarser(Arguments& args);
 
-      void addRedistributedOnCoarsest(T* t);
+      void addRedistributedOnCoarsest(Arguments& args);
       
       /**
        * @brief Add an element on a finer level.
@@ -1111,7 +1111,7 @@ namespace Dune
       Iterator matrix = matrices_.finest(), coarsest = matrices_.coarsest();
       int level=0;
       if(redist->isSetup())
-	  hierarchy.addRedistributedOnCoarsest(new BlockVector<V,TA>(matrix.getRedistributed().getmat().N()));
+	  hierarchy.addRedistributedOnCoarsest(matrix.getRedistributed().getmat().N());
       Dune::dvverb<<"Level "<<level<<" has "<<matrices_.finest()->getmat().N()<<" unknowns!"<<std::endl;
 
       while(matrix != coarsest){
@@ -1120,7 +1120,7 @@ namespace Dune
 	  
 	hierarchy.addCoarser(matrix->getmat().N());
 	if(redist->isSetup())
-	  hierarchy.addRedistributedOnCoarsest(new BlockVector<V,TA>(matrix.getRedistributed().getmat().N()));
+	  hierarchy.addRedistributedOnCoarsest(matrix.getRedistributed().getmat().N());
 	
       }
 	  
@@ -1259,9 +1259,9 @@ namespace Dune
     }
 
     template<class T, class A>
-    void Hierarchy<T,A>::addRedistributedOnCoarsest(T* t)
+    void Hierarchy<T,A>::addRedistributedOnCoarsest(Arguments& args)
     {
-      coarsest_->redistributed_ = t;
+      coarsest_->redistributed_ = ConstructionTraits<MemberType>::construct(args);
     }
     
     template<class T, class A>
