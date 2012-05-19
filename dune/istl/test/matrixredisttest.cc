@@ -142,5 +142,5 @@ int main(int argc, char** argv)
   }
   
   testRepart<1>(N,coarsenTarget);
-  return 0;
+  MPI_Finalize();
 }
