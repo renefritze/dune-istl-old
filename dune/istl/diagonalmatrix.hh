@@ -692,7 +692,7 @@ public:
     {
 #ifdef DUNE_FMatrix_WITH_CHECKING
         if (i!=row_)
-            DUNE_THROW(FMatrixError,"index is contained in pattern");
+            DUNE_THROW(FMatrixError,"index is not contained in pattern");
 #endif
         return *p_;
     }
