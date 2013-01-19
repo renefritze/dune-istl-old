@@ -609,7 +609,7 @@ namespace Dune
     bool operator<(const IndexData<T>& i1, const IndexData<T>& i2)
     {
       return i1.index<i2.index;
-    };
+    }
 
     /**
      * @brief Read IndexData from a stream.
